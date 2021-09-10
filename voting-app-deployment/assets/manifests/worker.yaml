@@ -1,0 +1,41 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: worker
+  labels:
+    name: worker-deployment
+    app: example-voting-app
+  namespace: lab2-example-voting-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     name: worker
+     role: workerapp
+     app: example-voting-app
+  template:
+    spec:
+      containers:
+        - name: worker
+          image: nestorsalceda/example-voting-app-worker
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: example-voting-app
+                  key: redis_host
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: example-voting-app
+                  key: jdbc_db_url
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              memory: 64Mi
+    metadata:
+      labels:
+        name: worker
+        role: workerapp
+        app: example-voting-app
