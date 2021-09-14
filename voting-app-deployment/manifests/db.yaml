@@ -132,7 +132,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: postgres-config
-  namespace: postgres
+  namespace: lab2-example-voting-app
   labels:
     app: postgres
 data:
