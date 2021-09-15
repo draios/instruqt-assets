@@ -2,3 +2,20 @@ sysdig:
   settings:
     feature:  
       mode: troubleshooting
+    new_k8s: true
+    metrics_excess_log: true
+    10s_flush_enable: true
+    app_checks_enabled: false
+    use_promscrape: true
+    new_k8s: true
+    promscrape_fastproto: true
+    prometheus:
+      enabled: true
+      prom_service_discovery: true
+      log_errors: true
+      max_metrics: 200000
+      max_metrics_per_process: 200000
+      max_tags_per_metric: 100
+      ingest_raw: true
+      ingest_calculated: false
+    snaplen: 512
