@@ -42,7 +42,7 @@ spec:
             requests:
               memory: "256Mi"
               cpu: "256m"
-        volumes:
+      volumes:
         - configMap:
             defaultMode: 420
             name: postgres-init
