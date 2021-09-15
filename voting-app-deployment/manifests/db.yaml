@@ -147,7 +147,7 @@ data:
   # Add in POSTGRES_PASSWORD the result of:
   # echo YOUR-PASSWORD | base64 -> admin123  
   # EXPORTER-PASSWORD: password
-  POSTGRES_PASSWORD: YWRtaW4xMjMK
+  POSTGRES_PASSWORD: ''
   POSTGRES_EXPORTER_PASSWORD: cGFzc3dvcmQK
   # echo "ALTER USER postgres_exporter WITH PASSWORD 'password';" | base64
   modify-exporter-user-password.sql: |
