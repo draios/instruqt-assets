@@ -20,8 +20,8 @@ workloadName: db
 workloadType: deployment
 EOF
 
-kubectl create -n postgres secret generic postgresql-exporter \
+kubectl create -n lab2-example-voting-app secret generic postgresql-exporter \
   --from-literal=username=postgres_exporter \
   --from-literal=password=password
 
-helm install -n postgres -f values.yaml --repo https://sysdiglabs.github.io/integrations-charts sysdigcloud-sysdigcloud-postgresql12 postgresql-exporter
+helm install -n lab2-example-voting-app -f values.yaml --repo https://sysdiglabs.github.io/integrations-charts sysdigcloud-sysdigcloud-postgresql12 postgresql-exporter
