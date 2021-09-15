@@ -42,6 +42,18 @@ spec:
             requests:
               memory: "256Mi"
               cpu: "256m"
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: postgres-init
+          name: postgres-init
+        - secret:
+            defaultMode: 420
+            secretName: postgres-secret
+            items:
+              - key: modify-exporter-user-password.sql
+                path: modify-exporter-user-password.sql
+          name: postgres-secret
     metadata:
       labels:
         name: db
