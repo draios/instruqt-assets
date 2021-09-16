@@ -1,21 +1,35 @@
-sysdig:
-  settings:
+sysdig: 
+  settings: 
+    command_line:
+      enabled: true
     feature:  
       mode: troubleshooting
+    collector: collector-staging.sysdigcloud.com
     new_k8s: true
-    metrics_excess_log: true
+    security:
+      enabled: true
+    commandlines_capture:
+      enabled: true
+    memdump:
+      enabled: true
     10s_flush_enable: true
     app_checks_enabled: false
+    autodrop:
+      enabled: true
+      upper_threshold: 80
+    k8s_cluster_name: demo-env-prom
+    metrics_excess_log: true
     use_promscrape: true
-    new_k8s: true
     promscrape_fastproto: true
+    k8s_extra_resources:
+      include:
+        - horizontalpodautoscalers
     prometheus:
       enabled: true
-      prom_service_discovery: true
-      log_errors: true
-      max_metrics: 200000
-      max_metrics_per_process: 200000
-      max_tags_per_metric: 100
-      ingest_raw: true
       ingest_calculated: false
+      ingest_raw: true
+      max_metrics: 10000
+      max_metrics_per_process: 20000
+      prom_service_discovery: true
     snaplen: 512
+    tags: role:demo-env-prom

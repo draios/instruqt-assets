@@ -1,0 +1,24 @@
+{
+   "requests": [{
+      "format": {
+         "type": "data"
+      },
+      "time": {
+         "from": "_FROM",
+         "to": "_TO"
+      },
+      "metrics": {
+         "containerid": "agent.tag.instruqt"
+      },
+      "group": {
+         "aggregations": {
+            "containerid": "concat"
+         },
+         "groupAggregations": {
+         },
+         "by": [{
+            "metric": "hostName"
+         }]
+      }
+   }]
+}
