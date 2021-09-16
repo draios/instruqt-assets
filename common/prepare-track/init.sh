@@ -88,9 +88,9 @@ select_region () {
 }
 
 # invoque with:
-# configure_API "PRODUCT" ${PRODUCT_URL} ${PRODUCT_API_KEY} ${PRODUCT_API_ENDPOINT}
+# configure_API "PRODUCT" ${PRODUCT_URL} ${PRODUCT_API_ENDPOINT}
 # example:
-# configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_KEY} ${MONITOR_API_ENDPOINT}
+# configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
 configure_API () {
 
     echo "Configuring Sysdig $1 API"
@@ -98,8 +98,13 @@ configure_API () {
     declare ${1}_API_KEY=foo
     varname=${1}_API_KEY
 
-    while [ ! -f /usr/local/bin/sysdig/user_data_SECURE_API_OK ]; do
-        read -p "   Insert here your Sysdig $1 API Token: "  ${!varname}; echo 
+    x=0
+
+    while [ ! -f /usr/local/bin/sysdig/user_data_${1}_API_OK ] && [ $x -le 7 ]; do
+
+        x=$(( $x + 1 ))
+
+        read -p "   Insert here your Sysdig $1 API Token: "  ${varname}; echo 
 
         # testing connection
         echo -n "Testing connection to API... "
@@ -111,7 +116,7 @@ configure_API () {
         else
             echo "FAIL"
             echo "Or the region selected (URL) is not your region or the key is wrong."
-            
+
             #select_region #we can not just change the region, the agent is using the backend.
             #TODO: retry 3 times and if it still does not work, 
             # 1. remove sysdig-agent namespace
@@ -163,8 +168,8 @@ if [[ ${DEBUG_REGION} == "" ]]; then
     # this will install the agent while the user configure APIs, we save some time
     bash /root/prepare-track/agent-install-helm.sh &
 
-    configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_KEY} ${MONITOR_API_ENDPOINT}
-    configure_API "SECURE" ${SECURE_URL} ${SECURE_API_KEY} ${SECURE_API_ENDPOINT}
+    configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
+    configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
 
     # echo -e "Visit \x1B[31m\e[1m$SECURE_URL/#/settings/user\e[0m to retrieve your Sysdig Secure API Token."
     # read -p "   Insert your Sysdig Secure API Token: " SECURE_API_KEY; echo 
@@ -212,7 +217,7 @@ sed -i -e 's/"_FROM"/'"$TIMEFROM"'/g' /root/prepare-track/data.json
 RESULT_AGENT=1
 x=0
 
-while [ RESULT_AGENT -ne 0 && $x -le 7 ]; do
+while [ RESULT_AGENT -ne 0 ] && [ $x -le 7 ]; do
     echo "|"
     sleep 5
     echo "|"
