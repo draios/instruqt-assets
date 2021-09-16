@@ -108,7 +108,7 @@ configure_API () {
 
         # testing connection
         echo -n "Testing connection to API... "
-        curl -s -H 'Authorization: Bearer '"$3" "$4"'/api/' | grep 'status":404' &> /dev/null
+        curl -s -H 'Authorization: Bearer '"${varname}" "$3"'/api/' | grep 'status":404' &> /dev/null
 
         if [ $? -eq 0 ]; then
             echo "OK"
