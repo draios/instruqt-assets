@@ -147,10 +147,10 @@ AGENT_TR_ID=$(xxd -l 3 -c 3 -p < /dev/random)
 AGENT_DEPLOY_DATE=$(date +"%F_%H:%M")
 
 mkdir -p /usr/local/bin/sysdig/
-chmod +x /root/common/prepare-track/agent-install-helm.sh &
+chmod +x /root/prepare-track/agent-install-helm.sh
 
 # nginx is already installed by track-setup, we overwrite config
-cp /root/common/nginx.default.conf /etc/nginx/nginx.conf
+cp /root/prepare-track/nginx.default.conf /etc/nginx/nginx.conf
 
 if [[ ${DEBUG_REGION} == "" ]]; then
 
@@ -161,7 +161,7 @@ if [[ ${DEBUG_REGION} == "" ]]; then
     read -p "   Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY; echo 
 
     # this will install the agent while the user configure APIs, we save some time
-    bash /root/common/prepare-track/agent-install-helm.sh &
+    bash /root/prepare-track/agent-install-helm.sh &
 
     configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_KEY} ${MONITOR_API_ENDPOINT}
     configure_API "SECURE" ${SECURE_URL} ${SECURE_API_KEY} ${SECURE_API_ENDPOINT}
@@ -176,7 +176,7 @@ else
     SECURE_API_KEY=$DEBUG_SECURE_API_KEY
     set_values $REGION
 
-    bash /root/common/prepare-track/agent-install-helm.sh &
+    bash /root/prepare-track/agent-install-helm.sh &
 fi
 
 # test agent connection
@@ -204,9 +204,9 @@ TIMETO=$(( $TIMETO + 60 ))
 #echo "DATE: " $DATE "TIMETO: " $TIMETO "TIMEFROM: " $TIMEFROM
 TIMETO+=000000
 TIMEFROM+=000000
-cp /root/common/prepare-track/data.original.json /root/common/prepare-track/data.json
-sed -i -e 's/"_TO"/'"$TIMETO"'/g' /root/common/prepare-track/data.json
-sed -i -e 's/"_FROM"/'"$TIMEFROM"'/g' /root/common/prepare-track/data.json
+cp /root/prepare-track/data.original.json /root/prepare-track/data.json
+sed -i -e 's/"_TO"/'"$TIMETO"'/g' /root/prepare-track/data.json
+sed -i -e 's/"_FROM"/'"$TIMEFROM"'/g' /root/prepare-track/data.json
 
 #check if there's an agent running with same custom TAG
 RESULT_AGENT=1
@@ -223,7 +223,7 @@ while [ RESULT_AGENT -ne 0 && $x -le 7 ]; do
     curl -s --header "Content-Type: application/json"   \
         -H 'Authorization: Bearer '"${MONITOR_API_KEY}" \
         --request POST \
-        --data @/root/common/prepare-track/data.json \
+        --data @/root/prepare-track/data.json \
         "${MONITOR_API_ENDPOINT}"/api/data/batch \
         | jq ".responses[].data[]" | grep -o "$AGENT_TR_ID"
 
@@ -246,12 +246,12 @@ if  [ -f /usr/local/bin/sysdig/user_data_MONITOR_API_OK ] && \
         # the user configured all right, we can remove resources
         rm /usr/local/bin/data.json
         rm /usr/local/bin/data.json.original
-        rm -rf /root/common/prepare-track/
+        rm -rf /root/prepare-track/
         sed -i '/init.sh/d' /root/.profile  # removes the script from .profile so it is not executed in new challenges
         touch /usr/local/bin/sysdig/user_data_OK # flag environment configured with user data
 else
         echo "Some errors were detected configuring this lab. Please, run again this script with:"
-        echo "   source /root/common/prepare-track/init.sh"
+        echo "   source /root/prepare-track/init.sh"
         echo
         echo "You can ask for help using Intercom or get in touch with us in team-training@sysdig.com"
 fi
