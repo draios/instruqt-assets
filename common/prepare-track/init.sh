@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 #trap '' 2 #signal capture quit with ctrlc
 
 # define url and endpoints for the selected region.
