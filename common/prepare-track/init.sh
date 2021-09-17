@@ -235,7 +235,7 @@ MONITOR_API_KEY=`cat cat /usr/local/bin/sysdig/user_data_MONITOR_API_OK`
 RESULT_AGENT=1
 x=0
 
-while [ RESULT_AGENT -ne 0 ] && [ $x -le 7 ]; do
+while [ ${RESULT_AGENT} -ne 0 ] && [ $x -le 7 ]; do
     echo "|"
     sleep 5
     echo "|"
@@ -254,7 +254,7 @@ while [ RESULT_AGENT -ne 0 ] && [ $x -le 7 ]; do
     x=$(( $x + 1 ))
 done
 
-if [ RESULT_AGENT -eq 0 ]; then
+if [ ${RESULT_AGENT} -eq 0 ]; then
 	echo " OK"
     touch /usr/local/bin/sysdig/user_data_AGENT_OK
 else
