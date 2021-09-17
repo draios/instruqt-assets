@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+#set -x
 
 #trap '' 2 #signal capture quit with ctrlc
 
@@ -15,6 +15,7 @@ set_values () {
         AGENT_COLLECTOR='ingest-'$DOMAIN
         #endpoints
         MONITOR_API_ENDPOINT=$MONITOR_URL
+        SECURE_API_ENDPOINT=$MONITOR_URL
         PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
         NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
     elif [[ ${REGION} == *"EMEA"* ]]
@@ -25,6 +26,7 @@ set_values () {
         AGENT_COLLECTOR='ingest-'$DOMAIN
         #endpoints
         MONITOR_API_ENDPOINT=$MONITOR_URL
+        SECURE_API_ENDPOINT=$MONITOR_URL
         PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
         NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
     else # default case, US East
@@ -34,6 +36,7 @@ set_values () {
         AGENT_COLLECTOR='collector.sysdigcloud.com'
         #endpoints
         MONITOR_API_ENDPOINT=$MONITOR_URL
+        SECURE_API_ENDPOINT=$MONITOR_URL
         PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
         NIA_ENDPOINT='https://collector-static.sysdigcloud.com/internal/scanning/scanning-analysis-collector'
     fi
@@ -46,6 +49,7 @@ set_values () {
     echo "Other parameters configured:"
     echo "  - Agent Collector=$AGENT_COLLECTOR" 
     echo "  - monitor_API_endpoind=$MONITOR_API_ENDPOINT"
+    echo "  - secure_API_endpoind=$SECURE_API_ENDPOINT"
     echo "  - prometheus_endpoint=$PROMETHEUS_ENDPOINT" 
     echo "  - NIA_endpoint=$NIA_ENDPOINT" 
 
