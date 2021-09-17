@@ -15,7 +15,6 @@ set_values () {
         AGENT_COLLECTOR='ingest-'$DOMAIN
         #endpoints
         MONITOR_API_ENDPOINT=$MONITOR_URL
-        SECURE_API_ENDPOINT=$MONITOR_URL
         PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
         NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
     elif [[ ${REGION} == *"EMEA"* ]]
@@ -26,7 +25,6 @@ set_values () {
         AGENT_COLLECTOR='ingest-'$DOMAIN
         #endpoints
         MONITOR_API_ENDPOINT=$MONITOR_URL
-        SECURE_API_ENDPOINT=$MONITOR_URL
         PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
         NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
     else # default case, US East
@@ -36,7 +34,6 @@ set_values () {
         AGENT_COLLECTOR='collector.sysdigcloud.com'
         #endpoints
         MONITOR_API_ENDPOINT=$MONITOR_URL
-        SECURE_API_ENDPOINT=$MONITOR_URL
         PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
         NIA_ENDPOINT='https://collector-static.sysdigcloud.com/internal/scanning/scanning-analysis-collector'
     fi
@@ -49,7 +46,6 @@ set_values () {
     echo "Other parameters configured:"
     echo "  - Agent Collector=$AGENT_COLLECTOR" 
     echo "  - monitor_API_endpoind=$MONITOR_API_ENDPOINT"
-    echo "  - secure_API_endpoind=$SECURE_API_ENDPOINT"
     echo "  - prometheus_endpoint=$PROMETHEUS_ENDPOINT" 
     echo "  - NIA_endpoint=$NIA_ENDPOINT" 
 
@@ -90,6 +86,7 @@ select_region () {
 }
 
 # invoque with:
+# configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
 # configure_API "PRODUCT" ${PRODUCT_URL} ${PRODUCT_API_ENDPOINT}
 # example:
 # configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
@@ -99,6 +96,12 @@ configure_API () {
     echo -e "Visit \x1B[31m\e[1m$2/#/settings/user\e[0m to retrieve your Sysdig $1 API Token."
     declare ${1}_API_KEY=foo
     varname=${1}_API_KEY
+    # echo ${varname}
+
+    # PRODUCT=MONITOR
+    # declare ${PRODUCT}_API_KEY=foofoo
+    # varname=${PRODUCT}_API_KEY
+    # eval echo -e "\$${varname}"
 
     x=0
 
@@ -107,10 +110,11 @@ configure_API () {
         x=$(( $x + 1 ))
 
         read -p "   Insert here your Sysdig $1 API Token: "  ${varname}; echo 
+        eval echo -e "esta es la clave: \$${varname}"
 
         # testing connection
         echo -n "Testing connection to API... "
-        curl -s -H 'Authorization: Bearer '"${varname}" "$3"'/api/' | grep 'status":404' &> /dev/null
+        eval curl -s -H 'Authorization: Bearer '"\$${varname}" "$3"'/api/' | grep 'status":404' &> /dev/null
 
         if [ $? -eq 0 ]; then
             echo "OK"
@@ -171,7 +175,6 @@ if [[ ${DEBUG_REGION} == "" ]]; then
     bash /root/prepare-track/agent-install-helm.sh &
 
     configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
-    configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
 
     # echo -e "Visit \x1B[31m\e[1m$SECURE_URL/#/settings/user\e[0m to retrieve your Sysdig Secure API Token."
     # read -p "   Insert your Sysdig Secure API Token: " SECURE_API_KEY; echo 
