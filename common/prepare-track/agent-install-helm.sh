@@ -2,12 +2,12 @@
 
 #deploy agent, default to Helm for k3s env. Consider other alternatives later. Helm already installed
 #curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash &> /dev/null
-helm repo add sysdig https://charts.sysdig.com &> /dev/null
-helm repo update &> /dev/null
+helm repo add sysdig https://charts.sysdig.com
+helm repo update
 
 
 # echo "Deploying Sysdig Agent with Helm"
-kubectl create ns sysdig-agent &> /dev/null
+kubectl create ns sysdig-agent
 helm install sysdig-agent \
     --set clusterName="instruqtk3s_${AGENT_DEPLOY_DATE}" \
     --set sysdig.settings.tags="instruqt:${AGENT_TR_ID}" \
@@ -20,5 +20,5 @@ helm install sysdig-agent \
     --set resources.requests.memory=512Mi \
     --set resources.limits.cpu=2 \
     --set resources.limits.memory=2048Mi \
-    sysdig/sysdig &> /dev/null
+    sysdig/sysdig
 # TODO: set version to match the available img.ver on our packer custom image
