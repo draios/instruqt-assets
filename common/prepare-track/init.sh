@@ -128,7 +128,7 @@ configure_API () {
             cat << EOF > /usr/local/bin/sysdig/user_data_$1_API_OK
 ${API_TOKEN}
 EOF
-            cat /usr/local/bin/sysdig/user_data_$1_API_OK
+            #cat /usr/local/bin/sysdig/user_data_$1_API_OK
             
         else
             echo "FAIL"
