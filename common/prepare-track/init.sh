@@ -123,8 +123,10 @@ configure_API () {
         if [ $? -eq 0 ]; then
             echo "OK"
             touch /usr/local/bin/sysdig/user_data_$1_API_OK
-            cat <<-"EOF" > /usr/local/bin/sysdig/user_data_$1_API_OK
-    $(eval echo -e "\$${varname}")
+            API_TOKEN=$(eval echo -e "\$${varname}")
+            
+            cat << EOF > /usr/local/bin/sysdig/user_data_$1_API_OK
+${API_TOKEN}
 EOF
             cat /usr/local/bin/sysdig/user_data_$1_API_OK
             
