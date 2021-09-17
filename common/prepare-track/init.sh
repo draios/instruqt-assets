@@ -203,7 +203,7 @@ fi
 
 # test agent connection
 echo -n "Testing Sysdig Agent running in your environment."
-echo -n " It can take up to 2 minutes to connect with the backend..."
+echo " It can take up to 2 minutes to connect with the backend..."
 
 # sleep 120 &
 # PID=$!
@@ -229,18 +229,18 @@ TIMEFROM+=000000
 cp /root/prepare-track/data.original.json /root/prepare-track/data.json
 sed -i -e 's/"_TO"/'"$TIMETO"'/g' /root/prepare-track/data.json
 sed -i -e 's/"_FROM"/'"$TIMEFROM"'/g' /root/prepare-track/data.json
-MONITOR_API_KEY=`cat cat /usr/local/bin/sysdig/user_data_MONITOR_API_OK`
+MONITOR_API_KEY=$(cat /usr/local/bin/sysdig/user_data_MONITOR_API_OK)
 
 #check if there's an agent running with same custom TAG
 RESULT_AGENT=1
 x=0
 
 while [ ${RESULT_AGENT} -ne 0 ] && [ $x -le 7 ]; do
-    echo "|"
+    echo -n "|"
     sleep 5
-    echo "|"
+    echo -n "|"
     sleep 5
-    echo "|"
+    echo -n "|"
     sleep 5
 
     curl -s --header "Content-Type: application/json"   \
@@ -254,6 +254,7 @@ while [ ${RESULT_AGENT} -ne 0 ] && [ $x -le 7 ]; do
     x=$(( $x + 1 ))
 done
 
+echo 
 if [ ${RESULT_AGENT} -eq 0 ]; then
 	echo " OK"
     touch /usr/local/bin/sysdig/user_data_AGENT_OK
@@ -269,6 +270,8 @@ if  [ -f /usr/local/bin/sysdig/user_data_MONITOR_API_OK ] && \
         # the user configured all right, we can remove resources
         rm /usr/local/bin/data.json
         rm /usr/local/bin/data.json.original
+        rm /usr/local/bin/sysdig/user_data_SECURE_API_OK
+        rm /usr/local/bin/sysdig/user_data_MONITOR_API_OK
         rm -rf /root/prepare-track/
         sed -i '/init.sh/d' /root/.profile  # removes the script from .profile so it is not executed in new challenges
         touch /usr/local/bin/sysdig/user_data_OK # flag environment configured with user data
