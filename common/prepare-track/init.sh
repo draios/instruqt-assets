@@ -110,11 +110,11 @@ configure_API () {
         x=$(( $x + 1 ))
 
         read -p "   Insert here your Sysdig $1 API Token: "  ${varname}; echo 
-        eval echo -e "esta es la clave: \$${varname}"
+        #eval echo -e "esta es la clave: \$${varname}"
 
         # testing connection
         echo -n "Testing connection to API... "
-        eval curl -s -H 'Authorization: Bearer '$(eval echo -e "\$${varname}") "$3"'/api/' | grep 'status":404' &> /dev/null
+        curl -s -H 'Authorization: Bearer '$(eval echo -e "\$${varname}") "$3"'/api/' | grep 'status":404' &> /dev/null
 
         if [ $? -eq 0 ]; then
             echo "OK"
@@ -175,6 +175,7 @@ if [[ ${DEBUG_REGION} == "" ]]; then
     bash /root/prepare-track/agent-install-helm.sh &
 
     configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
+    configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
 
     # echo -e "Visit \x1B[31m\e[1m$SECURE_URL/#/settings/user\e[0m to retrieve your Sysdig Secure API Token."
     # read -p "   Insert your Sysdig Secure API Token: " SECURE_API_KEY; echo 
