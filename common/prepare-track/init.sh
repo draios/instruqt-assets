@@ -145,6 +145,31 @@ EOF
 }
 
 
+install_agent () {
+    #deploy agent, default to Helm for k3s env. Consider other alternatives later. Helm already installed
+    #curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash &> /dev/null
+    helm repo add sysdig https://charts.sysdig.com
+    helm repo update
+
+
+    # echo "Deploying Sysdig Agent with Helm"
+    kubectl create ns sysdig-agent
+    helm install sysdig-agent \
+        --set clusterName="instruqtk3s_${1}" \
+        --set sysdig.settings.tags="instruqt:${2}" \
+        --namespace sysdig-agent \
+        --set sysdig.accessKey=${3} \
+        --set sysdig.settings.collector=${4} \
+        --set nodeAnalyzer.deploy=false \
+        --set nodeImageAnalyzer.deploy=false \
+        --set resources.requests.cpu=0.5 \
+        --set resources.requests.memory=512Mi \
+        --set resources.limits.cpu=2 \
+        --set resources.limits.memory=2048Mi \
+        sysdig/sysdig
+    # TODO: set version to match the available img.ver on our packer custom image
+}
+
 echo "----------------------------------------------------------"
 echo "   ____ __  __   ____   ___    ____  _____                "
 echo "  / __/ \ \/ /  / __/  / _ \  /  _/ / ___/                "
@@ -183,7 +208,7 @@ if [[ ${DEBUG_REGION} == "" ]]; then
     read -p "   Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY; echo 
 
     # this will install the agent while the user configure APIs, we save some time
-    bash /root/prepare-track/agent-install-helm.sh &
+    install_agent ${AGENT_DEPLOY_DATE} ${AGENT_TR_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} &
 
     configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
     configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
@@ -198,7 +223,7 @@ else
     SECURE_API_KEY=$DEBUG_SECURE_API_KEY
     set_values $REGION
 
-    bash /root/prepare-track/agent-install-helm.sh &
+    install_agent ${AGENT_DEPLOY_DATE} ${AGENT_TR_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} &
 fi
 
 # test agent connection
