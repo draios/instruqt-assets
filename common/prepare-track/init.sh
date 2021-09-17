@@ -123,6 +123,11 @@ configure_API () {
         if [ $? -eq 0 ]; then
             echo "OK"
             touch /usr/local/bin/sysdig/user_data_$1_API_OK
+            cat <<-"EOF" > /usr/local/bin/sysdig/user_data_$1_API_OK
+    $(eval echo -e "\$${varname}")
+EOF
+            cat /usr/local/bin/sysdig/user_data_$1_API_OK
+            
         else
             echo "FAIL"
             echo "Or the region selected (URL) is not your region or the key is wrong."
@@ -178,8 +183,8 @@ if [[ ${DEBUG_REGION} == "" ]]; then
     # this will install the agent while the user configure APIs, we save some time
     bash /root/prepare-track/agent-install-helm.sh &
 
-    configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
     configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
+    configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
 
     # echo -e "Visit \x1B[31m\e[1m$SECURE_URL/#/settings/user\e[0m to retrieve your Sysdig Secure API Token."
     # read -p "   Insert your Sysdig Secure API Token: " SECURE_API_KEY; echo 
@@ -222,6 +227,7 @@ TIMEFROM+=000000
 cp /root/prepare-track/data.original.json /root/prepare-track/data.json
 sed -i -e 's/"_TO"/'"$TIMETO"'/g' /root/prepare-track/data.json
 sed -i -e 's/"_FROM"/'"$TIMEFROM"'/g' /root/prepare-track/data.json
+MONITOR_API_KEY=`cat cat /usr/local/bin/sysdig/user_data_MONITOR_API_OK`
 
 #check if there's an agent running with same custom TAG
 RESULT_AGENT=1
