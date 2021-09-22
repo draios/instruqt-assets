@@ -1,0 +1,51 @@
+$ cat audits-config.patch
+--- /etc/kubernetes/manifests/kube-apiserver.yaml       2020-01-24 18:26:17.612000000 +0000
++++ /etc/kubernetes/manifests/kube-apiserver.yaml.BAK   2020-01-24 18:26:59.952000000 +0000
+@@ -11,7 +11,7 @@
+   containers:
+   - command:
+     - kube-apiserver
+-    - --advertise-address=172.17.0.79
++    - --advertise-address=172.17.0.81
+     - --allow-privileged=true
+     - --authorization-mode=Node,RBAC
+     - --client-ca-file=/etc/kubernetes/pki/ca.crt
+@@ -37,19 +37,12 @@
+     - --service-cluster-ip-range=10.96.0.0/12
+     - --tls-cert-file=/etc/kubernetes/pki/apiserver.crt
+     - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
+-    - --audit-policy-file=/audit/audit-policy.yaml
+-    - --audit-log-path=/audit/log
+-    - --audit-log-maxbackup=1
+-    - --audit-log-maxsize=10
+-    - --audit-dynamic-configuration
+-    - --runtime-config=auditregistration.k8s.io/v1alpha1=true
+-    - --feature-gates=DynamicAuditing=true
+     image: k8s.gcr.io/kube-apiserver:v1.14.0
+     imagePullPolicy: IfNotPresent
+     livenessProbe:
+       failureThreshold: 8
+       httpGet:
+-        host: 172.17.0.79
++        host: 172.17.0.81
+         path: /healthz
+         port: 6443
+         scheme: HTTPS
+@@ -78,17 +71,10 @@
+     - mountPath: /usr/share/ca-certificates
+       name: usr-share-ca-certificates
+       readOnly: true
+-    - mountPath: /audit
+-      name: auditlog
+-      readOnly: false
+   hostNetwork: true
+   priorityClassName: system-cluster-critical
+   volumes:
+   - hostPath:
+-      path: /audit
+-      type: DirectoryOrCreate
+-    name: auditlog
+-  - hostPath:
+       path: /etc/ssl/certs
+       type: DirectoryOrCreate
+     name: ca-certs

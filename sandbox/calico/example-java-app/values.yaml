@@ -1,0 +1,71 @@
+cassandra:
+  image:
+    repository: cassandra
+    tag: 2.0.16
+  resources: {}
+#    limits:
+#      cpu: 100m
+#      memory: 128Mi
+#    requests:
+#      cpu: 100m
+#      memory: 128Mi
+
+javaapp:
+  image:
+    repository: sysdiglabs/counterapp
+    tag: 0.1
+  resources: {}
+#    requests:
+#      memory: 256Mi
+#      cpu: 150m
+#    limits:
+#      memory: 512Mi
+#      cpu: 500m
+
+jclient:
+  image:
+    repository: sysdiglabs/recurling
+    tag: 0.1
+  resources: {}
+#    limits:
+#      cpu: 100m
+#      memory: 128Mi
+#    requests:
+#      cpu: 100m
+#      memory: 128Mi
+
+mongo:
+  image:
+    repository: mongo
+    tag: 4.0.6
+  resources: {}
+#    limits:
+#      cpu: 100m
+#      memory: 128Mi
+#    requests:
+#      cpu: 100m
+#      memory: 128Mi
+
+mongo_statsd:
+  image:
+    repository: sysdiglabs/demo-mongo-statsd
+    tag: 0.1
+  resources: {}
+#    limits:
+#      cpu: 100m
+#      memory: 128Mi
+#    requests:
+#      cpu: 100m
+#      memory: 128Mi
+
+redis:
+  image:
+    repository: redis
+    tag: 2.8.19
+  resources: {}
+#    limits:
+#      cpu: 100m
+#      memory: 128Mi
+#    requests:
+#      cpu: 100m
+#      memory: 128Mi

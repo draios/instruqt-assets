@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "example-java-app.fullname" . }}-cassandra
+  labels:
+        {{- include "example-java-app.cassandra.labels" . | nindent 4 }}
+spec:
+  ports:
+  - port: 9042
+    targetPort: cassandra
+  selector:
+        {{- include "example-java-app.cassandra.selectorLabels" . | nindent 4 }}

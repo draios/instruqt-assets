@@ -1,0 +1,30 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: worker
+  labels:
+    name: worker-deployment
+    app: example-voting-app
+  namespace: example-voting-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     name: worker
+     role: workerapp
+     app: example-voting-app
+  template:
+    spec:
+      containers:
+        - name: worker
+          image: bencer/example-voting-app-worker:jmx-1
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              memory: 64Mi
+    metadata:
+      labels:
+        name: worker
+        role: workerapp
+        app: example-voting-app

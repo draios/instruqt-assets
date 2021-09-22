@@ -1,0 +1,3077 @@
+[
+  {
+    "id": 94513,
+    "version": 1,
+    "createdOn": 1543356268000,
+    "modifiedOn": 1543356268000,
+    "teamId": 19148,
+    "autoCreated": false,
+    "isShared": true,
+    "isPublic": false,
+    "schema": 1,
+    "layout": [
+      {
+        "col": 1,
+        "row": 1,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 7,
+        "row": 1,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 1,
+        "row": 5,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 7,
+        "row": 5,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 1,
+        "row": 9,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 7,
+        "row": 9,
+        "size_x": 6,
+        "size_y": 4
+      }
+    ],
+    "scopeExpressionList": null,
+    "filterExpression": null,
+    "name": "[K8s - Prom] Kubelet",
+    "items": [
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 1,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "metricId": "host.hostName",
+            "propertyName": "k1"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "kubelet_docker_operations",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Docker Operations By Host\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeriesArea",
+        "showAsType": "area",
+        "sorting": [
+          {
+            "id": "v0",
+            "mode": "desc"
+          }
+        ]
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 7,
+          "row": 1,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "metricId": "operation_type",
+            "propertyName": "k1"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "kubelet_docker_operations",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Docker\u00a0 Operations by Type\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeriesArea",
+        "showAsType": "area",
+        "sorting": [
+          {
+            "id": "v0",
+            "mode": "desc"
+          }
+        ]
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 5,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "metricId": "host.hostName",
+            "propertyName": "k1"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "kubelet_docker_operations_latency_microseconds.avg",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Docker Operations Latency by Host\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line",
+        "sorting": [
+          {
+            "id": "v0",
+            "mode": "desc"
+          }
+        ]
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 7,
+          "row": 5,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "metricId": "operation_type",
+            "propertyName": "k1"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "kubelet_docker_operations_latency_microseconds.avg",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Docker Operations Latency\u00a0 by Type\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line",
+        "sorting": [
+          {
+            "id": "v0",
+            "mode": "desc"
+          }
+        ]
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 9,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "kubelet_cgroup_manager_latency_microseconds.50percentile",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "CGroup Latency\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 7,
+          "row": 9,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "metricId": "host.hostName",
+            "propertyName": "k1"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "kubelet_docker_operations_errors",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Docker op Errors by Host\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeriesArea",
+        "showAsType": "area"
+      }
+    ],
+    "username": "fede.barcelona+kubelab@sysdig.com"
+  },
+  {
+    "id": 94514,
+    "version": 1,
+    "createdOn": 1543356269000,
+    "modifiedOn": 1543356269000,
+    "teamId": 19148,
+    "autoCreated": false,
+    "isShared": true,
+    "isPublic": false,
+    "schema": 1,
+    "layout": [
+      {
+        "col": 1,
+        "row": 1,
+        "size_x": 4,
+        "size_y": 4
+      },
+      {
+        "col": 7,
+        "row": 5,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 7,
+        "row": 9,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 1,
+        "row": 9,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 5,
+        "row": 1,
+        "size_x": 4,
+        "size_y": 4
+      },
+      {
+        "col": 9,
+        "row": 1,
+        "size_x": 4,
+        "size_y": 4
+      },
+      {
+        "col": 1,
+        "row": 5,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 7,
+        "row": 13,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 1,
+        "row": 13,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 1,
+        "row": 17,
+        "size_x": 12,
+        "size_y": 4
+      }
+    ],
+    "scopeExpressionList": null,
+    "filterExpression": null,
+    "name": "[K8s - Prom] API Server",
+    "items": [
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 1,
+          "size_x": 4,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "metricId": "verb",
+            "propertyName": "k1"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "apiserver_request_count",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Requests by verb\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeriesArea",
+        "showAsType": "area",
+        "sorting": [
+          {
+            "id": "v0",
+            "mode": "desc"
+          }
+        ]
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 7,
+          "row": 5,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "code",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "rest_client_requests_total",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Rest requests by code\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "top",
+        "showAsType": "bars"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 7,
+          "row": 9,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "url",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "avg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "rest_client_request_latency_seconds.avg",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Rest request latency by URL\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "top",
+        "showAsType": "bars"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 9,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "client",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "avg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "apiserver_request_count",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Top Requests by Client\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "top",
+        "showAsType": "bars"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 5,
+          "row": 1,
+          "size_x": 4,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "metricId": "resource",
+            "propertyName": "k1"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "apiserver_request_count",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Requests by resource\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeriesArea",
+        "showAsType": "area",
+        "sorting": [
+          {
+            "id": "v0",
+            "mode": "desc"
+          }
+        ]
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 9,
+          "row": 1,
+          "size_x": 4,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "metricId": "scope",
+            "propertyName": "k1"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "apiserver_request_count",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Requests by scope\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeriesArea",
+        "showAsType": "area",
+        "sorting": [
+          {
+            "id": "v0",
+            "mode": "desc"
+          }
+        ]
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 5,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "code",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "avg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "apiserver_request_count",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Request top status codes\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "top",
+        "showAsType": "bars"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 7,
+          "row": 13,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "resource",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "avg",
+            "groupAggregation": "avg",
+            "metricId": "apiserver_request_latencies_summary.avg",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Top latency by resource\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "top",
+        "showAsType": "bars"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 13,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "aggregation": "avg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "apiserver_request_latencies_summary.avg",
+            "propertyName": "v0"
+          },
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          }
+        ],
+        "name": "Request Latency\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 17,
+          "size_x": 12,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "metricId": "username",
+            "propertyName": "k1"
+          },
+          {
+            "aggregation": "avg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "authenticated_user_requests",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Authenticated User Requests\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeriesArea",
+        "showAsType": "area",
+        "sorting": [
+          {
+            "id": "v0",
+            "mode": "desc"
+          }
+        ]
+      }
+    ],
+    "username": "fede.barcelona+kubelab@sysdig.com"
+  },
+  {
+    "id": 94515,
+    "version": 1,
+    "createdOn": 1543356270000,
+    "modifiedOn": 1543356270000,
+    "teamId": 19148,
+    "autoCreated": false,
+    "isShared": true,
+    "isPublic": false,
+    "schema": 1,
+    "layout": [
+      {
+        "col": 1,
+        "row": 1,
+        "size_x": 4,
+        "size_y": 3
+      },
+      {
+        "col": 5,
+        "row": 1,
+        "size_x": 4,
+        "size_y": 3
+      },
+      {
+        "col": 9,
+        "row": 1,
+        "size_x": 4,
+        "size_y": 3
+      },
+      {
+        "col": 1,
+        "row": 4,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 1,
+        "row": 8,
+        "size_x": 4,
+        "size_y": 4
+      },
+      {
+        "col": 5,
+        "row": 8,
+        "size_x": 4,
+        "size_y": 4
+      },
+      {
+        "col": 9,
+        "row": 8,
+        "size_x": 4,
+        "size_y": 4
+      },
+      {
+        "col": 7,
+        "row": 4,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 7,
+        "row": 12,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 1,
+        "row": 12,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 1,
+        "row": 16,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 7,
+        "row": 16,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 1,
+        "row": 20,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 7,
+        "row": 20,
+        "size_x": 6,
+        "size_y": 4
+      },
+      {
+        "col": 1,
+        "row": 24,
+        "size_x": 12,
+        "size_y": 4
+      },
+      {
+        "col": 1,
+        "row": 28,
+        "size_x": 12,
+        "size_y": 4
+      },
+      {
+        "col": 1,
+        "row": 32,
+        "size_x": 12,
+        "size_y": 4
+      }
+    ],
+    "scopeExpressionList": null,
+    "filterExpression": null,
+    "name": "[K8s - Prom] Etcd\n",
+    "items": [
+      {
+        "compareToConfig": {
+          "periodCount": 1,
+          "periodTypeId": "hour"
+        },
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 1,
+          "size_x": 4,
+          "size_y": 3
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "aggregation": "max",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "etcd_server_has_leader",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Etcd has leader?\n",
+        "overrideFilter": false,
+        "showAs": "summary",
+        "showAsType": "summary"
+      },
+      {
+        "compareToConfig": {
+          "periodCount": 1,
+          "periodTypeId": "hour"
+        },
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 5,
+          "row": 1,
+          "size_x": 4,
+          "size_y": 3
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "aggregation": "max",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "etcd_server_leader_changes_seen_total",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Number of leader changes seen\n",
+        "overrideFilter": false,
+        "showAs": "summary",
+        "showAsType": "summary"
+      },
+      {
+        "compareToConfig": {
+          "periodCount": 1,
+          "periodTypeId": "hour"
+        },
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 9,
+          "row": 1,
+          "size_x": 4,
+          "size_y": 3
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "aggregation": "avg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "etcd_server_leader_changes_seen_total",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Total number of failed proposals seen",
+        "overrideFilter": false,
+        "showAs": "summary",
+        "showAsType": "summary"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 4,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "metricId": "grpc_type",
+            "propertyName": "k1"
+          },
+          {
+            "metricId": "grpc_code",
+            "propertyName": "k2"
+          },
+          {
+            "aggregation": "avg",
+            "groupAggregation": "avg",
+            "metricId": "grpc_server_started_total",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "RPC Rate",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeriesArea",
+        "showAsType": "area",
+        "sorting": [
+          {
+            "id": "v0",
+            "mode": "desc"
+          }
+        ]
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 8,
+          "size_x": 4,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "etcd_debugging_mvcc_db_total_size_in_bytes",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "DB Size\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 5,
+          "row": 8,
+          "size_x": 4,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "etcd_disk_wal_fsync_duration_seconds.avg",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Disc Sync Duration\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 9,
+          "row": 8,
+          "size_x": 4,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "metricId": "host.hostName",
+            "propertyName": "k1"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "process_resident_memory_bytes",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Memory",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line",
+        "sorting": [
+          {
+            "id": "v0",
+            "mode": "desc"
+          }
+        ]
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 7,
+          "row": 4,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "grpc_server_handled_total",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Handled\u00a0 Streams\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 7,
+          "row": 12,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "metricId": "host.hostName",
+            "propertyName": "k1"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "etcd_network_client_grpc_sent_bytes_total",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Client Traffic Out\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line",
+        "sorting": [
+          {
+            "id": "v0",
+            "mode": "desc"
+          }
+        ]
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 12,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "metricId": "host.hostName",
+            "propertyName": "k1"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "etcd_network_client_grpc_received_bytes_total",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Client Traffic In\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line",
+        "sorting": [
+          {
+            "id": "v0",
+            "mode": "desc"
+          }
+        ]
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 16,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "sum",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "etcd_server_proposals_failed_total",
+            "propertyName": "v0"
+          },
+          {
+            "aggregation": "sum",
+            "groupAggregation": "avg",
+            "metricId": "etcd_server_proposals_pending",
+            "propertyName": "v1"
+          },
+          {
+            "aggregation": "sum",
+            "groupAggregation": "avg",
+            "metricId": "etcd_server_proposals_committed_total",
+            "propertyName": "v2"
+          },
+          {
+            "aggregation": "sum",
+            "groupAggregation": "avg",
+            "metricId": "etcd_server_proposals_applied_total",
+            "propertyName": "v3"
+          }
+        ],
+        "name": "Raft Proposals\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 7,
+          "row": 16,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "metricId": "host.hostName",
+            "propertyName": "k1"
+          },
+          {
+            "aggregation": "max",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "etcd_server_leader_changes_seen_total",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Total leader elections\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line",
+        "sorting": [
+          {
+            "id": "v0",
+            "mode": "desc"
+          }
+        ]
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 20,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "sum",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "etcd_server_proposals_committed_total",
+            "propertyName": "v0"
+          },
+          {
+            "aggregation": "sum",
+            "groupAggregation": "avg",
+            "metricId": "etcd_server_proposals_applied_total",
+            "propertyName": "v1"
+          }
+        ],
+        "name": "Total number of consensus proposals committed",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 7,
+          "row": 20,
+          "size_x": 6,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "aggregation": "avg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "etcd_server_proposals_pending",
+            "propertyName": "v0"
+          },
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          }
+        ],
+        "name": "Proposals Pending\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 24,
+          "size_x": 12,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "avg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "etcd_disk_wal_fsync_duration_seconds.avg",
+            "propertyName": "v0"
+          },
+          {
+            "aggregation": "avg",
+            "groupAggregation": "avg",
+            "metricId": "etcd_disk_wal_fsync_duration_seconds.count",
+            "propertyName": "v1"
+          }
+        ],
+        "name": "Disk operations\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 28,
+          "size_x": 12,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "sum",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "etcd_network_client_grpc_received_bytes_total",
+            "propertyName": "v0"
+          },
+          {
+            "aggregation": "sum",
+            "groupAggregation": "avg",
+            "metricId": "etcd_network_client_grpc_sent_bytes_total",
+            "propertyName": "v1"
+          }
+        ],
+        "name": "Network",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 32,
+          "size_x": 12,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "sum",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "etcd_debugging_snap_save_total_duration_seconds.count",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Snapshot duration\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line"
+      }
+    ],
+    "username": "fede.barcelona+kubelab@sysdig.com"
+  },
+  {
+    "id": 94517,
+    "version": 1,
+    "createdOn": 1543356272000,
+    "modifiedOn": 1543356272000,
+    "teamId": 19148,
+    "autoCreated": false,
+    "isShared": true,
+    "isPublic": false,
+    "schema": 1,
+    "layout": [
+      {
+        "col": 1,
+        "row": 1,
+        "size_x": 3,
+        "size_y": 4
+      },
+      {
+        "col": 10,
+        "row": 1,
+        "size_x": 3,
+        "size_y": 4
+      },
+      {
+        "col": 4,
+        "row": 1,
+        "size_x": 3,
+        "size_y": 4
+      },
+      {
+        "col": 1,
+        "row": 5,
+        "size_x": 12,
+        "size_y": 4
+      },
+      {
+        "col": 7,
+        "row": 1,
+        "size_x": 3,
+        "size_y": 4
+      }
+    ],
+    "filterExpression": null,
+    "name": "[K8s - Prom] Scheduler",
+    "items": [
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 1,
+          "size_x": 3,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "host.mac",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "delta",
+            "groupAggregation": "sum",
+            "metricFormattingDecimals": null,
+            "metricId": "scheduler_binding_latency_microseconds",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Binding Latency (\u00b5s)\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "segmentedHistogram",
+        "showAsType": "segmentedHistogram"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 10,
+          "row": 1,
+          "size_x": 3,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "host.mac",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "delta",
+            "groupAggregation": "sum",
+            "metricFormattingDecimals": null,
+            "metricId": "scheduler_e2e_scheduling_latency_microseconds",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "End-to-end scheduling latency (\u00b5s)\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "segmentedHistogram",
+        "showAsType": "segmentedHistogram"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 4,
+          "row": 1,
+          "size_x": 3,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "host.mac",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "delta",
+            "groupAggregation": "sum",
+            "metricFormattingDecimals": null,
+            "metricId": "scheduler_scheduling_algorithm_latency_microseconds",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Algorithm scheduling Latency (\u00b5s)\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "segmentedHistogram",
+        "showAsType": "segmentedHistogram"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 5,
+          "size_x": 12,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "timestamp",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricId": "scheduler_pod_preemption_victims",
+            "propertyName": "v0"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricId": "scheduler_total_preemption_attempts",
+            "propertyName": "v1"
+          }
+        ],
+        "name": "Scheduler Preemption",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "timeSeries",
+        "showAsType": "line"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 7,
+          "row": 1,
+          "size_x": 3,
+          "size_y": 4
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "host.mac",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "delta",
+            "groupAggregation": "sum",
+            "metricFormattingDecimals": null,
+            "metricId": "scheduler_scheduling_algorithm_priority_evaluation",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Scheduling Algorithm Priority Evaluation Latency\n",
+        "overrideFilter": false,
+        "paging": {
+          "from": 0,
+          "to": 9
+        },
+        "showAs": "segmentedHistogram",
+        "showAsType": "segmentedHistogram"
+      }
+    ],
+    "username": "fede.barcelona+kubelab@sysdig.com"
+  },
+  {
+    "id": 94518,
+    "version": 1,
+    "createdOn": 1543356273000,
+    "modifiedOn": 1543356273000,
+    "teamId": 19148,
+    "autoCreated": false,
+    "isShared": true,
+    "isPublic": false,
+    "schema": 1,
+    "layout": [
+      {
+        "col": 1,
+        "row": 4,
+        "size_x": 12,
+        "size_y": 6
+      },
+      {
+        "col": 1,
+        "row": 10,
+        "size_x": 12,
+        "size_y": 8
+      },
+      {
+        "col": 1,
+        "row": 1,
+        "size_x": 2,
+        "size_y": 3
+      },
+      {
+        "col": 3,
+        "row": 1,
+        "size_x": 2,
+        "size_y": 3
+      },
+      {
+        "col": 5,
+        "row": 1,
+        "size_x": 2,
+        "size_y": 3
+      },
+      {
+        "col": 7,
+        "row": 1,
+        "size_x": 2,
+        "size_y": 3
+      },
+      {
+        "col": 9,
+        "row": 1,
+        "size_x": 2,
+        "size_y": 3
+      },
+      {
+        "col": 11,
+        "row": 1,
+        "size_x": 2,
+        "size_y": 3
+      }
+    ],
+    "filterExpression": null,
+    "name": "[K8s] Node Overview",
+    "items": [
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "format": {
+          "hierarchical": false
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 4,
+          "size_x": 12,
+          "size_y": 6
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "metricId": "host.hostName",
+            "propertyName": "k0"
+          },
+          {
+            "aggregation": "avg",
+            "groupAggregation": "avg",
+            "metricFormattingDecimals": null,
+            "metricFormattingUnit": null,
+            "metricId": "cpu.used.percent",
+            "propertyName": "v0"
+          },
+          {
+            "aggregation": "avg",
+            "groupAggregation": "avg",
+            "metricId": "memory.used.percent",
+            "propertyName": "v1"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricId": "net.bytes.total",
+            "propertyName": "v2"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "sum",
+            "metricId": "kubernetes.pod.status.ready",
+            "propertyName": "v3"
+          },
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "avg",
+            "metricId": "kubernetes.pod.restart.count",
+            "propertyName": "v4"
+          }
+        ],
+        "name": "Overview Info\n",
+        "overrideFilter": false,
+        "paging": null,
+        "showAs": "table",
+        "showAsType": "table"
+      },
+      {
+        "compareToConfig": null,
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "format": {
+          "hierarchical": true
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 10,
+          "size_x": 12,
+          "size_y": 8
+        },
+        "group": {
+          "configuration": {
+            "groups": [
+              {
+                "groupBy": [
+                  {
+                    "metric": "host.mac"
+                  },
+                  {
+                    "metric": "container.image"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "limitToScope": false,
+        "linkMetrics": [],
+        "metrics": [
+          {
+            "aggregation": "max",
+            "groupAggregation": "avg",
+            "metricId": "memory.used.percent",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Memory and response\u00a0 time topology",
+        "overrideFilter": true,
+        "showAs": "map",
+        "showAsType": "map"
+      },
+      {
+        "compareToConfig": {
+          "periodCount": 1,
+          "periodTypeId": "hour"
+        },
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 1,
+          "row": 1,
+          "size_x": 2,
+          "size_y": 3
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "sum",
+            "metricFormattingDecimals": 0,
+            "metricId": "host.count",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Nodes\n",
+        "overrideFilter": false,
+        "showAs": "summary",
+        "showAsType": "summary"
+      },
+      {
+        "colorCoding": {
+          "active": true,
+          "thresholds": [
+            {
+              "color": "best",
+              "max": null,
+              "min": 1
+            },
+            {
+              "color": "ok",
+              "max": 1,
+              "min": 0
+            },
+            {
+              "color": "worst",
+              "max": 0,
+              "min": null
+            }
+          ]
+        },
+        "compareToConfig": {
+          "periodCount": 1,
+          "periodTypeId": "hour"
+        },
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 3,
+          "row": 1,
+          "size_x": 2,
+          "size_y": 3
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "sum",
+            "metricFormattingDecimals": 0,
+            "metricId": "kubernetes.node.ready",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Nodes ready\n",
+        "overrideFilter": false,
+        "showAs": "summary",
+        "showAsType": "summary"
+      },
+      {
+        "colorCoding": {
+          "active": true,
+          "thresholds": [
+            {
+              "color": "best",
+              "max": 1,
+              "min": null
+            },
+            {
+              "color": "ok",
+              "max": 2,
+              "min": 1
+            },
+            {
+              "color": "worst",
+              "max": null,
+              "min": 2
+            }
+          ]
+        },
+        "compareToConfig": {
+          "periodCount": 1,
+          "periodTypeId": "hour"
+        },
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 5,
+          "row": 1,
+          "size_x": 2,
+          "size_y": 3
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "sum",
+            "metricFormattingDecimals": 0,
+            "metricId": "kubernetes.node.diskPressure",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Nodes with disk pressure\n",
+        "overrideFilter": false,
+        "showAs": "summary",
+        "showAsType": "summary"
+      },
+      {
+        "colorCoding": {
+          "active": true,
+          "thresholds": [
+            {
+              "color": "best",
+              "max": 1,
+              "min": null
+            },
+            {
+              "color": "ok",
+              "max": 2,
+              "min": 1
+            },
+            {
+              "color": "worst",
+              "max": null,
+              "min": 2
+            }
+          ]
+        },
+        "compareToConfig": {
+          "periodCount": 1,
+          "periodTypeId": "hour"
+        },
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 7,
+          "row": 1,
+          "size_x": 2,
+          "size_y": 3
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "sum",
+            "metricFormattingDecimals": 0,
+            "metricId": "kubernetes.node.memoryPressure",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Nodes with memory pressure\n",
+        "overrideFilter": false,
+        "showAs": "summary",
+        "showAsType": "summary"
+      },
+      {
+        "colorCoding": {
+          "active": true,
+          "thresholds": [
+            {
+              "color": "best",
+              "max": 1,
+              "min": null
+            },
+            {
+              "color": "ok",
+              "max": 2,
+              "min": 1
+            },
+            {
+              "color": "worst",
+              "max": null,
+              "min": 2
+            }
+          ]
+        },
+        "compareToConfig": {
+          "periodCount": 1,
+          "periodTypeId": "hour"
+        },
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 9,
+          "row": 1,
+          "size_x": 2,
+          "size_y": 3
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "sum",
+            "metricFormattingDecimals": 0,
+            "metricId": "kubernetes.node.networkUnavailable",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Nodes with unavailable network\n",
+        "overrideFilter": false,
+        "showAs": "summary",
+        "showAsType": "summary"
+      },
+      {
+        "colorCoding": {
+          "active": true,
+          "thresholds": [
+            {
+              "color": "best",
+              "max": 1,
+              "min": null
+            },
+            {
+              "color": "ok",
+              "max": 2,
+              "min": 1
+            },
+            {
+              "color": "worst",
+              "max": null,
+              "min": 2
+            }
+          ]
+        },
+        "compareToConfig": {
+          "periodCount": 1,
+          "periodTypeId": "hour"
+        },
+        "customDisplayOptions": {
+          "histogram": {
+            "numberOfBuckets": 10
+          },
+          "valueLimit": {
+            "count": 10,
+            "direction": "desc"
+          },
+          "xAxis": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisLeftDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisRightDomain": {
+            "from": 0,
+            "to": null
+          },
+          "yAxisScale": "linear"
+        },
+        "gridConfiguration": {
+          "col": 11,
+          "row": 1,
+          "size_x": 2,
+          "size_y": 3
+        },
+        "limitToScope": false,
+        "metrics": [
+          {
+            "aggregation": "timeAvg",
+            "groupAggregation": "sum",
+            "metricFormattingDecimals": 0,
+            "metricId": "kubernetes.node.unschedulable",
+            "propertyName": "v0"
+          }
+        ],
+        "name": "Nodes unscheludable\n",
+        "overrideFilter": false,
+        "showAs": "summary",
+        "showAsType": "summary"
+      }
+    ],
+    "username": "fede.barcelona+kubelab@sysdig.com"
+  }
+]

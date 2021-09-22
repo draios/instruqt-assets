@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "example-java-app.fullname" . }}-redis
+  labels:
+        {{- include "example-java-app.redis.labels" . | nindent 4 }}
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+        {{- include "example-java-app.redis.selectorLabels" . | nindent 4 }}

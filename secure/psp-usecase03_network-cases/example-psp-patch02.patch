@@ -1,0 +1,8 @@
+--- example-psp.step2.yaml      2020-01-26 18:41:50.946596846 +0000
++++ example-psp.yaml    2020-01-26 18:41:53.542588209 +0000
+@@ -17,4 +17,4 @@
+   hostNetwork: true
+   hostPorts:
+   - min: 0
+-    max: 1024
++    max: 6000

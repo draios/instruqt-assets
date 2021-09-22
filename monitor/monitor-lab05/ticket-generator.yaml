@@ -1,0 +1,107 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: ticket-generator
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ticket-backend
+  name: ticket-server
+  namespace: ticket-generator
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ticket-backend
+  template:
+    metadata:
+      labels:
+        app: ticket-backend
+    spec:
+      containers:
+      - image: mateobur/ticket-server
+        name: ticket-server
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ticket-backend
+  name: ticket-service
+  namespace: ticket-generator
+spec:
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: ticket-backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ticket-balancer
+  name: ticket-balancer
+  namespace: ticket-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ticket-balancer
+  template:
+    metadata:
+      labels:
+        app: ticket-balancer
+    spec:
+      containers:
+      - image: mateobur/lbticket
+        name: lbticket
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ticket-balancer
+  name: tickets
+  namespace: ticket-generator
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: ticket-balancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ticket-client
+  name: ticket-client
+  namespace: ticket-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ticket-client
+  template:
+    metadata:
+      labels:
+        app: ticket-client
+    spec:
+      containers:
+      - image: mateobur/ticketclient
+        name: ticket-client

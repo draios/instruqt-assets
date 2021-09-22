@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+   name: dummy-vuln-app
+spec:
+   containers:
+   - name: dummy-vuln-app
+     image: sysdiglabs/dummy-vuln-app:latest
+     ports:
+     - containerPort: 5000
+     - containerPort: 22

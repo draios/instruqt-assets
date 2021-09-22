@@ -1,0 +1,54 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: result
+  labels:
+    name: result-deployment
+    app: example-voting-app
+  namespace: lab2-example-voting-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+     name: result
+     role: resultapp
+     app: example-voting-app
+  template:
+    spec:
+      containers:
+        - name: result
+          image: bencer/example-voting-app-result:metrics-3
+          env:
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: example-voting-app
+                  key: db_url
+            - name: CONFIG_HASH
+              value: f410b7dddb885e6f4ef5676cc59871bc35fb4d182ad598e9bdc7abdb878a317c
+          resources:
+            limits:
+              memory: 64Mi
+            requests:
+              memory: 32Mi
+    metadata:
+      labels:
+        name: result
+        role: resultapp
+        app: example-voting-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: result
+  name: result
+  namespace: lab2-example-voting-app
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    name: result
+    app: example-voting-app
+    role: resultapp

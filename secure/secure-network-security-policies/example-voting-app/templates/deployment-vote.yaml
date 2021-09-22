@@ -1,0 +1,26 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: vote
+  labels:
+        {{- include "example-voting-app.vote.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+        {{- include "example-voting-app.vote.selectorLabels" . | nindent 6 }}
+  template:
+    spec:
+      serviceAccountName: {{ include "example-voting-app.serviceAccountName" . }}
+      containers:
+      - name: vote
+        image: {{ include "example-voting-app.vote.image" . }}
+        resources:
+          limits:
+            memory: 128Mi
+          requests:
+            memory: 64Mi
+    metadata:
+      labels:
+        {{- include "example-voting-app.vote.selectorLabels" . | nindent 8 }}

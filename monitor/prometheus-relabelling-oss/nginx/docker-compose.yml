@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+    nginx1:
+        container_name: nginx-server1
+        image: nginx
+        ports:
+            - 8001:80
+        volumes:
+            - ./index.html:/usr/share/nginx/html/index.html
+            - ./nginx.conf:/etc/nginx/nginx.conf     
+    nginx2:
+        container_name: nginx-server2
+        image: nginx
+        ports:
+            - 8002:80
+        volumes:
+            - ./index2.html:/usr/share/nginx/html/index.html
+            - ./nginx2.conf:/etc/nginx/nginx.conf     
+    nginx-exporter1:
+        container_name: nginx-exporter1
+        image: nginx/nginx-prometheus-exporter:0.5.0
+        restart: always
+        command: -nginx.scrape-uri http://nginx1:80/metrics -nginx.retries 50 -nginx.retry-interval 10s
+        ports:
+            - "9113:9113"
+        labels:
+            - "io.prometheus.scrape=true"    
+            - "io.prometheus.port=9113"
+    nginx-exporter2:
+        container_name: nginx-exporter2
+        image: nginx/nginx-prometheus-exporter:0.5.0
+        restart: always
+        command: -nginx.scrape-uri http://nginx2:80/metrics -nginx.retries 50 -nginx.retry-interval 10s
+        ports:
+            - "9114:9113"
+        labels:
+            - "io.prometheus.scrape=true"    
+            - "io.prometheus.port=9114"

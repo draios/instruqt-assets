@@ -1,0 +1,35 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: observer
+  labels:
+    name: observer-deployment
+    app: example-voting-app
+  namespace: example-voting-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     name: observer
+     role: observerapp
+     app: example-voting-app
+  template:
+    spec:
+      containers:
+        - name: observer
+          image: bencer/recurling:0.1
+          env:
+            - name: URL
+              value: "result.example-voting-app.svc.cluster.local"
+            - name: SLEEP
+              value: "5"
+          resources:
+            limits:
+              memory: 64Mi
+            requests:
+              memory: 32Mi
+    metadata:
+      labels:
+        name: observer
+        role: observerapp
+        app: example-voting-app

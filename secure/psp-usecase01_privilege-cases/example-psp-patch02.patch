@@ -1,0 +1,7 @@
+--- example-psp.yaml    2020-01-26 13:53:04.400000000 +0000
++++ example-psp.orig.yaml    2020-01-26 13:50:50.272000000 +0000
+@@ -14,3 +14,4 @@
+     rule: RunAsAny
+   volumes:
+   - '*'
++  allowPrivilegeEscalation: false

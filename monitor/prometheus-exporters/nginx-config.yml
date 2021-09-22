@@ -1,0 +1,23 @@
+global:
+    config_version: 2
+input:
+    type: file
+    path: ../nginx_log
+    readall: true
+grok:
+    patterns_dir: ./patterns
+metrics:
+    - type: counter
+      name: nginx_example
+      help: HTTP reqests to Nginx.
+      match: '%{IPORHOST:clientip} (?:-|(%{WORD}.%{WORD})) %{USER:ident} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) %{QS:referrer} %{QS:agent} %{QS:forwarder}'
+      labels:
+          client: '{{.clientip}}'
+          method: '{{.verb}}'
+          path: '{{.request}}'
+          code: '{{.response}}'
+
+           #This is the segments
+# server:
+#     host: localhost
+#     port: 9144

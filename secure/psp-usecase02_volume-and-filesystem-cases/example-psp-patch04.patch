@@ -1,0 +1,7 @@
+--- example-psp.yaml    2020-01-26 17:54:50.196000000 +0000
++++ example-psp.step5.yaml      2020-01-26 17:54:35.272000000 +0000
+@@ -14,3 +14,4 @@
+     rule: RunAsAny
+   volumes:
+   - '*'
++  readOnlyRootFilesystem: true

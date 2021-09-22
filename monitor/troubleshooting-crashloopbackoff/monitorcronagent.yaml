@@ -1,0 +1,52 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: monitorcronagent-account
+  namespace: nginx-flask
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: monitorcronagent-cluster-role
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]
+  - nonResourceURLs: ["*"]
+    verbs: ["*"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: monitorcronagent-cluster-role-binding
+subjects:
+  - kind: ServiceAccount
+    name: monitorcronagent-account
+    namespace: nginx-flask
+roleRef:
+  kind: ClusterRole
+  name: monitorcronagent-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: monitorcronagent
+  namespace: nginx-flask
+  labels:
+    app: monitorcronagent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     app: monitorcronagent
+  template:
+    spec:
+      serviceAccountName: monitorcronagent-account
+      containers:
+        - name: monitorcronagent
+          image: mateobur/nginxflaskcrash:sko
+    metadata:
+      labels:
+        app: monitorcronagent

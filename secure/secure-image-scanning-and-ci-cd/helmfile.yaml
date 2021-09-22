@@ -1,0 +1,31 @@
+---
+repositories:
+  - name: jenkinsci
+    url: https://charts.jenkins.io/
+
+helmDefaults:
+  createNamespace: true
+
+releases:
+  - name: jenkins
+    namespace: jenkins
+    atomic: true
+    chart: jenkinsci/jenkins
+    version: 1.27.0
+    values:
+    - persistence:
+        enabled: false
+      master:
+        adminPassword: sysdig
+        serviceType: NodePort
+        nodePort: 31337
+        installPlugins: 
+        - git
+        - kubernetes
+        - credentials-binding
+        - workflow-basic-steps
+        - workflow-job
+        - workflow-aggregator
+      agent:
+        privileged: false
+

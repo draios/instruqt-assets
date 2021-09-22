@@ -1,0 +1,9 @@
+--- example-psp.yaml    2020-01-26 16:42:24.804000000 +0000
++++ example-psp.step4.yaml      2020-01-26 16:43:22.308000000 +0000
+@@ -14,6 +14,3 @@
+     rule: RunAsAny
+   volumes:
+   - '*'
+-  allowedHostPaths:
+-  - pathPrefix: "/etc/hostname"
+-    readOnly: true

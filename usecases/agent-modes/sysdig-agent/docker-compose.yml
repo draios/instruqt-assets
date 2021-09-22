@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  sysdig-agent:
+    container_name: sysdig-agent
+    privileged: true
+    # image: sysdig/agent:10.0.0
+    image: sysdig/agent:latest
+    restart: always
+    network_mode: "host"
+    pid: "host"
+    environment:
+      ACCESS_KEY: $AGENT_KEY
+      COLLECTOR: $AGENT_COLLECTOR
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - /dev:/host/dev
+      - /proc:/host/proc:ro
+      - /boot:/host/boot:ro
+      - /lib/modules:/host/lib/modules:ro
+      - /usr:/host/usr:ro
+      - ./dragent.yaml:/opt/draios/etc/dragent.yaml:rw
+      - ./prometheus.yaml:/opt/draios/etc/prometheus.yaml:rw
+    shm_size: 512m
+networks: {}

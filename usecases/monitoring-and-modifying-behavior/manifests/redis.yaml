@@ -1,0 +1,46 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: redis
+  labels:
+    name: redis-deployment
+    app: example-voting-app
+  namespace: example-voting-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     name: redis
+     role: redisdb
+     app: example-voting-app
+  template:
+    spec:
+      containers:
+        - name: redis
+          image: redis:alpine
+          resources:
+            limits:
+              memory: 64Mi
+            requests:
+              memory: 32Mi
+    metadata:
+      labels:
+        name: redis
+        role: redisdb
+        app: example-voting-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: redis
+  name: redis
+  namespace: example-voting-app
+spec:
+  ports:
+    - port: 6379
+      targetPort: 6379
+  selector:
+    name: redis
+    app: example-voting-app
+    role: redisdb

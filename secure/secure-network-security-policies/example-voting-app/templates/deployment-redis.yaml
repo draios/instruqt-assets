@@ -1,0 +1,29 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: redis
+  labels:
+        {{- include "example-voting-app.redis.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+        {{- include "example-voting-app.redis.selectorLabels" . | nindent 6 }}
+  template:
+    spec:
+      serviceAccountName: {{ include "example-voting-app.serviceAccountName" . }}
+      containers:
+      - name: redis
+        image: {{ include "example-voting-app.redis.image" . }}
+        resources:
+          limits:
+            memory: 64Mi
+          requests:
+            memory: 32Mi
+    metadata:
+      annotations:
+        prometheus.io/port: "80"
+        prometheus.io/scrape: "true"
+      labels:
+        {{- include "example-voting-app.redis.selectorLabels" . | nindent 8 }}

@@ -1,0 +1,8 @@
+--- example-psp.yaml	2020-01-26 14:44:51.000000000 +0000
++++ example-psp.step1.yaml	2020-01-26 14:45:30.000000000 +0000
+@@ -13,4 +13,4 @@
+   fsGroup:
+     rule: RunAsAny
+   volumes:
+-  - '*'
++  - 'flexVolume'

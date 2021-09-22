@@ -1,0 +1,71 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: jenkins
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: jenkins
+    role: jenkins
+  name: jenkins
+  namespace: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+      role: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+        role: jenkins
+    spec:
+      volumes:
+        # - name: jenkins-data-vol
+        #   persistentVolumeClaim:
+        #     claimName: jenkins-data
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock
+        - name: docker-bin
+          hostPath:
+            path: /usr/bin/docker
+      containers:
+        - image: sysdiglabs/jenkins:0.4
+          name: jenkins
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: jnlp
+              containerPort: 50000
+          volumeMounts:
+            # - name: jenkins-data-vol
+            #   mountPath: "/var/jenkins_home"
+            - name: docker-sock
+              mountPath: /var/run/docker.sock
+            - name: docker-bin
+              mountPath: /usr/bin/docker
+      securityContext:
+        fsGroup: 1000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: jenkins
+  name: jenkins-service
+  namespace: jenkins
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      nodePort: 31337
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: jenkins

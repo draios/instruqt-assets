@@ -1,0 +1,278 @@
+tags: "environment:sko"
+k8s_cluster_name: "kube-sko-lab3"
+dev_new_k8s: true
+
+jmx:
+  per_process_beans:
+    voting:
+      pattern: "worker-jar"
+      beans:
+        - query: "worker:type=Metric,*"
+          attributes:
+            - name: Dogs
+              alias: Dogs
+            - name: Cats
+              alias: Cats
+            - name: Votes
+              alias: Votes
+
+prometheus:
+  enabled: true
+  interval: 10
+  log_errors: true
+  max_metrics: 2000
+  max_metrics_per_process: 1000
+  max_tags_per_metric: 20
+  histograms: true
+  # Filtering ports for known prometheus exporters
+  # Any ports not matching a rule will not be scanned
+  port_filter:
+    # Excluding ports reserved for other protocols like Kafka & Elasticsearch
+    - exclude: [9092,9200,9300]
+    - include: 9090-9500
+    - include: [9913,9984,24231,42004]
+    - include: [80,8080]
+    - include: 9171
+
+  # - apiserver_admission_step_admission_latencies_seconds_summary
+  # - apiserver_request_count
+  # - apiserver_request_latencies_summary
+  # - authenticated_user_requests
+  # - rest_client_request_latency_seconds
+  # - rest_client_requests_total
+
+  scraping_endpoints:
+    - etcd:
+        url: https://127.0.0.1:4001/metrics
+        delegated_only: true
+        auth_cert_path: /run/secrets/etcd/client-cert
+        auth_key_path: /run/secrets/etcd/client-key
+    - apiserver:
+        url: https://kubernetes.default/metrics
+        delegated_only: true
+        auth_token_path: /run/secrets/kubernetes.io/serviceaccount/token
+        metric_blacklist:
+          - APIServiceOpenAPIAggregationControllerQueue1_adds
+          - APIServiceOpenAPIAggregationControllerQueue1_depth
+          - APIServiceOpenAPIAggregationControllerQueue1_queue_latency
+          - APIServiceOpenAPIAggregationControllerQueue1_retries
+          - APIServiceOpenAPIAggregationControllerQueue1_work_duration
+          - APIServiceRegistrationController_adds
+          - APIServiceRegistrationController_depth
+          - APIServiceRegistrationController_queue_latency
+          - APIServiceRegistrationController_retries
+          - APIServiceRegistrationController_work_duration
+          - AvailableConditionController_adds
+          - AvailableConditionController_depth
+          - AvailableConditionController_queue_latency
+          - AvailableConditionController_retries
+          - AvailableConditionController_work_duration
+          - DiscoveryController_adds
+          - DiscoveryController_depth
+          - DiscoveryController_queue_latency
+          - DiscoveryController_retries
+          - DiscoveryController_work_duration
+          - admission_quota_controller_adds
+          - admission_quota_controller_depth
+          - admission_quota_controller_queue_latency
+          - admission_quota_controller_work_duration
+          - apiserver_admission_controller_admission_latencies_seconds
+          - apiserver_admission_step_admission_latencies_seconds
+          - apiserver_audit_event_total
+          - apiserver_client_certificate_expiration_seconds
+          - apiserver_current_inflight_requests
+          - apiserver_longrunning_gauge
+          - apiserver_registered_watchers
+          - apiserver_request_latencies$
+          - apiserver_response_sizes
+          - apiserver_storage_data_key_generation_failures_total
+          - apiserver_storage_data_key_generation_latencies_microseconds
+          - apiserver_storage_envelope_transformation_cache_misses_total
+          - autoregister_adds
+          - autoregister_depth
+          - autoregister_queue_latency
+          - autoregister_retries
+          - autoregister_work_duration
+          - crdEstablishing_adds
+          - crdEstablishing_depth
+          - crdEstablishing_queue_latency
+          - crdEstablishing_retries
+          - crdEstablishing_work_duration
+          - etcd_helper_cache_entry_count
+          - etcd_helper_cache_hit_count
+          - etcd_helper_cache_miss_count
+          - etcd_object_counts
+          - etcd_request_cache_add_latencies_summary
+          - etcd_request_cache_get_latencies_summary
+          - get_token_count
+          - get_token_fail_count
+          - go_gc_duration_seconds
+          - go_goroutines
+          - go_memstats_alloc_bytes
+          - go_memstats_alloc_bytes_total
+          - go_memstats_buck_hash_sys_bytes
+          - go_memstats_frees_total
+          - go_memstats_gc_cpu_fraction
+          - go_memstats_gc_sys_bytes
+          - go_memstats_heap_alloc_bytes
+          - go_memstats_heap_idle_bytes
+          - go_memstats_heap_inuse_bytes
+          - go_memstats_heap_objects
+          - go_memstats_heap_released_bytes
+          - go_memstats_heap_sys_bytes
+          - go_memstats_last_gc_time_seconds
+          - go_memstats_lookups_total
+          - go_memstats_mallocs_total
+          - go_memstats_mcache_inuse_bytes
+          - go_memstats_mcache_sys_bytes
+          - go_memstats_mspan_inuse_bytes
+          - go_memstats_mspan_sys_bytes
+          - go_memstats_next_gc_bytes
+          - go_memstats_other_sys_bytes
+          - go_memstats_stack_inuse_bytes
+          - go_memstats_stack_sys_bytes
+          - go_memstats_sys_bytes
+          - go_threads
+          - http_request_duration_microseconds
+          - http_request_size_bytes
+          - http_requests_total
+          - http_response_size_bytes
+          - kubernetes_build_info
+          - process_cpu_seconds_total
+          - process_max_fds
+          - process_open_fds
+          - process_resident_memory_bytes
+          - process_start_time_seconds
+          - process_virtual_memory_bytes
+          - reflector_items_per_list
+          - reflector_items_per_watch
+          - reflector_last_resource_version
+          - reflector_list_duration_seconds
+          - reflector_lists_total
+          - reflector_short_watches_total
+          - reflector_watch_duration_seconds
+          - reflector_watches_total
+          - ssh_tunnel_open_count
+          - ssh_tunnel_open_fail_count
+  # Filtering processes to scan. Processes not matching a rule and
+  # processes without matched ports will not be scanned
+  process_filter:
+    - include:
+        process.name: kubelet
+        conf:
+          metric_blacklist:
+          - go_threads
+    - include:
+        process.name: kube-scheduler
+    - exclude:
+        process.name: docker-proxy
+    - exclude:
+        container.image: sysdig/agent
+    # special rule to exclude processes matching configured prometheus appcheck
+    - exclude:
+        appcheck.match: prometheus
+    - include:
+        appcheck.match: node
+    # Uncomment this to exclude processes with any matching appcheck
+    # - exclude:
+    #     appcheck.match: "*"
+    - include:
+        container.label.io.prometheus.scrape: "true"
+    - exclude:
+        container.label.io.prometheus.scrape: "false"
+    # special rule to include any process with a matched port
+    - include:
+        port: matched
+    - include:
+        process.name: node
+        port: 80
+    - include:
+        process.name: server
+        port: 8080
+    - include:
+        process.name: mixs
+        conf:
+          port_filter:
+           - include: 42422
+           - include: 9102
+           - include: 9093
+    - include:
+        port: 9171
+        conf:
+          port_filter:
+            - include: 9171
+    - include:
+        container.label.io.prometheus.scrape: "true"
+        conf:
+            # Custom path definition
+            # If the label doesn't exist we'll still use "/metrics"
+            path: "{container.label.io.prometheus.path}"
+
+            # Port definition
+            # - If the label exists, only scan the given port.
+            # - If it doesn't, use port_filter instead.
+            # - If there is no port_filter defined, skip this process
+            port: "{container.label.io.prometheus.port}"
+            port_filter:
+                - exclude: [9092,9200,9300]
+                - include: 9090-9500
+                - include: [9913,9984,24231,42004]
+    - include:
+        kubernetes.pod.annotation.prometheus.io/scrape: true
+        conf:
+            path: "{kubernetes.pod.annotation.prometheus.io/path}"
+            port: "{kubernetes.pod.annotation.prometheus.io/port}"
+    - exclude:
+        kubernetes.pod.annotation.prometheus.io/scrape: false
+
+app_checks:
+  - name: ntp
+    check_module: ntp
+    pattern:
+      comm: ntpd
+  - name: hash-browns
+    check_module: go_expvar
+    pattern:
+      comm: server
+    conf:
+      expvar_url: "http://localhost:{port}/debug/vars" # automatically match url using the listening port
+      # Add custom metrics if you want
+      # metrics:
+      #   - path: points_processed
+      #     type: rate # rate or gauge
+      #     alias: points.processed.count
+  - name: cauterized_check
+    check_module: http_check
+    pattern:
+      comm: init
+    conf:
+      url: "https://cauterized.net/"
+      collect_response_time: true
+      content_match: "this is cauterized.net"
+  - name: quassel_check
+    check_module: tcp_check
+    pattern:
+      comm: init
+    conf:
+      host: smurf.cauterized.net
+      port: 4242
+  - name: smtp_check
+    check_module: tcp_check
+    pattern:
+      comm: init
+    conf:
+      host: casi.cauterized.net
+      port: 587
+  - name: imap_check
+    check_module: tcp_check
+    pattern:
+      comm: init
+    conf:
+      host: casi.cauterized.net
+      port: 993
+
+percentiles: [50, 95, 99]
+group_percentiles:
+  enabled: true
+  check_interval: 60
+  max_containers: 50

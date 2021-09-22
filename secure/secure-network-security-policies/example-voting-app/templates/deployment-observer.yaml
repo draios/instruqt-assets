@@ -1,0 +1,31 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: observer
+  labels:
+        {{- include "example-voting-app.observer.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+        {{- include "example-voting-app.observer.selectorLabels" . | nindent 6 }}
+  template:
+    spec:
+      serviceAccountName: {{ include "example-voting-app.serviceAccountName" . }}
+      containers:
+      - name: observer
+        image: {{ include "example-voting-app.observer.image" . }}
+        env:
+        - name: URL
+          value: result
+        - name: SLEEP
+          value: "5"
+        resources:
+          limits:
+            memory: 64Mi
+          requests:
+            memory: 32Mi
+    metadata:
+      labels:
+        {{- include "example-voting-app.observer.selectorLabels" . | nindent 8 }}

@@ -1,0 +1,35 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: voter
+  labels:
+    name: voter-deployment
+    app: example-voting-app
+  namespace: example-voting-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     name: voter
+     role: voterapp
+     app: example-voting-app
+  template:
+    spec:
+      containers:
+        - name: voter
+          image: mateobur/voter:sko
+          env:
+            - name: VOTE
+              value: "vote.example-voting-app.svc.cluster.local"
+            - name: PORT
+              value: "80"
+          resources:
+            limits:
+              memory: 64Mi
+            requests:
+              memory: 32Mi
+    metadata:
+      labels:
+        name: voter
+        role: voterapp
+        app: example-voting-app
