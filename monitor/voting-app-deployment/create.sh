@@ -1,4 +1,4 @@
 #!/bin/sh
 
-kubectl apply -f manifests/namespace.yaml
-kubectl apply -f manifests/
+kubectl apply -f /root/manifests/namespace.yaml
+kubectl apply -f /root/manifests/
