@@ -102,22 +102,16 @@ configure_API () {
     varname=${1}_API_KEY
     # echo ${varname}
 
-    # PRODUCT=MONITOR
-    # declare ${PRODUCT}_API_KEY=foofoo
-    # varname=${PRODUCT}_API_KEY
-    # eval echo -e "\$${varname}"
-
     x=0
 
     while [ ! -f /usr/local/bin/sysdig/user_data_${1}_API_OK ] && [ $x -le 7 ]; do
 
         x=$(( $x + 1 ))
 
-        read -p "   Insert here your Sysdig $1 API Token: "  ${varname}; echo 
-        #eval echo -e "esta es la clave: \$${varname}"
+        read -p "   Insert here your Sysdig $1 API Token: "  ${varname}; 
 
         # testing connection
-        echo -n "Testing connection to API... "
+        echo -n "   Testing connection to API... "
         curl -s -H 'Authorization: Bearer '$(eval echo -e "\$${varname}") "$3"'/api/' | grep 'status":404' &> /dev/null
 
         if [ $? -eq 0 ]; then
@@ -135,12 +129,14 @@ EOF
             echo "Or the region selected (URL) is not your region or the key is wrong."
 
             #select_region #we can not just change the region, the agent is using the backend.
+            # use helm update!
             #TODO: retry 3 times and if it still does not work, 
             # 1. remove sysdig-agent namespace
             # 2. define region again
             # 3. reinstall agent
             # 4. configure APIs again
         fi
+        echo
     done
 }
 
@@ -268,12 +264,11 @@ while [ ${RESULT_AGENT} -ne 0 ] && [ $x -le 7 ]; do
     x=$(( $x + 1 ))
 done
 
-echo 
 if [ ${RESULT_AGENT} -eq 0 ]; then
 	echo " OK"
     touch /usr/local/bin/sysdig/user_data_AGENT_OK
 else
-	echo "FAIL"
+	echo " FAIL"
     echo
     echo "  Or the region selected (URL) is not your region or the Agent Key is wrong."
 fi
