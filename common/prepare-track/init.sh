@@ -148,8 +148,8 @@ EOF
 install_agent () {
     #deploy agent, default to Helm for k3s env. Consider other alternatives later. Helm already installed
     #curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash &> /dev/null
-    helm repo add sysdig https://charts.sysdig.com
-    helm repo update
+    helm repo add sysdig https://charts.sysdig.com &> /dev/null
+    helm repo update &> /dev/null
 
 
     # echo "Deploying Sysdig Agent with Helm"
@@ -166,7 +166,7 @@ install_agent () {
         --set resources.requests.memory=512Mi \
         --set resources.limits.cpu=2 \
         --set resources.limits.memory=2048Mi \
-        sysdig/sysdig
+        sysdig/sysdig &> /dev/null
     # TODO: set version to match the available img.ver on our packer custom image
 }
 
@@ -228,18 +228,7 @@ fi
 
 # test agent connection
 echo -n "Testing Sysdig Agent running in your environment."
-echo " It can take up to 2 minutes to connect with the backend..."
-
-# sleep 120 &
-# PID=$!
-# i=1
-# sp="/-\|"
-# echo -n ' '
-# while [ -d /proc/$PID ]
-# do
-#   printf "\b${sp:i++%${#sp}:1}"
-#   sleep .1
-# done
+echo -n " It can take up to 2 minutes to connect with the backend. "
 
 #define query
 DATE=$(date +%s)
@@ -273,7 +262,7 @@ while [ ${RESULT_AGENT} -ne 0 ] && [ $x -le 7 ]; do
         --request POST \
         --data @/root/prepare-track/data.json \
         "${MONITOR_API_ENDPOINT}"/api/data/batch \
-        | jq ".responses[].data[]" | grep -o "$AGENT_TR_ID"
+        | jq ".responses[].data[]" | grep -o "$AGENT_TR_ID" &> /dev/null
 
     RESULT_AGENT=$?
     x=$(( $x + 1 ))
@@ -285,7 +274,8 @@ if [ ${RESULT_AGENT} -eq 0 ]; then
     touch /usr/local/bin/sysdig/user_data_AGENT_OK
 else
 	echo "FAIL"
-    echo "Or the region selected (URL) is not your region or the Agent Key is wrong."
+    echo
+    echo "  Or the region selected (URL) is not your region or the Agent Key is wrong."
 fi
 
 # Final Check and clean config files from environment in case of success
@@ -293,10 +283,9 @@ if  [ -f /usr/local/bin/sysdig/user_data_MONITOR_API_OK ] && \
     [ -f /usr/local/bin/sysdig/user_data_SECURE_API_OK ] && \
     [ -f /usr/local/bin/sysdig/user_data_AGENT_OK ]; then
         # the user configured all right, we can remove resources
-        rm /usr/local/bin/data.json
-        rm /usr/local/bin/data.json.original
         rm /usr/local/bin/sysdig/user_data_SECURE_API_OK
         rm /usr/local/bin/sysdig/user_data_MONITOR_API_OK
+        rm /usr/local/bin/sysdig/user_data_AGENT_OK
         rm -rf /root/prepare-track/
         sed -i '/init.sh/d' /root/.profile  # removes the script from .profile so it is not executed in new challenges
         touch /usr/local/bin/sysdig/user_data_OK # flag environment configured with user data
