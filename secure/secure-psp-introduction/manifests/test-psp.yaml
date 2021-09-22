@@ -1,0 +1,65 @@
+# Should grant access to very few pods, i.e. kube-system system pods and possibly CNI pods
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  annotations:
+    # See https://kubernetes.io/docs/concepts/policy/pod-security-policy/#seccomp
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+  name: 00test
+spec:
+  allowedCapabilities:
+  - '*'
+  allowPrivilegeEscalation: true
+  fsGroup:
+    rule: 'RunAsAny'
+  hostIPC: true
+  hostNetwork: true
+  hostPID: true
+  hostPorts:
+  - min: 0
+    max: 65535
+  privileged: true
+  readOnlyRootFilesystem: false
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  volumes:
+  - '*'
+
+---
+
+# Cluster role which grants access to the privileged pod security policy
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: 00test-psp
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - 00test
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+
+---
+
+# Role binding for kube-system - allow nodes and kube-system service accounts - should take care of CNI i.e. flannel running in the kube-system namespace
+# Assumes access to the kube-system is restricted
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: 00test-psp
+  namespace: nginx
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: 00test-psp
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:serviceaccounts:nginx

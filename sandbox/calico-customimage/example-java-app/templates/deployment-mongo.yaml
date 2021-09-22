@@ -1,0 +1,35 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ include "example-java-app.fullname" . }}-mongo
+  labels:
+        {{- include "example-java-app.mongo.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  # selector identifies the set of Pods that this
+  # replication controller is responsible for managing
+  selector:
+    matchLabels:
+        {{- include "example-java-app.mongo.selectorLabels" . | nindent 6 }}
+  template:
+    spec:
+      securityContext:
+        runAsUser: 0
+      serviceAccountName: {{ include "example-java-app.fullname" . }}
+      containers:
+      - name: mongo
+        image: {{ include "example-java-app.mongo.image" . }}
+        ports:
+        - containerPort: 27017
+          name: mongo
+        command: ["mongod", "--smallfiles", "--bind_ip", "0.0.0.0"]
+        resources:
+{{ toYaml .Values.mongo.resources | indent 10 }}
+      - name: mongo-statsd
+        image: {{ include "example-java-app.mongo_statsd.image" . }}
+        resources:
+{{ toYaml .Values.mongo_statsd.resources | indent 10 }}
+    metadata:
+      labels:
+        {{- include "example-java-app.mongo.selectorLabels" . | nindent 8 }}

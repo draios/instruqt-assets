@@ -1,0 +1,41 @@
+db:
+  image:
+    repository: postgres
+    tag: 9.4
+  resources: {}
+
+observer:
+  image:
+    repository: sysdiglabs/recurling
+    tag: "0.1"
+  resources: {}
+
+redis:
+  image:
+    repository: redis
+    tag: 5.0.3-alpine
+  resources: {}
+
+result:
+  image:
+    repository: sysdiglabs/example-voting-app-result
+    tag: metrics-3
+  resources: {}
+
+vote:
+  image:
+    repository: sysdiglabs/example-voting-app-vote
+    tag: statsd-5
+  resources: {}
+
+voter:
+  image:
+    repository: sysdiglabs/example-voting-app-voter
+    tag: 0.1
+  resources: {}
+
+worker:
+  image:
+    repository: sysdiglabs/example-voting-app-worker
+    tag: jmx-1
+  resources: {}

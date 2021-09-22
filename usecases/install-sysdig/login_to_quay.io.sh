@@ -1,0 +1,12 @@
+#!/bin/bash
+
+SECRET="[REDACTED]WjE5MFpXRnRPa2MxVVRGR1FrTkRSMGRNT0UxUk5VTldURlF4UzBGUlFsZExVRkZITjFaTU5WaEZNMUZWV2pKRE4wNDBVVmhIU2tzMFNGbEpRa3d6VHpaVk9UWklSVGs9IiwKICAgICAgImVtYWlsIjogIiIKICAgIH0KICB9Cn0="
+
+AUTH=$(echo $SECRET | base64 --decode | jq -r '.auths."quay.io".auth'| base64 --decode)
+QUAY_USERNAME=${AUTH%:*}
+QUAY_PASSWORD=${AUTH#*:}
+
+echo $QUAY_USERNAME
+echo $QUAY_PASSWORD
+
+docker login -u "$QUAY_USERNAME" -p "$QUAY_PASSWORD" quay.io

@@ -1,0 +1,15 @@
+version: '3'
+ 
+services:
+  blackbox:
+    image: prom/blackbox-exporter:latest
+    privileged: true
+    restart: always
+    network_mode: "host"
+    volumes:
+      - ./blackbox.yaml:/etc/blackbox_exporter/config.yml
+    ports:
+      - '9115:9115'
+    labels:
+      - "io.prometheus.scrape=true"    
+      - "io.prometheus.port=9115"

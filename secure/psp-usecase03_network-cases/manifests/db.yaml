@@ -1,0 +1,47 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: db
+  labels:
+    name: db-deployment
+    app: example-voting-app
+  namespace: example-voting-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     name: db
+     role: sqldb
+     app: example-voting-app
+  template:
+    spec:
+      containers:
+        - name: db
+          image: postgres:9.4
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: 0.25
+            requests:
+              memory: 128Mi
+    metadata:
+      labels:
+        name: db
+        role: sqldb
+        app: example-voting-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: db
+  name: db
+  namespace: example-voting-app
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    name: db
+    app: example-voting-app
+    role: sqldb

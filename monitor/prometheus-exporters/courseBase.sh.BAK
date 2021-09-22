@@ -1,0 +1,80 @@
+#!/bin/bash
+
+set -x
+
+# This added because couldnt get teh file copied in place with index.json
+# mv sysdig-agent.sh manifests/
+
+#scenario preparation in Katacoda for PromQL:
+#includes:
+# metrics generator by Dmitry
+# node-exporter
+# Prometheus (with Dashboard)
+#maybe would be interesting also including Grafana
+#tested again 2020-16-01 and still worked :D
+
+#installing prometheus
+mkdir -p prometheus
+mkdir -p manifests
+
+touch prometheus/prometheus.yml
+cat << EOT >> prometheus/prometheus.yml
+# prometheus config to read simulator input
+global:
+  scrape_interval:     15s
+  evaluation_interval: 30s
+scrape_configs:
+- job_name: demo
+  honor_labels: true
+  # scrape_interval is defined by the configured global (15s).
+  # scrape_timeout is defined by the global default (10s).
+  # metrics_path defaults to '/metrics'
+  # scheme defaults to 'http'.
+  static_configs:
+  - targets: ['0.0.0.0:9090','0.0.0.0:9100','0.0.0.0:8080','0.0.0.0:9144']
+# - job_name: grok
+#   honor_labels: true
+#   # scrape_interval is defined by the configured global (15s).
+#   # scrape_timeout is defined by the global default (10s).
+#   metrics_path: '/'
+#   # scheme defaults to 'http'.
+#   static_configs:
+#   - targets: ['0.0.0.0:9144']
+EOT
+
+#run Prometheus
+docker run -d \
+  --name prometheus \
+  --volume /root/prometheus/:/etc/prometheus/ \
+  --net="host" \
+  prom/prometheus
+
+# Run Node exporter
+docker run -d \
+  --name node-exporter \
+  --volume "/:/host:ro,rslave" \
+  --net="host" \
+  --pid="host" \
+  quay.io/prometheus/node-exporter \
+  --path.rootfs=/host
+
+#scenario base: ubuntu machine 16.04 (enought with this version, it has all dependences needed)
+# https://www.katacoda.com/scenario-examples/courses/environment-usages/ubuntu
+
+#commands for metric simulator Dmitry
+git clone https://github.com/dmitsh/promsim.git
+cd promsim
+make
+docker run -d -it --name promsim -p 8080:8080 docker.io/dmitsh/promsim:0.1 /bin/promsim target --address ":8080"
+
+#docker run -dt \
+#  --name metricSimulator \
+#  --publish 8080:8080 \
+#  --volume $(pwd)/promsim:/go/promsim \
+#  golang /bin/bash
+#
+#docker run --rm -it --name promsim -p 8080:8080 docker.io/dmitsh/promsim:0.1 /bin/promsim target --address ":8080"
+#
+#docker exec -d metricSimulator bash -c 'make -C ./promsim && ./promsim/promsim target -p 8080'
+#tests raw output of the simulator on stdout
+#curl localhost:8080/metrics

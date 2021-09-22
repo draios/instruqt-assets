@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+#  name: stress
+  name: stresser
+  namespace: example-voting-app
+spec:
+  selector:
+    matchLabels:
+      # app: stress
+      app: stresser
+  template:
+    metadata:
+      labels:
+        # app: stress
+        app: stresser
+    spec:
+      containers:
+      # - name: stress
+      - name: stresser
+        image: progrium/stress
+        args:
+          - --cpu
+          - "1"
+          - --vm
+          - "2"
+          - --vm-bytes
+          - 50M
+        resources:
+          limits:
+            memory: "12000Mi"
+            cpu: "2000m"
+          requests:
+            memory: "100Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: stresser
+  name: stresser
+  namespace: example-voting-app
+spec:
+  ports:
+    - port: 9000
+      targetPort: 9000
+  selector:
+    name: stresser
+    app: example-voting-app
+    # role: redisdb

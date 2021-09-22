@@ -1,0 +1,30 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: db
+  labels:
+        {{- include "example-voting-app.db.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+        {{- include "example-voting-app.db.selectorLabels" . | nindent 6 }}
+  template:
+    spec:
+      serviceAccountName: {{ include "example-voting-app.serviceAccountName" . }}
+      containers:
+      - name: db
+        image: {{ include "example-voting-app.db.image" . }}
+        resources:
+          limits:
+            memory: 256Mi
+            cpu: "150m"
+          requests:
+            memory: 128Mi
+        env:
+          - name : "POSTGRES_HOST_AUTH_METHOD"
+            value : "trust"
+    metadata:
+      labels:
+        {{- include "example-voting-app.db.selectorLabels" . | nindent 8 }}

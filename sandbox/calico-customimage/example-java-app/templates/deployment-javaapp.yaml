@@ -1,0 +1,43 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ include "example-java-app.fullname" . }}-javaapp
+  labels:
+        {{- include "example-java-app.javaapp.labels" . | nindent 4 }}
+spec:
+  replicas: 2
+  # selector identifies the set of Pods that this
+  # replication controller is responsible for managing
+  selector:
+    matchLabels:
+        {{- include "example-java-app.javaapp.selectorLabels" . | nindent 6 }}
+  template:
+    spec:
+      securityContext:
+        runAsUser: 0
+      serviceAccountName: {{ include "example-java-app.fullname" . }}
+      containers:
+      - name: javaapp
+        image: {{ include "example-java-app.javaapp.image" . }}
+        env:
+        - name: MONGO
+          value: {{ include "example-java-app.fullname" . }}-mongo
+        - name: CASSANDRA
+          value: {{ include "example-java-app.fullname" . }}-cassandra
+        - name: REDIS
+          value: {{ include "example-java-app.fullname" . }}-redis
+        ports:
+        - containerPort: 8080
+          name: java
+        livenessProbe:
+          httpGet:
+            path: /simpleWebJava/TestServlet
+            port: 8080
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+        resources:
+{{ toYaml .Values.javaapp.resources | indent 10 }}
+    metadata:
+      labels:
+        {{- include "example-java-app.javaapp.selectorLabels" . | nindent 8}}

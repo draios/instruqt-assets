@@ -1,0 +1,11 @@
+--- example-psp.yaml	2020-01-26 13:00:46.000000000 +0000
++++ example-psp.orig.yaml	2020-01-26 13:01:24.000000000 +0000
+@@ -9,7 +9,7 @@
+   supplementalGroups:
+     rule: RunAsAny
+   runAsUser:
+-    rule: RunAsAny
++    rule: MustRunAsNonRoot
+   fsGroup:
+     rule: RunAsAny
+   volumes:

@@ -1,0 +1,11 @@
+--- nginx.yaml  2020-01-26 17:31:55.836000000 +0000
++++ nginx.step4.yaml    2020-01-26 17:32:19.044000000 +0000
+@@ -12,6 +12,6 @@
+     - name:  nginx
+       image: nginx
+       volumeMounts:
+-      - mountPath: /home/hostname  # Where we are going to mount
++      - mountPath: /home  # Container Path where we are going to mount
+         name: example-volume
+-        readOnly: true
++

@@ -1,0 +1,23 @@
+#This represents the schema version of this config, this version follows semver
+#and maintains semver guarantees around versioning.
+schema_version: 1.0.0
+#Size of the cluster. Takes [ small | medium | large ]
+#This defines CPU & Memory & Disk & Replicas
+#Replicas can be overwritten for medium , large in advanced   config section
+size: small
+#Set Quay.Io secrets
+quaypullsecret: [REDACTED]WjE5MFpXRnRPa2MxVVRGR1FrTkRSMGRNT0UxUk5VTldURlF4UzBGUlFsZExVRkZITjFaTU5WaEZNMUZWV2pKRE4wNDBVVmhIU2tzMFNGbEpRa3d6VHpaVk9UWklSVGs9IiwKICAgICAgImVtYWlsIjogIiIKICAgIH0KICB9Cn0=
+#supports aws | gke | ibm | hostPath | local
+storageClassProvisioner: aws  # TODO: this would be better as cloudProvisioner | hostPath | local, where cloudProvisioner differs to cloudProvider.name where used
+#Sysdig application config
+sysdig:
+# Sysdig Platform super admin user. This will be used for initial login to
+# the web interface. Make sure this is a valid email address that you can
+# receive emails at.
+  admin:
+    username: john.fitzpatrick@sysdig.com
+  #Set Sysdig license
+  license: a8162668a68d6a3d60d06bba0d4450d039962ea2c353526db50ced56bb1f226fbae40b3057eb03b1e00384dd84b35cd87a7d89b4eb059fa65802f9d69cc23d85605d663ea24ab3561e26c3e9d3d84aeea65aee4d5ea4989c718e7a54f4cd827e89f73d7fadd8c8d035e535f144c208117b177891b1aa8da39c9e59dc593005ee209530578f563b70440db53c8fe9070c6762f2a1786d4ce814862998a4c13e888ea86daec69fabc1c23cb06024fbb13435dbfbe6f2c1ee553c8da3ce0adc4cfc8277cf4a5c81462efcafdbaaf35e24767d4bed71a8f747ce34029e2466da8a8f82651f8d9d5d26762061264336b90b57
+  dnsName:   localhost
+  #supports hostnetwork | loadbalancer | nodeport
+  ingressNetworking: hostnetwork

@@ -1,0 +1,21 @@
+global:
+    config_version: 2
+input:
+    type: file
+    path: ../sample.log
+    readall: true
+grok:
+    patterns_dir: ./patterns
+    additional_patterns:
+    - 'COLOR [a-zA-Z ]*'
+metrics:
+    - type: gauge
+      name: training_example
+      help: The number times each colour appears.
+      match: '%{DATA} %{TIME} %{COLOR:color} %{NUMBER:number}'
+      value: '{{.number}}' #gauge value
+      labels:
+          color_count: '{{.color}}' #This is the segments
+# server:
+#     host: localhost
+#     port: 9144

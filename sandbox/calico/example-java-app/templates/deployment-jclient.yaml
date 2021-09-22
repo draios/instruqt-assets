@@ -1,0 +1,30 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ include "example-java-app.fullname" . }}-jclient
+  labels:
+        {{- include "example-java-app.jclient.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  # selector identifies the set of Pods that this
+  # replication controller is responsible for managing
+  selector:
+    matchLabels:
+        {{- include "example-java-app.jclient.selectorLabels" . | nindent 6 }}
+  template:
+    spec:
+      securityContext:
+        runAsUser: 0
+      serviceAccountName: {{ include "example-java-app.fullname" . }}
+      containers:
+      - name: client
+        image: {{ include "example-java-app.jclient.image" . }}
+        env:
+        - name: URL
+          value: http://{{ include "example-java-app.fullname" . }}-javaapp:8080/simpleWebJava/TestServlet
+        resources:
+{{ toYaml .Values.jclient.resources | indent 10 }}
+    metadata:
+      labels:
+        {{- include "example-java-app.jclient.selectorLabels" . | nindent 8 }}

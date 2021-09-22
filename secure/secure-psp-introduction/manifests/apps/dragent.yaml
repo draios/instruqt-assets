@@ -1,0 +1,23 @@
+dev_new_k8s: true
+k8s_cluster_name: psp-test
+snaplen: 512
+collector: collector-staging3.sysdigcloud.com
+collector_port: 6443
+ssl: true
+ssl_verify_certificate: false
+security:
+    enabled: true
+    k8s_audit_server_url: 0.0.0.0
+    k8s_audit_server_port: 7765
+
+prometheus:
+  enabled: true
+  histograms: true
+
+app_checks:
+  - name: ntp
+    check_module: ntp
+    pattern:
+      comm: ntpd
+  
+percentiles: [50, 95, 99]

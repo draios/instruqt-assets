@@ -1,0 +1,34 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: mongo
+  labels:
+    name: mongo-deployment
+    app: demo
+spec:
+  replicas: 1
+  # selector identifies the set of Pods that this
+  # replication controller is responsible for managing
+  selector:
+    matchLabels:
+     name: mongo
+     role: mongodb
+     app: demo
+  template:
+    spec:
+      containers:
+        - name: mongo
+          image: mongo
+          ports:
+            - containerPort: 27017
+              name: mongo
+          command: ["mongod", "--bind_ip", "0.0.0.0"]
+        - name: mongo-statsd
+          image: ltagliamonte/demo-mongo-statsd
+    metadata:
+      labels:
+        # Important: these labels need to match the selector above
+        # The api server enforces this constraint.
+        name: mongo
+        role: mongodb
+        app: demo

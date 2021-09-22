@@ -1,0 +1,8 @@
+--- example-psp.yaml    2020-01-26 16:11:24.520000000 +0000
++++ example-psp.step2.yaml       2020-01-26 16:03:48.608000000 +0000
+@@ -14,5 +14,3 @@
+     rule: RunAsAny
+   volumes:
+     - 'flexVolume'
+-    - 'persistentVolumeClaim'
+-    - 'secret'

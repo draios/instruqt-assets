@@ -1,0 +1,28 @@
+
+process:
+  flush_filter_enabled: true
+  flush_filter:
+    - exclude:
+        process.name: cointerface 
+    - include:
+        all
+prometheus:
+  enabled: true
+  interval: 10
+  ingest_raw: true
+  log_errors: true
+  max_metrics: 3000
+  process_filter:
+    - include:
+        container.label.io.prometheus.scrape: "true"
+        conf:
+            path: "{container.label.io.prometheus.path}"
+            port: "{container.label.io.prometheus.port}"
+
+    - exclude:
+        container.label.io.prometheus.scrape: "false"
+
+customerid: your_customer_id
+collector: your collector_endpoint
+tags: mode:training
+ssl: true

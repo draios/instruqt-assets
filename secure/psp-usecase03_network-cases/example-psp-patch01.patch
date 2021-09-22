@@ -1,0 +1,10 @@
+--- example-psp.step1.yaml      2020-01-26 18:34:10.484028494 +0000
++++ example-psp.yaml    2020-01-26 18:34:19.656000240 +0000
+@@ -14,3 +14,7 @@
+     rule: RunAsAny
+   volumes:
+   - '*'
++  hostNetwork: true
++  hostPorts:
++  - min: 0
++    max: 1024

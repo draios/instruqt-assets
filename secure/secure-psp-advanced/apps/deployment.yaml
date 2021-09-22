@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: nginx
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      volumes:
+      - name: etc-vol
+        hostPath:
+          path: /etc
+      hostNetwork: true
+      containers:
+      - name: nginx
+        image: nginx:1.15.4
+        volumeMounts:
+        - mountPath: /host/etc
+          name: etc-vol
+        securityContext:
+          privileged: true
+          runAsUser: 0
+          runAsGroup: 0

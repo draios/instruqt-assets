@@ -1,0 +1,4 @@
+sysdig:
+  settings:
+    feature:  
+      mode: troubleshooting

@@ -1,0 +1,14 @@
+kubectl create -f - <<EOF
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: jclient-isolate
+  namespace: eja
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: eja
+      app.kubernetes.io/name: eja-jclient
+  policyTypes:
+    - Ingress
+    - Egress

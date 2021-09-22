@@ -1,0 +1,47 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: vote
+  labels:
+    name: vote-deployment
+    app: example-voting-app
+  namespace: example-voting-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     name: vote
+     role: voteapp
+     app: example-voting-app
+  template:
+    spec:
+      containers:
+        - name: vote
+          image: bencer/example-voting-app-vote:statsd-5
+          resources:
+            limits:
+              cpu: 0.125
+              memory: 128Mi
+            requests:
+              memory: 64Mi
+    metadata:
+      labels:
+        name: vote
+        role: voteapp
+        app: example-voting-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: vote
+  name: vote
+  namespace: example-voting-app
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    name: vote
+    app: example-voting-app
+    role: voteapp

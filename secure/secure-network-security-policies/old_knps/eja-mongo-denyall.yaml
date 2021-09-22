@@ -1,0 +1,13 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: mongo-isolate
+  namespace: eja
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: eja
+      app.kubernetes.io/name: eja-mongo
+  policyTypes:
+    - Ingress
+    - Egress
