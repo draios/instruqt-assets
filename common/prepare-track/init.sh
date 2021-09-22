@@ -153,7 +153,7 @@ install_agent () {
 
 
     # echo "Deploying Sysdig Agent with Helm"
-    kubectl create ns sysdig-agent
+    kubectl create ns sysdig-agent &> /dev/null
     helm install sysdig-agent \
         --set clusterName="instruqtk3s_${1}" \
         --set sysdig.settings.tags="instruqt:${2}" \
