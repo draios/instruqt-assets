@@ -2,7 +2,12 @@
 
 #set -x
 
-#trap '' 2 #signal capture quit with ctrlc
+trap '' 2 #signal capture quit with ctrlc
+
+F_BOLD='\e[1m'
+F_RED='\x1B[31m'
+F_CYAN='\e[36m'
+F_NORMAL='\e[0m'
 
 # define url and endpoints for the selected region.
 # this is used to define the URL of the track-TABS, for API queries and define agent parameters
@@ -97,7 +102,7 @@ select_region () {
 configure_API () {
 
     echo "Configuring Sysdig $1 API"
-    echo -e "Visit \x1B[31m\e[1m$2/#/settings/user\e[0m to retrieve your Sysdig $1 API Token."
+    echo -e "Visit ${F_BOLD}${F_CYAN}${2}/#/settings/user${F_NORMAL} to retrieve your Sysdig ${1} API Token."
     declare ${1}_API_KEY=foo
     varname=${1}_API_KEY
     # echo ${varname}
@@ -125,13 +130,12 @@ EOF
             #cat /usr/local/bin/sysdig/user_data_$1_API_OK
             
         else
-            echo "FAIL"
-            echo "Or the region selected (URL) is not your region or the key is wrong."
-
+            echo "FAIL. Or the region selected (URL) is not your region or the key is wrong."
+            
             #select_region #we can not just change the region, the agent is using the backend.
             # use helm update!
             #TODO: retry 3 times and if it still does not work, 
-            # 1. remove sysdig-agent namespace
+            # NO-> 1. remove sysdig-agent namespace
             # 2. define region again
             # 3. reinstall agent
             # 4. configure APIs again
