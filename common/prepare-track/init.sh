@@ -48,8 +48,7 @@ set_values () {
 
     #print selected data
     echo 
-    echo "Region $REGION selected."
-    echo "Use $MONITOR_URL & $SECURE_URL to access your Sysdig Monitor and Secure Dashboards"
+    echo -e "   Use ${F_BOLD}${F_CYAN}$MONITOR_URL${F_NORMAL} & ${F_BOLD}${F_CYAN}$SECURE_URL${F_NORMAL} to access your Sysdig Monitor and Secure Dashboards"
     echo
     echo "Other parameters configured:"
     echo "  - Agent Collector=$AGENT_COLLECTOR" 
@@ -75,15 +74,15 @@ select_region () {
     
     if [[ ${REGION_N} == "1" ]]; then
         REGION="US East (default)"
-        echo -n "${REGION} selected."
+        echo -n "   ${REGION} selected."
     elif [[ ${REGION_N} == "2" ]]; then
         REGION="US West"
-        echo -n "${REGION} selected."
+        echo -n "   ${REGION} selected."
     elif [[ ${REGION_N} == "3" ]]; then
         REGION="EMEA"
-        echo -n "${REGION} selected."
+        echo -n "   ${REGION} selected."
     elif [[ ${REGION_N} == "4" ]]; then
-        echo -n "Abort init.sh. Region not defined, agent not installed. This track won't might not work properly."
+        echo -n "   Abort init.sh. Region not defined, agent not installed. This track won't might not work properly."
         exit 0
     else 
         echo "${REGION_N} is not a valid an option."
@@ -194,7 +193,7 @@ AGENT_TR_ID=$(xxd -l 3 -c 3 -p < /dev/random)
 AGENT_DEPLOY_DATE=$(date +"%F_%H:%M")
 
 mkdir -p /usr/local/bin/sysdig/
-chmod +x /root/prepare-track/agent-install-helm.sh
+# chmod +x /root/prepare-track/agent-install-helm.sh
 
 # nginx is already installed by track-setup, we overwrite config
 cp /root/prepare-track/nginx.default.conf /etc/nginx/nginx.conf
@@ -204,7 +203,7 @@ if [[ ${DEBUG_REGION} == "" ]]; then
     select_region
 
     echo 
-    echo -e "Visit \x1B[31m\e[1m$MONITOR_URL/#/settings/agentInstallation\e[0m to retrieve your Sysdig Agent Key."
+    echo -e "Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_NORMAL} to retrieve your Sysdig Agent Key."
     read -p "   Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY; echo 
 
     # this will install the agent while the user configure APIs, we save some time
