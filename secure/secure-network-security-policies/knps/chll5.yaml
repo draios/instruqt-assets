@@ -7,17 +7,6 @@ spec:
   ingress: []
   egress:
     - to:
-        - namespaceSelector:
-            matchLabels:
-              app: example-voting-app
-          podSelector:
-            matchLabels:
-              app.kubernetes.io/instance: eva
-              app.kubernetes.io/name: example-voting-app-result
-      ports:
-        - port: 80
-          protocol: TCP
-    - to:
         - namespaceSelector: {}
       ports:
         - port: 53
