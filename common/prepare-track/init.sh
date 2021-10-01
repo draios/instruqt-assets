@@ -193,7 +193,7 @@ echo "----------------------------------------------------------"
 
 #training agent unique identifier 
 AGENT_TR_ID=$(xxd -l 3 -c 3 -p < /dev/random)
-AGENT_DEPLOY_DATE=$(date +"%F_%H:%M")
+AGENT_DEPLOY_DATE=$(date +"%F__%H_%M")
 
 mkdir -p /usr/local/bin/sysdig/
 # chmod +x /root/prepare-track/agent-install-helm.sh
