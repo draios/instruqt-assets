@@ -34,6 +34,17 @@ set_values () {
         SECURE_API_ENDPOINT=$MONITOR_URL
         PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
         NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+    elif [[ ${REGION} == *"Pacific"* ]]
+    then
+        DOMAIN='app.au1.sysdig.com'
+        MONITOR_URL='https://'$DOMAIN
+        SECURE_URL=$MONITOR_URL'/secure/'
+        AGENT_COLLECTOR='ingest.au1.sysdig.com'
+        #endpoints
+        MONITOR_API_ENDPOINT=$MONITOR_URL
+        SECURE_API_ENDPOINT=$MONITOR_URL
+        PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+        NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
     else # default case, US East
         #DOMAIN=
         MONITOR_URL='https://app.sysdigcloud.com'
@@ -69,7 +80,8 @@ select_region () {
     echo "   1) US East (default)"
     echo "   2) US West"
     echo "   3) EMEA"
-    echo "   4) Abort install"
+    echo "   4) Pacific"
+    echo "   5) Abort install"
     read -p "   Select Region (type number): "  REGION_N; 
     
     if [[ ${REGION_N} == "1" ]]; then
@@ -82,6 +94,9 @@ select_region () {
         REGION="EMEA"
         echo -n "   ${REGION} selected."
     elif [[ ${REGION_N} == "4" ]]; then
+        REGION="Pacific"
+        echo -n "   ${REGION} selected."
+    elif [[ ${REGION_N} == "5" ]]; then
         echo -n "   Abort init.sh. Region not defined, agent not installed. This track won't might not work properly."
         exit 0
     else 
