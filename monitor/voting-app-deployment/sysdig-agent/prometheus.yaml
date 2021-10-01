@@ -1,47 +1,50 @@
-global:
-  scrape_interval: 15s
-  evaluation_interval: 15s
-scrape_configs:
-- job_name: postgres-default
-  tls_config:
-    insecure_skip_verify: true
-  kubernetes_sd_configs:
-  - role: pod
-  relabel_configs:
-  - action: keep
-    source_labels: [__meta_kubernetes_pod_host_ip]
-    regex: __HOSTIPS__
-  - action: keep
-    source_labels:
-    - __meta_kubernetes_pod_annotation_promcat_sysdig_com_integration_type
-    regex: "postgresql"
-  - action: replace
-    source_labels: [__meta_kubernetes_pod_annotation_promcat_sysdig_com_target_ns]
-    target_label: kube_namespace_name
-  - action: replace
-    source_labels: [__meta_kubernetes_pod_annotation_promcat_sysdig_com_target_workload_type]
-    target_label: kube_workload_type
-  - action: replace
-    source_labels: [__meta_kubernetes_pod_annotation_promcat_sysdig_com_target_workload_name]
-    target_label: kube_workload_name
-  - action: replace
-    source_labels: [__meta_kubernetes_pod_annotation_promcat_sysdig_com_target_cluster_name]
-    target_label: kube_cluster_name
-  - action: replace
-    replacement: true
-    target_label: sysdig_omit_source
-  - action: replace
-    source_labels: [__address__, __meta_kubernetes_pod_annotation_promcat_sysdig_com_port]
-    regex: ([^:]+)(?::\d+)?;(\d+)
-    replacement: $1:$2
-    target_label: __address__
-  - action: replace
-    source_labels: [__meta_kubernetes_pod_uid]
-    target_label: sysdig_k8s_pod_uid
-  - action: replace
-    source_labels: [__meta_kubernetes_pod_container_name]
-    target_label: sysdig_k8s_pod_container_name
-  metric_relabel_configs:
-  - source_labels: [__name__]
-    regex: (pg_database_size_bytes|pg_locks_count|pg_postmaster_start_time_seconds|pg_replication_lag|pg_settings_max_connections|pg_settings_superuser_reserved_connections|pg_stat_activity_count|pg_stat_activity_max_tx_duration|pg_stat_archiver_archived_count|pg_stat_archiver_failed_count|pg_stat_bgwriter_buffers_alloc|pg_stat_bgwriter_buffers_backend|pg_stat_bgwriter_buffers_checkpoint|pg_stat_bgwriter_buffers_clean|pg_stat_bgwriter_checkpoint_sync_time|pg_stat_bgwriter_checkpoint_write_time|pg_stat_bgwriter_checkpoints_req|pg_stat_bgwriter_checkpoints_timed|pg_stat_bgwriter_maxwritten_clean|pg_stat_database_blk_read_time|pg_stat_database_blks_hit|pg_stat_database_blks_read|pg_stat_database_conflicts_confl_deadlock|pg_stat_database_conflicts_confl_lock|pg_stat_database_deadlocks|pg_stat_database_numbackends|pg_stat_database_temp_bytes|pg_stat_database_tup_deleted|pg_stat_database_tup_fetched|pg_stat_database_tup_inserted|pg_stat_database_tup_returned|pg_stat_database_tup_updated|pg_stat_database_xact_commit|pg_stat_database_xact_rollback|pg_stat_user_tables_idx_scan|pg_stat_user_tables_n_tup_hot_upd|pg_stat_user_tables_seq_scan|pg_up)
-    action: keep
+prometheus:
+  file: true
+  yaml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+    scrape_configs:
+    - job_name: postgres-default
+      tls_config:
+        insecure_skip_verify: true
+      kubernetes_sd_configs:
+      - role: pod
+      relabel_configs:
+      - action: keep
+        source_labels: [__meta_kubernetes_pod_host_ip]
+        regex: __HOSTIPS__
+      - action: keep
+        source_labels:
+        - __meta_kubernetes_pod_annotation_promcat_sysdig_com_integration_type
+        regex: "postgresql"
+      - action: replace
+        source_labels: [__meta_kubernetes_pod_annotation_promcat_sysdig_com_target_ns]
+        target_label: kube_namespace_name
+      - action: replace
+        source_labels: [__meta_kubernetes_pod_annotation_promcat_sysdig_com_target_workload_type]
+        target_label: kube_workload_type
+      - action: replace
+        source_labels: [__meta_kubernetes_pod_annotation_promcat_sysdig_com_target_workload_name]
+        target_label: kube_workload_name
+      - action: replace
+        source_labels: [__meta_kubernetes_pod_annotation_promcat_sysdig_com_target_cluster_name]
+        target_label: kube_cluster_name
+      - action: replace
+        replacement: true
+        target_label: sysdig_omit_source
+      - action: replace
+        source_labels: [__address__, __meta_kubernetes_pod_annotation_promcat_sysdig_com_port]
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: replace
+        source_labels: [__meta_kubernetes_pod_uid]
+        target_label: sysdig_k8s_pod_uid
+      - action: replace
+        source_labels: [__meta_kubernetes_pod_container_name]
+        target_label: sysdig_k8s_pod_container_name
+      metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: (pg_database_size_bytes|pg_locks_count|pg_postmaster_start_time_seconds|pg_replication_lag|pg_settings_max_connections|pg_settings_superuser_reserved_connections|pg_stat_activity_count|pg_stat_activity_max_tx_duration|pg_stat_archiver_archived_count|pg_stat_archiver_failed_count|pg_stat_bgwriter_buffers_alloc|pg_stat_bgwriter_buffers_backend|pg_stat_bgwriter_buffers_checkpoint|pg_stat_bgwriter_buffers_clean|pg_stat_bgwriter_checkpoint_sync_time|pg_stat_bgwriter_checkpoint_write_time|pg_stat_bgwriter_checkpoints_req|pg_stat_bgwriter_checkpoints_timed|pg_stat_bgwriter_maxwritten_clean|pg_stat_database_blk_read_time|pg_stat_database_blks_hit|pg_stat_database_blks_read|pg_stat_database_conflicts_confl_deadlock|pg_stat_database_conflicts_confl_lock|pg_stat_database_deadlocks|pg_stat_database_numbackends|pg_stat_database_temp_bytes|pg_stat_database_tup_deleted|pg_stat_database_tup_fetched|pg_stat_database_tup_inserted|pg_stat_database_tup_returned|pg_stat_database_tup_updated|pg_stat_database_xact_commit|pg_stat_database_xact_rollback|pg_stat_user_tables_idx_scan|pg_stat_user_tables_n_tup_hot_upd|pg_stat_user_tables_seq_scan|pg_up)
+        action: keep
