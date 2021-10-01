@@ -1,4 +1,5 @@
 prometheus:
+  file: true
   yaml: |
     global:
       scrape_interval: 15s

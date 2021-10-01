@@ -176,8 +176,8 @@ install_agent () {
         --set sysdig.settings.collector=${4} \
         --set nodeAnalyzer.deploy=false \
         --set nodeImageAnalyzer.deploy=false \
-        --set resources.requests.cpu=0.5 \
-        --set resources.requests.memory=512Mi \
+        --set resources.requests.cpu=1 \
+        --set resources.requests.memory=1024Mi \
         --set resources.limits.cpu=2 \
         --set resources.limits.memory=2048Mi \
         -f /root/sysdig-agent/prometheus.yaml \
