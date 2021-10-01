@@ -4,7 +4,6 @@ sysdig:
       enabled: true
     feature:  
       mode: troubleshooting
-    collector: collector-staging.sysdigcloud.com
     new_k8s: true
     security:
       enabled: true
@@ -17,7 +16,6 @@ sysdig:
     autodrop:
       enabled: true
       upper_threshold: 80
-    k8s_cluster_name: demo-env-prom
     metrics_excess_log: true
     use_promscrape: true
     promscrape_fastproto: true
@@ -32,4 +30,3 @@ sysdig:
       max_metrics_per_process: 20000
       prom_service_discovery: true
     snaplen: 512
-    tags: role:demo-env-prom
