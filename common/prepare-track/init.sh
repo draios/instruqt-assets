@@ -165,7 +165,9 @@ install_agent () {
         --set resources.requests.memory=512Mi \
         --set resources.limits.cpu=2 \
         --set resources.limits.memory=2048Mi \
-        sysdig/sysdig &> /dev/null
+        -f /root/sysdig-agent/prometheus.yaml \
+        -f /root/sysdig-agent/values.yaml \
+    sysdig/sysdig &> /dev/null
     # TODO: set version to match the available img.ver on our packer custom image
 }
 
