@@ -222,7 +222,15 @@ if [[ ${DEBUG_REGION} == "" ]]; then
 
     echo 
     echo -e "Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_NORMAL} to retrieve your Sysdig Agent Key."
-    read -p "   Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY; echo 
+    read -p "   Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY; 
+    echo 
+    echo ${AGENT_ACCESS_KEY} >> /root/prepare-track/accesskey
+    sed -e "s/^M//" /root/prepare-track/accesskey > /root/prepare-track/newaccesskey
+    ACCESSKEY=`cat /root/prepare-track/newaccesskey`
+    # echo "Access key: " ${AGENT_ACCESS_KEY}
+
+    # rm /root/prepare-track/accesskey
+    # rm /root/prepare-track/newaccesskey
 
     # this will install the agent while the user configure APIs, we save some time
     install_agent ${AGENT_DEPLOY_DATE} ${AGENT_TR_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} &
