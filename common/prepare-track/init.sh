@@ -98,7 +98,7 @@ select_region () {
         echo -n "   ${REGION} selected."
     elif [[ ${REGION_N} == "5" ]]; then
         echo -n "   Abort init.sh. Region not defined, agent not installed. This track won't might not work properly."
-        exit 0
+        # exit 0
     else 
         echo "${REGION_N} is not a valid an option."
         select_region
@@ -176,6 +176,7 @@ install_agent () {
         --set sysdig.settings.collector=${4} \
         --set nodeAnalyzer.deploy=false \
         --set nodeImageAnalyzer.deploy=false \
+        --set resourceProfile=custom \
         --set resources.requests.cpu=1 \
         --set resources.requests.memory=1024Mi \
         --set resources.limits.cpu=2 \
@@ -208,7 +209,7 @@ echo "----------------------------------------------------------"
 
 #training agent unique identifier 
 AGENT_TR_ID=$(xxd -l 3 -c 3 -p < /dev/random)
-AGENT_DEPLOY_DATE=$(date -v +2H +"%F__%H_%M")
+AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
 
 mkdir -p /usr/local/bin/sysdig/
 # chmod +x /root/prepare-track/agent-install-helm.sh
