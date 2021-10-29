@@ -1,4 +1,4 @@
-package main
+package etc-writer
 
 import (
 	"io/ioutil"

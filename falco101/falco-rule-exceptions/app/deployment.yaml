@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-app
+  name: etc-writer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: my-app
+      app: etc-writer
   template:
     metadata:
       labels:
-        app: my-app
+        app: etc-writer
     spec:
       containers:
-      - name: my-app-container
-        image: localhost/my_app
+      - name: etc-writer
+        image: localhost/etc-writer
         resources:
           limits:
             memory: "256Mi"
