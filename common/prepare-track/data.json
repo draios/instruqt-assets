@@ -1,0 +1,15 @@
+{
+    "time": {
+        "from": 1634548730000000,
+        "to": 1634548930000000
+     },
+    "metrics": ["agent.tag"],
+    "filter": "agent.tag != null",
+    "sort": [{
+        "action": "asc"
+    }],
+    "paging": {
+        "from": 0,
+        "to": 49
+    }
+}

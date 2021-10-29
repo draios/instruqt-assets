@@ -1,0 +1,15 @@
+{
+    "time": {
+        "from": "_FROM",
+        "to": "_TO"
+     },
+    "metrics": ["agent.tag"],
+    "filter": "agent.tag != null",
+    "sort": [{
+        "action": "asc"
+    }],
+    "paging": {
+        "from": 0,
+        "to": 49
+    }
+}
