@@ -1,23 +1,34 @@
 package main
 
 import (
+    // "fmt"
+    // "html"
+    // "log"
+    // "net/http"
+	"io/ioutil"
+	"os"
     "fmt"
-    "html"
-    "log"
-    "net/http"
+    "time"
 )
 
 func main() {
 
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
-    })
+    // http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    //     fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
+    // })
 
-    http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request){
-        fmt.Fprintf(w, "Hi")
-    })
+    // http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request){
+    //     fmt.Fprintf(w, "Hi")
+    // })
 
-    log.Fatal(http.ListenAndServe(":8081", nil))
+    // log.Fatal(http.ListenAndServe(":8081", nil))
+    for {
+		const filename = "/etc/binary"
+        fmt.Println("Writing to %s", filename)
+		defer os.Remove(filename)
+		return ioutil.WriteFile(filename, nil, os.FileMode(0755))	
+        time.Sleep(time.Second)
+    }
 
 }
 
