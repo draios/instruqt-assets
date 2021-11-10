@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: readSensFile
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: readSensFile
+  template:
+    metadata:
+      labels:
+        app: readSensFile
+    spec:
+      containers:
+      - name: readSensFile
+        image: localhost/readSensFile
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "750m"

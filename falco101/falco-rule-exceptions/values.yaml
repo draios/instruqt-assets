@@ -1,0 +1,10 @@
+customRules:
+  my_rules: |-
+    - rule: <rule_name>
+      exceptions:
+      - name: <exception_name>
+        fields: [<field1>, <fieldN>]
+        comps: [=, in]
+        values:
+          - [<value1>, [<valueN_1>,<valueN_2>]]
+      append: true

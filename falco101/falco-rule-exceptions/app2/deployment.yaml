@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RunAShell
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: RunAShell
+  template:
+    metadata:
+      labels:
+        app: RunAShell
+    spec:
+      containers:
+      - name: RunAShell
+        image: localhost/RunAShell
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "750m"
