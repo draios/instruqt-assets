@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: RunAShell
+  name: etc-writer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: RunAShell
+      app: etc-writer
   template:
     metadata:
       labels:
-        app: RunAShell
+        app: etc-writer
     spec:
       containers:
-      - name: RunAShell
-        image: localhost/RunAShell
+      - name: etc-writer
+        image: localhost/etc-writer
         resources:
           limits:
             memory: "256Mi"
