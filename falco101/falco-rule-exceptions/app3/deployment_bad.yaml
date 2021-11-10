@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: shell_runner
-        image: sysdigtraining/shell_runner
+        image: sysdigtraining/shell_runncr
         resources:
           limits:
             memory: "256Mi"
