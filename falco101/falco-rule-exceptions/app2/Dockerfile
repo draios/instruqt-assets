@@ -4,4 +4,4 @@ RUN mkdir /app
 ADD . /app
 WORKDIR /app
 RUN go build -o etc_writer .
-CMD ["/app/main"]
+CMD ["/app/etc_writer"]

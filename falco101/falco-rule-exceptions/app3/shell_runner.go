@@ -1,12 +1,20 @@
 package main
 
 import (
+    "fmt"
+    "time"
     "os/exec"
 )
 
 func main() {
-    exec.Command("bash", "-c", "ls > /tmp/pableras").Run()
-}
+    counter := 0
+    for {
+        fmt.Println("%d - Sleeping 15 seconds and running shell", counter)
+        time.Sleep(time.Second * 15)
+        exec.Command("bash", "-c", "ls > /tmp/jodoco").Run()
+        counter = counter + 1
+    }
+    }
 
 
 // package main
