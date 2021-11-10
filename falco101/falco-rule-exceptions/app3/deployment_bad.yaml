@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: shell_runncr
+  name: shellrunncr
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: shell_runner
+      app: shellrunner
   template:
     metadata:
       labels:
-        app: shell_runner
+        app: shellrunner
     spec:
       containers:
-      - name: shell_runner
+      - name: shellrunner
         image: sysdigtraining/shell_runncr
         resources:
           limits:
