@@ -13,11 +13,27 @@ func main() {
     counter := 0
     for {
         const filename = "/etc/binary"
-        fmt.Println("%d - Sleeping 1 second and writing to %s", counter, filename)
-        time.Sleep(time.Second)
+        fmt.Println("%d - Sleeping 15 seconds and writing to %s", counter, filename)
+        time.Sleep(time.Second * 15)
         defer os.Remove(filename)
         ioutil.WriteFile(filename, nil, os.FileMode(0755))
         counter = counter + 1
     }
 }
 
+
+// 20:52:35.802925050: Error File below /etc opened for writing (user=root\
+//      user_loginuid=-1\
+//      command=etc_writer\
+//      parent=<NA>\
+//      pcmdline=<NA>\
+//      file=/etc/binary\
+//      program=etc_writer\
+//      gparent=<NA>\
+//      ggparent=<NA>\
+//      gggparent=<NA>\
+//      container_id=8dee55e866ba\
+//      image=docker.io/sysdigtraining/etc_writer)\
+//      k8s.ns=app2\
+//      k8s.pod=etc-writer-6bdddc8975-d4znw\
+//      container=8dee55e866ba

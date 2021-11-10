@@ -4,4 +4,4 @@ RUN mkdir /app
 ADD . /app
 WORKDIR /app
 RUN go build -o apache2 .
-CMD ["/app/main"]
+CMD ["/app/shell_runner"]

@@ -8,6 +8,22 @@ import (
 )
 
 // https://github.com/falcosecurity/event-generator/blob/b8ed1a9420ff46926b5bf936832f1af1f799cd5c/events/syscall/read_sensitive_file_untrusted.go
+// 17:46:16.927652071: Warning Sensitive file opened for reading by non-trusted program (
+//     user=root
+//     user_loginuid=0
+//     program=read_sens_file
+//     command=read_sens_file
+//     file=/etc/shadow
+//     parent=systemd
+//     gparent=<NA>
+//     ggparent=<NA>
+//     gggparent=<NA>
+//     container_id=host
+//     image=<NA>)
+//     k8s.ns=<NA>
+//     k8s.pod=<NA>
+//     container=host
+
 func main() {
 
     counter := 0

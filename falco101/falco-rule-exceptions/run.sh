@@ -27,3 +27,6 @@ kubectl create -f app/deployment.yaml
 # kubectl expose deployment my_app --type=NodePort --name=my-app-svc --target-port=8081 
 
 kubectl logs --selector app=falco -n falco
+
+# docker build -t sysdigtraining/shell_runner .
+# docker push sysdigtraining/shell_runner 

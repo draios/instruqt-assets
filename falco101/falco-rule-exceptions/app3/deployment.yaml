@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: RunAShell
-        image: localhost/RunAShell
+        image: sysdigtraining/shell_runner
         resources:
           limits:
             memory: "256Mi"
