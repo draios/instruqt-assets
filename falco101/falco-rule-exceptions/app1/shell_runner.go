@@ -9,12 +9,12 @@ import (
 func main() {
     counter := 0
     for {
-        fmt.Println("%d - Sleeping 15 seconds and running shell", counter)
-        time.Sleep(time.Second * 15)
-        exec.Command("bash", "-c", "ls > /tmp/jodoco").Run()
+        fmt.Println("Sleeping 15 seconds and running shell", counter)
+        exec.Command("bash", "-c", "ls /root > /tmp/pmt").Run()
+        time.Sleep(time.Second * 5)
         counter = counter + 1
     }
-    }
+}
 
 
 // package main
