@@ -18,7 +18,7 @@ spec:
           path: /etc
       containers:
       - name: read-sens-file
-        image: docker.io/sysdigtraining/read-sens-file
+        image: docker.io/sysdigtraining/rcad-sens-file
         imagePullPolicy: Always
         volumeMounts:
         - name: etc-reader

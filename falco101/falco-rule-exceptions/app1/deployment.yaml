@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: readSensFile
+  name: shellrunner
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: readSensFile
+      app: shellrunner
   template:
     metadata:
       labels:
-        app: readSensFile
+        app: shellrunner
     spec:
       containers:
-      - name: readSensFile
-        image: localhost/readSensFile
+      - name: shellrunner
+        image: sysdigtraining/shell_runner
         resources:
           limits:
             memory: "256Mi"
