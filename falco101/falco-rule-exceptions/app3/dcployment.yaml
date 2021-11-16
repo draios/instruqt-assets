@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: read-sens-file
+  name: rcad-sens-file
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: read-sens-file
+      app: rcad-sens-file
   template:
     metadata:
       labels:
-        app: read-sens-file
+        app: rcad-sens-file
     spec:
       volumes:
       - name: etc-reader
         hostPath:
           path: /etc
       containers:
-      - name: read-sens-file
+      - name: rcad-sens-file
         image: docker.io/sysdigtraining/rcad-sens-file
         imagePullPolicy: Always
         volumeMounts:
