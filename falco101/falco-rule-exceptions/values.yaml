@@ -1,7 +1,41 @@
 customRules:
   custom_rules_from_default: |-
 
-    # challenge 1
+    - rule: Read sensitive file untrusted
+      desc: >
+        an attempt to read any sensitive file (e.g. files containing user/password/authentication
+        information). Exceptions are made for known trusted programs.
+      condition: >
+        sensitive_files and open_read
+        and proc_name_exists
+        and not proc.name in (user_mgmt_binaries, userexec_binaries, package_mgmt_binaries,
+        cron_binaries, read_sensitive_file_binaries, shell_binaries, hids_binaries,
+        vpn_binaries, mail_config_binaries, nomachine_binaries, sshkit_script_binaries,
+        in.proftpd, mandb, salt-minion, postgres_mgmt_binaries,
+        google_oslogin_
+        )
+        and not cmp_cp_by_passwd
+        and not ansible_running_python
+        and not run_by_qualys
+        and not run_by_chef
+        and not run_by_google_accounts_daemon
+        and not user_read_sensitive_file_conditions
+        and not mandb_postinst
+        and not perl_running_plesk
+        and not perl_running_updmap
+        and not veritas_driver_script
+        and not perl_running_centrifydc
+        and not runuser_reading_pam
+        and not linux_bench_reading_etc_shadow
+        and not user_known_read_sensitive_files_activities
+        and not user_read_sensitive_file_containers
+      output: >
+        Sensitive file opened for reading by non-trusted program (user=%user.name user_loginuid=%user.loginuid program=%proc.name
+        command=%proc.cmdline file=%fd.name parent=%proc.pname gparent=%proc.aname[2] ggparent=%proc.aname[3] gggparent=%proc.aname[4] container_id=%container.id image=%container.image.repository)
+      priority: WARNING
+      tags: [filesystem, mitre_credential_access, mitre_discovery]
+
+
     - rule: Run shell untrusted
       desc: an attempt to spawn a shell below a non-shell application. Specific applications are monitored.
       condition: >
@@ -42,8 +76,6 @@ customRules:
       tags: [shell, mitre_execution]
 
 
-
-    # challenge 2
     - rule: Write below etc
       desc: an attempt to write to any file below /etc
       condition: write_etc_common
@@ -51,39 +83,3 @@ customRules:
       priority: ERROR
       tags: [filesystem, mitre_persistence]
 
-
-
-    # challenge 3
-    - rule: Read sensitive file untrusted
-      desc: >
-        an attempt to read any sensitive file (e.g. files containing user/password/authentication
-        information). Exceptions are made for known trusted programs.
-      condition: >
-        sensitive_files and open_read
-        and proc_name_exists
-        and not proc.name in (user_mgmt_binaries, userexec_binaries, package_mgmt_binaries,
-        cron_binaries, read_sensitive_file_binaries, shell_binaries, hids_binaries,
-        vpn_binaries, mail_config_binaries, nomachine_binaries, sshkit_script_binaries,
-        in.proftpd, mandb, salt-minion, postgres_mgmt_binaries,
-        google_oslogin_
-        )
-        and not cmp_cp_by_passwd
-        and not ansible_running_python
-        and not run_by_qualys
-        and not run_by_chef
-        and not run_by_google_accounts_daemon
-        and not user_read_sensitive_file_conditions
-        and not mandb_postinst
-        and not perl_running_plesk
-        and not perl_running_updmap
-        and not veritas_driver_script
-        and not perl_running_centrifydc
-        and not runuser_reading_pam
-        and not linux_bench_reading_etc_shadow
-        and not user_known_read_sensitive_files_activities
-        and not user_read_sensitive_file_containers
-      output: >
-        Sensitive file opened for reading by non-trusted program (user=%user.name user_loginuid=%user.loginuid program=%proc.name
-        command=%proc.cmdline file=%fd.name parent=%proc.pname gparent=%proc.aname[2] ggparent=%proc.aname[3] gggparent=%proc.aname[4] container_id=%container.id image=%container.image.repository)
-      priority: WARNING
-      tags: [filesystem, mitre_credential_access, mitre_discovery]
