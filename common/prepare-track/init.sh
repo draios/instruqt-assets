@@ -217,7 +217,16 @@ mkdir -p /usr/local/bin/sysdig/
 # nginx is already installed by track-setup, we overwrite config
 cp /root/prepare-track/nginx.default.conf /etc/nginx/nginx.conf
 
-if [[ ${DEBUG_REGION} == "" ]]; then
+if [[ ${INSTRUQT_USER_ID} == *"testuser-"* ]]; then
+    # 2021-11-19 to be implemented, it is not possible to pass arguments to `instruqt track test` yet
+    REGION=$DEBUG_REGION
+    AGENT_ACCESS_KEY=$DEBUG_AGENT_ACCESS_KEY
+    MONITOR_API_KEY=$DEBUG_MONITOR_API_KEY
+    SECURE_API_KEY=$DEBUG_SECURE_API_KEY
+    set_values $REGION
+
+    install_agent ${AGENT_DEPLOY_DATE} ${AGENT_TR_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} &
+else
 
     select_region
 
@@ -242,14 +251,6 @@ if [[ ${DEBUG_REGION} == "" ]]; then
     # echo -e "Visit \x1B[31m\e[1m$SECURE_URL/#/settings/user\e[0m to retrieve your Sysdig Secure API Token."
     # read -p "   Insert your Sysdig Secure API Token: " SECURE_API_KEY; echo 
 
-else
-    REGION=$DEBUG_REGION
-    AGENT_ACCESS_KEY=$DEBUG_AGENT_ACCESS_KEY
-    MONITOR_API_KEY=$DEBUG_MONITOR_API_KEY
-    SECURE_API_KEY=$DEBUG_SECURE_API_KEY
-    set_values $REGION
-
-    install_agent ${AGENT_DEPLOY_DATE} ${AGENT_TR_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} &
 fi
 
 # test agent connection
