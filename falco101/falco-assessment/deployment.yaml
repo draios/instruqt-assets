@@ -24,7 +24,7 @@ spec:
         - name: BINARY_NAME_IN
           value: "__BIN__"
         - name: SECONDS_IN
-          value: "2"
+          value: "__SECONDS__"
         - name: FILES_IN
           value: "__PATH_1__ __PATH_2__"
         volumeMounts:
