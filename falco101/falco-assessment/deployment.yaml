@@ -1,32 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: generic_reader
+  name: gen-reader
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: generic_reader
+      app: gen-reader
   template:
     metadata:
       labels:
-        app: generic_reader
+        app: gen-reader
     spec:
       volumes:
       - name: secret-files
         hostPath:
           path: /tmp
       containers:
-      - name: generic_reader
+      - name: gen-reader
         image: localhost/generic_reader
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: BINARY_NAME_IN
-          value: __BIN__
+          value: "__BIN__"
         - name: SECONDS_IN
-          value: 2
+          value: "2"
         - name: FILES_IN
-          value: __PATH_1__ __PATH_2__
+          value: "__PATH_1__ __PATH_2__"
         volumeMounts:
         - name: secret-files
           mountPath: /tmp
@@ -34,3 +34,5 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "750m"
+      nodeSelector:
+        kubernetes.io/hostname: server

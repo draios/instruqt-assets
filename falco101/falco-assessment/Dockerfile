@@ -12,7 +12,7 @@ ADD . /
 WORKDIR /
 RUN go build -o $BINARY_NAME generic_reader.go
 RUN cp /$BINARY_NAME /usr/local/bin/
-CMD ${BINARY_NAME_IN} ${SECONDS_IN} ${FILES_IN}}
+CMD ${BINARY_NAME_IN} ${SECONDS_IN} ${FILES_IN}
 
 # # build with:
 # docker build \
@@ -23,5 +23,5 @@ CMD ${BINARY_NAME_IN} ${SECONDS_IN} ${FILES_IN}}
 # docker run \
 #     -e "BINARY_NAME_IN=binary" \
 #     -e "SECONDS_IN=2" \
-#     -e "FILES_IN=~/GIT/instruqt/README.md ~/GIT lol" \
+#     -e "=~/GIT/instruqt/README.md ~/GIT lol" \
 #     sysdigtraining/generic_reader
