@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: generic_reader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: generic_reader
+  template:
+    metadata:
+      labels:
+        app: generic_reader
+    spec:
+      volumes:
+      - name: secret-files
+        hostPath:
+          path: /tmp
+      containers:
+      - name: generic_reader
+        image: localhost/generic_reader
+        imagePullPolicy: Always
+        env:
+        - name: BINARY_NAME_IN
+          value: __BIN__
+        - name: SECONDS_IN
+          value: 2
+        - name: FILES_IN
+          value: __PATH_1__ __PATH_2__
+        volumeMounts:
+        - name: secret-files
+          mountPath: /tmp
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "750m"
