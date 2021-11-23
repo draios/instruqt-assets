@@ -8,7 +8,7 @@ import (
 )
 
 // 
-// This is a dumy program that opens a file or dir for reading.
+// This is a dummy program that opens a file or dir for reading.
 // Its goal is to demo rule open_sens_file of Falco.
 // 
 // It sleeps and opens some files for reading. 
@@ -16,26 +16,27 @@ import (
 // as 2nd, 3rd, ..., Nth arguments.
 // Files or directories are accepted, but they might exist
 // in order to trigger the Falco Rule.
-// It loops forever. 
 // 
 func main() {
     
     // invoque with 
     //   1. number of seconds to sleep
+    //   1. number of repetitions
     //   2. list of files to read
-    if len(os.Args) < 3 {
-        fmt.Printf("Usage : %s <seconds> <file1|dir1> <file2|dir2> ... \n ", os.Args[0]) // return the program name back to %s
+    if len(os.Args) < 4 {
+        fmt.Printf("Usage : %s <reps> <wait_interval> <file1|dir1> <file2|dir2> ... \n ", os.Args[0]) // return the program name back to %s
         os.Exit(1) // graceful exit
       }
-    // seconds := os.Getenv("INTERVAL")
-    // prog_args := os.Getenv("INTERVAL")
-    seconds_s := os.Args[1]
+
+    reps_s := os.Args[1]
+    reps, _ := strconv.Atoi(reps_s)
+    seconds_s := os.Args[2]
     seconds, _ := strconv.Atoi(seconds_s)
-    prog_args := os.Args[2:]
-    fmt.Printf("%s - %s\n\n", seconds, prog_args)
+    prog_args := os.Args[3:]
+    fmt.Printf("Exec plan: repeat %d times, sleeping %d seconds and reading:\n   %s\n\n", seconds, prog_args)
 
     counter := 0
-    for {
+    for counter < reps {
         fmt.Printf("%d - Read and sleep %d seconds.\n", counter, seconds)
 
         for _, files_by_arg := range prog_args {

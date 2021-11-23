@@ -23,6 +23,8 @@ spec:
         env:
         - name: BINARY_NAME_IN
           value: "__BIN__"
+        - name: REPS_IN
+          value: "__REPS__"
         - name: SECONDS_IN
           value: "__SECONDS__"
         - name: FILES_IN
