@@ -28,7 +28,7 @@ spec:
         - name: SECONDS_IN
           value: "__SECONDS__"
         - name: FILES_IN
-          value: "__PATH_1__ __PATH_2__"
+          value: "__PATH_1__ __PATH_2__ __PATH_3__ __PATH_4__"
         volumeMounts:
         - name: secret-files
           mountPath: /tmp
