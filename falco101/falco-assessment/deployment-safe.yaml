@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gen-reader-safe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gen-reader-safe
+  template:
+    metadata:
+      labels:
+        app: gen-reader-safe
+    spec:
+      volumes:
+      - name: secret-files
+        hostPath:
+          path: /tmp
+      containers:
+      - name: gen-reader-safe
+        image: localhost/generic_reader
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: BINARY_NAME_IN
+          value: "__BIN__"
+        - name: REPS_IN
+          value: "__REPS__"
+        - name: SECONDS_IN
+          value: "__SECONDS__"
+        - name: FILES_IN
+          value: "__PATH_1__ __PATH_2__ __PATH_3__ __PATH_4__"
+        volumeMounts:
+        - name: secret-files
+          mountPath: /tmp
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "750m"
+      nodeSelector:
+        kubernetes.io/hostname: server
