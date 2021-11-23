@@ -33,7 +33,7 @@ func main() {
     seconds_s := os.Args[2]
     seconds, _ := strconv.Atoi(seconds_s)
     prog_args := os.Args[3:]
-    fmt.Printf("Exec plan: repeat %d times, sleeping %d seconds and reading:\n   %s\n\n", seconds, prog_args)
+    fmt.Printf("Exec plan: repeat %d times, sleeping %d seconds and reading:\n   %s\n\n", reps, seconds, prog_args)
 
     counter := 0
     for counter < reps {
