@@ -1,4 +1,4 @@
-# Training Lab 5: Troubleshooting HTTP 502 errors
+# Sysdig Monitor: Troubleshooting a containerized app with captures
 
 In this scenario we will deploy an example microservice application with 3 services and 4 containers: client, balancer and servers (2).
 
