@@ -7,8 +7,6 @@
 #   Paul Hodgetts <paul.hodgetts@sysdig.com>
 ###
 
-set -e
-
 trap '' 2 # Signal capture quit with Ctrl+C
 
 
@@ -310,26 +308,24 @@ function test_agent () {
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
         sleep 3
-        kubectl logs daemonset.apps/sysdig-agent -n sysdig-agent | grep "Connected to collector"
+        kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=10000 | grep "Connected to collector" &> /dev/null
 
         if [ $? -eq 0 ]
         then
             connected=true
         fi
-
-        ### TODO: Test which collector is used
-        kubectl logs daemonset.apps/sysdig-agent -n sysdig-agent | grep $AGENT_COLLECTOR
-
-        if [ $? -ne 0 ]
-        then
-            echo " FAIL"
-            echo
-            echo "  Either the slected region (URL) is not your region."
-            panic_msg
-        fi
         
         attempt=$(( $attempt + 1 ))
     done
+
+    kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=10000 | grep $AGENT_COLLECTOR &> /dev/null
+    if [ $? -ne 0 ]
+    then
+        echo " FAIL"
+        echo
+        echo "  Either the slected region (URL) is not your region."
+        panic_msg
+    fi
 
     if [ "$connected" = true ]
     then
