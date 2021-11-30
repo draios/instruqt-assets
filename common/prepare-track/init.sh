@@ -376,6 +376,37 @@ function clean_setup () {
 }
 
 ##
+# Show help and script usage
+##
+function help () {
+    echo
+    echo "USAGE:"
+    echo
+    echo "  `basename $0` [OPTIONS...]"
+    echo
+    echo "Environment start up script. It can be used to deploy a Sysdig Agent and/or set"
+    echo "up some environment variables. When called with NO OPTIONS, it will deploy an"
+    echo "Agent and will ask for Monitor and Secure API keys; same as calling with"
+    echo "'-a/--agent -m/--monitor -s/--secure'."
+    echo
+    echo "WARNING: This script is meant to be used in training materials. Do NOT use it in"
+    echo "production."
+    echo
+    echo
+    echo "OPTIONS:"
+    echo
+    echo "  -a, --agent                 Deploy a Sysdig Agent."
+    echo "  -h, --help                  Show this help."
+    echo "  -m, --monitor               Set up environment for Monitor API usage."
+    echo "  -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent."
+    echo "  -N, --node-image-analyzer   Enable Image Node Analyzer. Use with -a/--agent."
+    echo "  -p, --prometheus            Enable Prometheus. Use with -a/--agent."
+    echo "  -s, --secure                Set up environment for Secure API usage."
+    echo
+}
+
+
+##
 # Check and consume script flags.
 ##
 function check_flags () {
@@ -406,8 +437,14 @@ function check_flags () {
                 --prometheus | -p)
                     USE_PROMETHEUS=true
                     ;;
+                --help | -h)
+                    help
+                    exit 0
+                    ;;
                 *)
                     echo "Unkown argument: $1"
+                    help
+                    exit 1
                     ;;
             esac
             shift
