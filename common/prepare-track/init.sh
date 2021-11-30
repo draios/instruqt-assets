@@ -386,7 +386,10 @@ function help () {
     echo "Environment start up script. It can be used to deploy a Sysdig Agent and/or set"
     echo "up some environment variables. When called with NO OPTIONS, it will deploy an"
     echo "Agent and will ask for Monitor and Secure API keys; same as calling with"
-    echo "'-a/--agent -m/--monitor -s/--secure'."
+    echo "'-a/--agent -m/--monitor -s/--secure'. When using the product options"
+    echo "('-m/--monitor' and/or '-s/--secure'), API keys will be stored in file"
+    echo "$WORK_DIR/user_data_\${PRODUCT}_API_OK, and exported to envvar"
+    echo "\$SYSDIG_\${PRODUCT}_API_TOKEN (where \${PRODUCT} is MONITOR or SECURE)."
     echo
     echo "WARNING: This script is meant to be used in training materials. Do NOT use it in"
     echo "production."
