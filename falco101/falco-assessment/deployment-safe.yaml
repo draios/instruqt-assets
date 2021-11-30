@@ -18,7 +18,7 @@ spec:
           path: /tmp
       containers:
       - name: gen-reader-safe
-        image: localhost/generic_reader
+        image: localhost/generic_reader_safe
         imagePullPolicy: IfNotPresent
         env:
         - name: BINARY_NAME_IN
