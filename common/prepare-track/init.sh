@@ -186,6 +186,7 @@ function configure_API () {
         then
             echo "OK"         
             echo "${API_TOKEN}" > $WORK_DIR/user_data_${PRODUCT}_API_OK
+            export SYSDIG_${PRODUCT}_API_TOKEN="${API_TOKEN}"
         else
             echo "FAIL. Either the slected region (URL) is not your region or the key is wrong."
             panic_msg
@@ -282,8 +283,6 @@ function intro () {
 ##
 function deploy_agent () {
     AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
-
-    select_region
 
     echo 
     echo -e "Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
@@ -467,7 +466,18 @@ function check_flags () {
 ##
 function setup () {
     check_flags $@
+    select_region
+
+    if [ "$USE_MONITOR_API" = true ]
+    then
+        configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_URL}
+    fi
     
+    if [ "$USE_SECURE_API" = true ]
+    then
+        configure_API "SECURE" ${SECURE_URL} ${SECURE_URL}
+    fi
+
     mkdir -p $WORK_DIR/
     # chmod +x $TRACK_DIR/agent-install-helm.sh
 
@@ -478,18 +488,6 @@ function setup () {
     then
         deploy_agent
         test_agent
-    fi
-
-    if [ "$USE_MONITOR_API" = true ]
-    then
-        # WIP
-        echo "Monitor API"
-    fi
-    
-    if [ "$USE_SECURE_API" = true ]
-    then
-        # WIP
-        echo "Secure API"
     fi
 }
 
