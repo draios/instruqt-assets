@@ -453,11 +453,10 @@ function check_flags () {
         done
     fi
 
-    if [ [ "$USE_NODE_ANALYZER" = true ] \
-         || [ "$USE_NODE_IMAGE_ANALYZER" = true ] \
-         || [ "$USE_PROMETHEUS" = true ] \
-       ] \
-       && [ "$USE_AGENT" = true ]
+    if [[ [[ [[ "$USE_NODE_ANALYZER" = true  \
+             || "$USE_NODE_IMAGE_ANALYZER" = true ]] \
+          ||  "$USE_PROMETHEUS" = true ]] \
+       && "$USE_AGENT" != true ]]
     then
         echo "ERROR: Options only available with -a/--agent."
         exit 1
