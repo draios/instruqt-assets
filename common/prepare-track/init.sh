@@ -22,9 +22,11 @@ AGENT_CONF_DIR=/root/sysdig-agent
 
 
 ##############################    GLOBAL VARS    ##############################
+INSTALL_WITH=''
 MONITOR_URL=''
 SECURE_URL=''
 AGENT_COLLECTOR=''
+NIA_ENDPOINT=''
 
 USE_AGENT=false
 USE_MONITOR_API=false
@@ -196,7 +198,25 @@ function configure_API () {
 }
 
 ##
-# Deploy a Sysdig Agent using Helm.
+# Selects the installation method depending on the environment.
+##
+function installation_method () {
+    if [[ -z "$INSTALL_WITH"]]
+    then
+        if [ `which helm` ]
+        then
+            INSTALL_WITH="helm"
+        elif [ `which docker` ]
+            INSTALL_WITH="docker"
+            export NIA_ENDPOINT
+        else
+            INSTALL_WITH="host"
+        fi
+    fi
+}
+
+##
+# Deploy a Sysdig Agent.
 #
 # Usage:
 #   install_agent ${CLUSTER_NAME} ${ACCESS_KEY} ${COLLECTOR}
@@ -207,51 +227,9 @@ function install_agent () {
     ACCESS_KEY=$2
     COLLECTOR=$3
 
-    # TODO: Add multiple installation methods
+    installation_method
 
-    #curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash &> /dev/null
-    helm repo add sysdig https://charts.sysdig.com &> /dev/null
-    helm repo update &> /dev/null
-
-    HELM_OPTS=''
-
-    if [ "$USE_NODE_ANALYZER" = true ]
-    then
-        HELM_OPTS="--set nodeAnalyzer.deploy=true $HELM_OPTS"
-    else
-        HELM_OPTS="--set nodeAnalyzer.deploy=false $HELM_OPTS"
-    fi
-
-    if [ "$USE_NODE_IMAGE_ANALYZER" = true ]
-    then
-        HELM_OPTS="--set nodeImageAnalyzer.deploy=true $HELM_OPTS"
-    else
-        HELM_OPTS="--set nodeImageAnalyzer.deploy=false $HELM_OPTS"
-    fi
-
-    if [ "$USE_NODE_ANALYZER" = true ]
-    then
-        HELM_OPTS="--set prometheus.file=true $HELM_OPTS"
-        HELM_OPTS="-f $AGENT_CONF_DIR/prometheus.yaml $HELM_OPTS"
-    fi
-
-    # echo "Deploying Sysdig Agent with Helm"
-    kubectl create ns sysdig-agent &> /dev/null
-    helm install sysdig-agent \
-        --set clusterName="insq_${CLUSTER_NAME}" \
-        --namespace sysdig-agent \
-        --set sysdig.accessKey=${ACCESS_KEY} \
-        --set sysdig.settings.collector=${COLLECTOR} \
-        --set resourceProfile=custom \
-        --set resources.requests.cpu=1 \
-        --set resources.requests.memory=1024Mi \
-        --set resources.limits.cpu=2 \
-        --set resources.limits.memory=2048Mi \
-        -f $AGENT_CONF_DIR/values.yaml \
-        ${HELM_OPTS} \
-    sysdig/sysdig &> /dev/null
-    
-    # TODO: Set version to match the available img.ver on our packer custom image
+    bash install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
 }
 
 ##
@@ -405,6 +383,20 @@ function help () {
     echo "  -p, --prometheus            Enable Prometheus. Use with -a/--agent."
     echo "  -s, --secure                Set up environment for Secure API usage."
     echo
+    echo
+    echo "ENVIRONMENT VARIABLES:"
+    echo
+    echo "  INSTALL_WITH                Sets preferred installation method. Available"
+    echo "                              options are 'helm', 'docker' and 'host'. If not"
+    echo "                              set, it will default to what's available in your,"
+    echo "                              checking first for 'helm', then 'docker', and"
+    echo "                              finally 'host'."
+    echo
+    echo "  HELM_OPTS                   Additional options for Helm installation."
+    echo
+    echo "  DOCKER_OPTS                 Additional options for Docker installation."
+    echo
+    echo "  HOST_OPTS                   Additional options for Host installation."
 }
 
 
@@ -431,13 +423,13 @@ function check_flags () {
                     USE_SECURE_API=true
                     ;;
                 --node-analyzer | -n)
-                    USE_NODE_ANALYZER=true
+                    export USE_NODE_ANALYZER=true
                     ;;
                 --node-image-analyzer | -N)
-                    USE_NODE_IMAGE_ANALYZER=true
+                    export USE_NODE_IMAGE_ANALYZER=true
                     ;;
                 --prometheus | -p)
-                    USE_PROMETHEUS=true
+                    export USE_PROMETHEUS=true
                     ;;
                 --help | -h)
                     help

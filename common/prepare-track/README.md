@@ -15,7 +15,8 @@ Agent and will ask for Monitor and Secure API keys; same as calling with
 /opt/sysdig/user_data_${PRODUCT}_API_OK, and exported to envvar
 $SYSDIG_${PRODUCT}_API_TOKEN (where ${PRODUCT} is MONITOR or SECURE).
 
-WARNING: This script is meant to be used in training materials. Do NOT use it in production.
+WARNING: This script is meant to be used in training materials. Do NOT use it
+in production.
 
 
 OPTIONS:
@@ -27,4 +28,19 @@ OPTIONS:
   -N, --node-image-analyzer   Enable Image Node Analyzer. Use with -a/--agent.
   -p, --prometheus            Enable Prometheus. Use with -a/--agent.
   -s, --secure                Set up environment for Secure API usage.
+
+
+ENVIRONMENT VARIABLES:
+
+  INSTALL_WITH                Sets preferred installation method. Available
+                              options are 'helm', 'docker' and 'host'. If not
+                              set, it will default to what's available in your,
+                              checking first for 'helm', then 'docker', and
+                              finally 'host'.
+
+  HELM_OPTS                   Additional options for Helm installation.
+
+  DOCKER_OPTS                 Additional options for Docker installation.
+
+  HOST_OPTS                   Additional options for Host installation.
 ```
