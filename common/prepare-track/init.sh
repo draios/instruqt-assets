@@ -43,7 +43,7 @@ USE_PROMETHEUS=false
 function panic_msg () {
     echo
     echo "Some errors were detected configuring this lab. Please, run again this script with:"
-    echo "   source $TRACK_DIR/init.sh"
+    echo "   /usr/bin/bash $TRACK_DIR/init.sh"
     echo
     echo "You can ask for help using Intercom or get in touch with us at team-training@sysdig.com"
     exit 1
@@ -201,12 +201,13 @@ function configure_API () {
 # Selects the installation method depending on the environment.
 ##
 function installation_method () {
-    if [[ -z "$INSTALL_WITH"]]
+    if [[ -z "$INSTALL_WITH" ]]
     then
         if [ `which helm` ]
         then
             INSTALL_WITH="helm"
         elif [ `which docker` ]
+        then
             INSTALL_WITH="docker"
             export NIA_ENDPOINT
         else
@@ -229,7 +230,7 @@ function install_agent () {
 
     installation_method
 
-    bash install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
+    source $TRACK_DIR/install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
 }
 
 ##
@@ -300,7 +301,7 @@ function test_agent () {
     then
         echo " FAIL"
         echo
-        echo "  Either the slected region (URL) is not your region."
+        echo "  Either the selected region (URL) is not your region."
         panic_msg
     fi
 
@@ -445,10 +446,8 @@ function check_flags () {
         done
     fi
 
-    if [[ [[ [[ "$USE_NODE_ANALYZER" = true  \
-             || "$USE_NODE_IMAGE_ANALYZER" = true ]] \
-          ||  "$USE_PROMETHEUS" = true ]] \
-       && "$USE_AGENT" != true ]]
+    if (([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_NODE_IMAGE_ANALYZER" = true ]) \
+       ||  [ "$USE_PROMETHEUS" = true ]) && [ "$USE_AGENT" != true ]
     then
         echo "ERROR: Options only available with -a/--agent."
         exit 1
