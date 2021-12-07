@@ -201,12 +201,13 @@ function configure_API () {
 # Selects the installation method depending on the environment.
 ##
 function installation_method () {
-    if [[ -z "$INSTALL_WITH"]]
+    if [[ -z "$INSTALL_WITH" ]]
     then
         if [ `which helm` ]
         then
             INSTALL_WITH="helm"
         elif [ `which docker` ]
+        then
             INSTALL_WITH="docker"
             export NIA_ENDPOINT
         else
@@ -445,10 +446,8 @@ function check_flags () {
         done
     fi
 
-    if [[ [[ [[ "$USE_NODE_ANALYZER" = true  \
-             || "$USE_NODE_IMAGE_ANALYZER" = true ]] \
-          ||  "$USE_PROMETHEUS" = true ]] \
-       && "$USE_AGENT" != true ]]
+    if (([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_NODE_IMAGE_ANALYZER" = true ]) \
+       ||  [ "$USE_PROMETHEUS" = true ]) && [ "$USE_AGENT" != true ]
     then
         echo "ERROR: Options only available with -a/--agent."
         exit 1
