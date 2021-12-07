@@ -43,7 +43,7 @@ USE_PROMETHEUS=false
 function panic_msg () {
     echo
     echo "Some errors were detected configuring this lab. Please, run again this script with:"
-    echo "   source $TRACK_DIR/init.sh"
+    echo "   /usr/bin/bash $TRACK_DIR/init.sh"
     echo
     echo "You can ask for help using Intercom or get in touch with us at team-training@sysdig.com"
     exit 1
@@ -230,7 +230,7 @@ function install_agent () {
 
     installation_method
 
-    bash install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
+    source $TRACK_DIR/install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
 }
 
 ##
@@ -301,7 +301,7 @@ function test_agent () {
     then
         echo " FAIL"
         echo
-        echo "  Either the slected region (URL) is not your region."
+        echo "  Either the selected region (URL) is not your region."
         panic_msg
     fi
 
