@@ -157,7 +157,14 @@ function configure_API () {
     PRODUCT_API_ENDPOINT=$3
 
     echo "Configuring Sysdig $PRODUCT API"
-    echo "  Visit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
+
+    if [ -f $WORK_DIR/user_data_${PRODUCT}_API_OK ]
+    then
+      echo -e "  Sysdig ${PRODUCT} API already configured.\n"
+      return
+    fi
+
+    echo -e "  Visit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
     varname=${PRODUCT}_API_KEY
 
     attempt=0
