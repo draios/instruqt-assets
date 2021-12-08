@@ -314,25 +314,34 @@ function test_agent () {
 ##
 function clean_setup () {
 
-    if [ -f $WORK_DIR/user_data_AGENT_OK ]
+    if [ "$USE_AGENT" == true ]
     then
-        rm $WORK_DIR/user_data_AGENT_OK
-    else
-        panic_msg
+      if [ -f $WORK_DIR/user_data_AGENT_OK ]
+      then
+          rm $WORK_DIR/user_data_AGENT_OK
+      else
+          panic_msg
+      fi
     fi
 
-    if [ -f $WORK_DIR/user_data_MONITOR_API_OK ]
+    if [ "$USE_MONITOR_API" == true ]
     then
-        rm $WORK_DIR/user_data_MONITOR_API_OK
-    else
-        panic_msg
+      if [ -f $WORK_DIR/user_data_MONITOR_API_OK ]
+      then
+          rm $WORK_DIR/user_data_MONITOR_API_OK
+      else
+          panic_msg
+      fi
     fi
 
-    if [ -f $WORK_DIR/user_data_SECURE_API_OK ]
+    if [ "$USE_SECURE_API" == true ]
     then
-        rm $WORK_DIR/user_data_SECURE_API_OK
-    else
-        panic_msg
+      if [ -f $WORK_DIR/user_data_SECURE_API_OK ]
+      then
+          rm $WORK_DIR/user_data_SECURE_API_OK
+      else
+          panic_msg
+      fi
     fi
 
     if [ -d $TRACK_DIR ]
