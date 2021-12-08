@@ -157,7 +157,7 @@ function configure_API () {
     PRODUCT_API_ENDPOINT=$3
 
     echo "Configuring Sysdig $PRODUCT API"
-    echo -e "\nVisit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
+    echo "  Visit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
     varname=${PRODUCT}_API_KEY
 
     attempt=0
@@ -167,19 +167,19 @@ function configure_API () {
     do
         attempt=$(( $attempt + 1 ))
 
-        read -p "   Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN; 
+        read -p "    Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN;
 
         # Test connection
-        echo -n "   Testing connection to API... "
+        echo -n "    Testing connection to API... "
         curl -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep 'HTTP/2 200'
         
         if [ $? -eq 0 ]
         then
-            echo "OK"         
+            echo "  OK"
             echo "${API_TOKEN}" > $WORK_DIR/user_data_${PRODUCT}_API_OK
             export SYSDIG_${PRODUCT}_API_TOKEN="${API_TOKEN}"
         else
-            echo "FAIL. Either the selected region is not your region or the key is wrong."
+            echo "  FAIL. Either the selected region is not your region or the key is wrong."
             panic_msg
         fi
         echo
@@ -276,9 +276,9 @@ function intro () {
 function deploy_agent () {
     AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
 
-    echo 
-    echo -e "\nVisit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
-    read -p "   Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY; 
+    echo "Configuring Sysdig Agent"
+    echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
+    read -p "    Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
     echo 
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
@@ -290,7 +290,7 @@ function deploy_agent () {
 ##
 function test_agent () {
     # test agent connection
-    echo -n "Testing Sysdig Agent running in your environment."
+    echo "    Testing Sysdig Agent running in your environment..."
 
     attempt=0
     MAX_ATTEMPTS=40 # 2 minutes
@@ -312,12 +312,10 @@ function test_agent () {
 
     if [ "$connected" = true ]
     then
-        echo " OK"
+        echo "  OK"
         touch $WORK_DIR/user_data_AGENT_OK
     else
-        echo " FAIL"
-        echo
-        echo "  Either the selected region is not your region or the Agent Key is wrong."
+        echo "  FAIL. Either the selected region is not your region or the Agent Key is wrong."
         panic_msg
     fi
 }
