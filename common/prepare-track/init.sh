@@ -171,7 +171,7 @@ function configure_API () {
 
         # Test connection
         echo -n "   Testing connection to API... "
-        curl -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}"'/api/alerts' | grep 'HTTP/2 200'
+        curl -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep 'HTTP/2 200'
         
         if [ $? -eq 0 ]
         then
@@ -299,7 +299,7 @@ function test_agent () {
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
         sleep 3
-        kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 | grep "Connected to collector" &> /dev/null
+        kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "Connected to collector" &> /dev/null
 
         if [ $? -eq 0 ]
         then
@@ -472,6 +472,8 @@ function check_flags () {
 # Execute setup.
 ##
 function setup () {
+    mkdir -p $WORK_DIR/
+
     check_flags $@
 
     intro
@@ -480,15 +482,14 @@ function setup () {
 
     if [ "$USE_MONITOR_API" = true ]
     then
-        configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_URL}
+        configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
     fi
     
     if [ "$USE_SECURE_API" = true ]
     then
-        configure_API "SECURE" ${SECURE_URL} ${SECURE_URL}
+        configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
     fi
 
-    mkdir -p $WORK_DIR/
 
     # nginx is already installed by track-setup, we overwrite config
     cp $TRACK_DIR/nginx.default.conf /etc/nginx/nginx.conf
