@@ -286,7 +286,7 @@ function deploy_agent () {
     echo "Configuring Sysdig Agent"
     echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
     read -p "    Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
-    echo 
+    echo    "    The agent is being installed in the background."
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
     install_agent ${AGENT_DEPLOY_DATE} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR}
@@ -296,8 +296,11 @@ function deploy_agent () {
 # Test if the Agent connected successfully to the collector endpoint.
 ##
 function test_agent () {
-    # test agent connection
-    echo "    Testing Sysdig Agent running in your environment..."
+    if [ "$USE_MONITOR_API" == true ] || [ "$USE_SECURE_API" == true ]; then
+      echo "Testing if Sysdig Agent is running correctly..."
+    else
+      echo "    Testing if Sysdig Agent is running correctly..."
+    fi
 
     attempt=0
     MAX_ATTEMPTS=40 # 2 minutes
@@ -306,7 +309,7 @@ function test_agent () {
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
         sleep 3
-        kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "Connected to collector" &> /dev/null
+        kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "${AGENT_COLLECTOR}" &> /dev/null
 
         if [ $? -eq 0 ]
         then
@@ -485,6 +488,11 @@ function setup () {
 
     select_region
 
+    if [ "$USE_AGENT" = true ]
+    then
+        deploy_agent
+    fi
+
     if [ "$USE_MONITOR_API" = true ]
     then
         configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
@@ -495,13 +503,11 @@ function setup () {
         configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
     fi
 
-
     # nginx is already installed by track-setup, we overwrite config
     cp $TRACK_DIR/nginx.default.conf /etc/nginx/nginx.conf
 
     if [ "$USE_AGENT" = true ]
     then
-        deploy_agent
         test_agent
     fi
 
