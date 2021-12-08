@@ -174,10 +174,10 @@ function configure_API () {
     do
         attempt=$(( $attempt + 1 ))
 
-        read -p "    Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN;
+        read -p "  Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN;
 
         # Test connection
-        echo -n "    Testing connection to API... "
+        echo -n "  Testing connection to API... "
         curl -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep 'HTTP/2 200'
         
         if [ $? -eq 0 ]
@@ -285,8 +285,8 @@ function deploy_agent () {
 
     echo "Configuring Sysdig Agent"
     echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
-    read -p "    Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
-    echo    "    The agent is being installed in the background."
+    read -p "  Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
+    echo -e "  The agent is being installed in the background.\n"
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
     install_agent ${AGENT_DEPLOY_DATE} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR}
@@ -299,7 +299,7 @@ function test_agent () {
     if [ "$USE_MONITOR_API" == true ] || [ "$USE_SECURE_API" == true ]; then
       echo "Testing if Sysdig Agent is running correctly..."
     else
-      echo "    Testing if Sysdig Agent is running correctly..."
+      echo "  Testing if Sysdig Agent is running correctly..."
     fi
 
     attempt=0
