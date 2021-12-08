@@ -190,7 +190,7 @@ function configure_API () {
             echo "${API_TOKEN}" > $WORK_DIR/user_data_${PRODUCT}_API_OK
             export SYSDIG_${PRODUCT}_API_TOKEN="${API_TOKEN}"
         else
-            echo "FAIL. Either the slected region (URL) is not your region or the key is wrong."
+            echo "FAIL. Either the selected region is not your region or the key is wrong."
             panic_msg
         fi
         echo
@@ -280,30 +280,22 @@ function test_agent () {
     echo -n "Testing Sysdig Agent running in your environment."
 
     attempt=0
-    MAX_ATTEMPTS=7
+    MAX_ATTEMPTS=40 # 2 minutes
     connected=false
 
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
         sleep 3
-        kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=10000 | grep "Connected to collector" &> /dev/null
+        kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 | grep "Connected to collector" &> /dev/null
 
         if [ $? -eq 0 ]
         then
             connected=true
+            break
         fi
         
         attempt=$(( $attempt + 1 ))
     done
-
-    kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=10000 | grep $AGENT_COLLECTOR &> /dev/null
-    if [ $? -ne 0 ]
-    then
-        echo " FAIL"
-        echo
-        echo "  Either the selected region (URL) is not your region."
-        panic_msg
-    fi
 
     if [ "$connected" = true ]
     then
@@ -312,7 +304,7 @@ function test_agent () {
     else
         echo " FAIL"
         echo
-        echo "  Either the selected region (URL) is not your region or the Agent Key is wrong."
+        echo "  Either the selected region is not your region or the Agent Key is wrong."
         panic_msg
     fi
 }
@@ -472,7 +464,6 @@ function setup () {
     fi
 
     mkdir -p $WORK_DIR/
-    # chmod +x $TRACK_DIR/agent-install-helm.sh
 
     # nginx is already installed by track-setup, we overwrite config
     cp $TRACK_DIR/nginx.default.conf /etc/nginx/nginx.conf
@@ -482,6 +473,8 @@ function setup () {
         deploy_agent
         test_agent
     fi
+
+    clean_setup
 }
 
 
