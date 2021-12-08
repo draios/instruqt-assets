@@ -95,17 +95,6 @@ function set_values () {
     SECURE_API_ENDPOINT=$MONITOR_URL
     PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
 
-    # Print selected data
-    echo 
-    echo -e "   Use ${F_BOLD}${F_CYAN}$MONITOR_URL${F_CLEAR} & ${F_BOLD}${F_CYAN}$SECURE_URL${F_CLEAR} to access your Sysdig Monitor and Secure Dashboards"
-    echo
-    echo "Other parameters configured:"
-    echo "  - Agent Collector=$AGENT_COLLECTOR" 
-    echo "  - monitor_API_endpoind=$MONITOR_API_ENDPOINT"
-    echo "  - secure_API_endpoind=$SECURE_API_ENDPOINT"
-    echo "  - prometheus_endpoint=$PROMETHEUS_ENDPOINT" 
-    echo "  - NIA_endpoint=$NIA_ENDPOINT" 
-
     # Tabs url_redirect
     sed -i -e "s@_MONITOR_URL_@$MONITOR_URL@g" /etc/nginx/nginx.conf
     sed -i -e "s@_SECURE_URL_@$SECURE_URL@g" /etc/nginx/nginx.conf
@@ -149,7 +138,7 @@ function select_region () {
     esac
 
     #based on selected region, values are defined
-    echo -n "   ${REGION} selected."
+    echo -e "\n   ${REGION} selected.\n"
     set_values $REGION
 }
 
@@ -168,7 +157,7 @@ function configure_API () {
     PRODUCT_API_ENDPOINT=$3
 
     echo "Configuring Sysdig $PRODUCT API"
-    echo -e "Visit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
+    echo -e "\nVisit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
     varname=${PRODUCT}_API_KEY
 
     attempt=0
@@ -249,10 +238,34 @@ function intro () {
     echo "/_/    /_/|_| /_/ |_|/___/  /_/|_/  /___/  /_/|_/  \___/  "
     echo "----------------------------------------------------------"
     echo
-    echo " Welcome! This script installs your Sysdig Agent in a"
-    echo " k3s cluster with Helm, selects your Sysdig SaaS Region, "
-    echo " and configures your API tokens."
-    echo " Follow the instructions below."
+    echo "  Welcome! This script configures the lab environment."
+    echo "  It will:"
+
+    if [ "$USE_MONITOR_API" == true ]; then
+      echo "    - Set up the environment for Monitor API usage."
+    fi
+
+    if [ "$USE_SECURE_API" == true ]; then
+      echo "    - Set up the environment for Secure API usage."
+    fi
+
+    if [ "$USE_AGENT" == true ]; then
+      echo "    - Deploy a Sysdig Agent."
+    fi
+
+    if [ "$USE_NODE_ANALYZER" == true ]; then
+      echo "    - Enable the Agent Node Analyzer."
+    fi
+
+    if [ "$USE_NODE_IMAGE_ANALYZER" == true ]; then
+      echo "    - Enable the Agent Image Node Analyzer."
+    fi
+
+    if [ "$USE_PROMETHEUS" == true ]; then
+      echo "    - Enable the Agent Prometheus collector."
+    fi
+
+    echo "  Follow the instructions below."
     echo
     echo "----------------------------------------------------------"
 }
@@ -264,7 +277,7 @@ function deploy_agent () {
     AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
 
     echo 
-    echo -e "Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
+    echo -e "\nVisit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
     read -p "   Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY; 
     echo 
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
@@ -460,6 +473,9 @@ function check_flags () {
 ##
 function setup () {
     check_flags $@
+
+    intro
+
     select_region
 
     if [ "$USE_MONITOR_API" = true ]
