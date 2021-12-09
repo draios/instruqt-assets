@@ -117,7 +117,7 @@ function set_values () {
 ##
 function select_region () {
     echo
-    echo "Please select one of the existing SaaS Regions: "
+    echo "Review the Sysdig Monitor/Secure activation e-mail received, and select your SaaS Region from the list: "
     echo "   1) US East (default)"
     echo "   2) US West"
     echo "   3) EMEA"
