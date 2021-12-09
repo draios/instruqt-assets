@@ -14,6 +14,7 @@ ADD . /
 WORKDIR /
 RUN go build -o $BINARY_NAME generic_reader.go
 RUN cp /$BINARY_NAME /usr/local/bin/
+RUN chmod 777 /usr/local/bin/$BINARY_NAME
 CMD ${BINARY_NAME_IN} ${REPS_IN} ${SECONDS_IN} ${FILES_IN}
 
 # # build with:

@@ -12,13 +12,15 @@ spec:
       labels:
         app: gen-reader-joe
     spec:
+      securityContext:
+        runAsUser: 1111
       volumes:
       - name: secret-files
         hostPath:
           path: /tmp
       containers:
       - name: gen-reader-joe
-        image: localhost/generic_reader_joe
+        image: localhost/generic_reader
         imagePullPolicy: IfNotPresent
         env:
         - name: BINARY_NAME_IN
