@@ -29,5 +29,11 @@ CMD ${BINARY_NAME_IN} ${REPS_IN} ${SECONDS_IN} ${FILES_IN}
 #     -e "BINARY_NAME_IN=binary" \
 #     -e "REPS_IN=1" \
 #     -e "SECONDS_IN=2" \
-#     -e "=~/GIT/instruqt/README.md ~/GIT lol" \
 #     sysdigtraining/generic_reader
+
+# podman run \
+#     -e "BINARY_NAME_IN=binary" \
+#     -e "REPS_IN=1" \
+#     -e "SECONDS_IN=2" \
+#     -e "FILES_IN=~/GIT/instruqt/README.md" \
+#     localhost/generic_reader_joe
