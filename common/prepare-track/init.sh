@@ -95,17 +95,6 @@ function set_values () {
     SECURE_API_ENDPOINT=$MONITOR_URL
     PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
 
-    # Print selected data
-    echo 
-    echo -e "   Use ${F_BOLD}${F_CYAN}$MONITOR_URL${F_CLEAR} & ${F_BOLD}${F_CYAN}$SECURE_URL${F_CLEAR} to access your Sysdig Monitor and Secure Dashboards"
-    echo
-    echo "Other parameters configured:"
-    echo "  - Agent Collector=$AGENT_COLLECTOR" 
-    echo "  - monitor_API_endpoind=$MONITOR_API_ENDPOINT"
-    echo "  - secure_API_endpoind=$SECURE_API_ENDPOINT"
-    echo "  - prometheus_endpoint=$PROMETHEUS_ENDPOINT" 
-    echo "  - NIA_endpoint=$NIA_ENDPOINT" 
-
     # Tabs url_redirect
     sed -i -e "s@_MONITOR_URL_@$MONITOR_URL@g" /etc/nginx/nginx.conf
     sed -i -e "s@_SECURE_URL_@$SECURE_URL@g" /etc/nginx/nginx.conf
@@ -149,7 +138,7 @@ function select_region () {
     esac
 
     #based on selected region, values are defined
-    echo -n "   ${REGION} selected."
+    echo -e "\n   ${REGION} selected.\n"
     set_values $REGION
 }
 
@@ -168,7 +157,14 @@ function configure_API () {
     PRODUCT_API_ENDPOINT=$3
 
     echo "Configuring Sysdig $PRODUCT API"
-    echo -e "Visit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
+
+    if [ -f $WORK_DIR/user_data_${PRODUCT}_API_OK ]
+    then
+      echo -e "  Sysdig ${PRODUCT} API already configured.\n"
+      return
+    fi
+
+    echo -e "  Visit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
     varname=${PRODUCT}_API_KEY
 
     attempt=0
@@ -178,19 +174,19 @@ function configure_API () {
     do
         attempt=$(( $attempt + 1 ))
 
-        read -p "   Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN; 
+        read -p "  Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN;
 
         # Test connection
-        echo -n "   Testing connection to API... "
-        curl -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}"'/api/alerts' | grep 'HTTP/2 200'
+        echo -n "  Testing connection to API... "
+        curl -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep 'HTTP/2 200'
         
         if [ $? -eq 0 ]
         then
-            echo "OK"         
+            echo "  OK"
             echo "${API_TOKEN}" > $WORK_DIR/user_data_${PRODUCT}_API_OK
             export SYSDIG_${PRODUCT}_API_TOKEN="${API_TOKEN}"
         else
-            echo "FAIL. Either the slected region (URL) is not your region or the key is wrong."
+            echo "  FAIL. Either the selected region is not your region or the key is wrong."
             panic_msg
         fi
         echo
@@ -249,10 +245,34 @@ function intro () {
     echo "/_/    /_/|_| /_/ |_|/___/  /_/|_/  /___/  /_/|_/  \___/  "
     echo "----------------------------------------------------------"
     echo
-    echo " Welcome! This script installs your Sysdig Agent in a"
-    echo " k3s cluster with Helm, selects your Sysdig SaaS Region, "
-    echo " and configures your API tokens."
-    echo " Follow the instructions below."
+    echo "  Welcome! This script configures the lab environment."
+    echo "  It will:"
+
+    if [ "$USE_MONITOR_API" == true ]; then
+      echo "    - Set up the environment for Monitor API usage."
+    fi
+
+    if [ "$USE_SECURE_API" == true ]; then
+      echo "    - Set up the environment for Secure API usage."
+    fi
+
+    if [ "$USE_AGENT" == true ]; then
+      echo "    - Deploy a Sysdig Agent."
+    fi
+
+    if [ "$USE_NODE_ANALYZER" == true ]; then
+      echo "    - Enable the Agent Node Analyzer."
+    fi
+
+    if [ "$USE_NODE_IMAGE_ANALYZER" == true ]; then
+      echo "    - Enable the Agent Image Node Analyzer."
+    fi
+
+    if [ "$USE_PROMETHEUS" == true ]; then
+      echo "    - Enable the Agent Prometheus collector."
+    fi
+
+    echo "  Follow the instructions below."
     echo
     echo "----------------------------------------------------------"
 }
@@ -263,10 +283,10 @@ function intro () {
 function deploy_agent () {
     AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
 
-    echo 
-    echo -e "Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
-    read -p "   Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY; 
-    echo 
+    echo "Configuring Sysdig Agent"
+    echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
+    read -p "  Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
+    echo -e "  The agent is being installed in the background.\n"
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
     install_agent ${AGENT_DEPLOY_DATE} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR}
@@ -276,43 +296,36 @@ function deploy_agent () {
 # Test if the Agent connected successfully to the collector endpoint.
 ##
 function test_agent () {
-    # test agent connection
-    echo -n "Testing Sysdig Agent running in your environment."
+    if [ "$USE_MONITOR_API" == true ] || [ "$USE_SECURE_API" == true ]; then
+      echo "Testing if Sysdig Agent is running correctly..."
+    else
+      echo "  Testing if Sysdig Agent is running correctly..."
+    fi
 
     attempt=0
-    MAX_ATTEMPTS=7
+    MAX_ATTEMPTS=40 # 2 minutes
     connected=false
 
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
         sleep 3
-        kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=10000 | grep "Connected to collector" &> /dev/null
+        kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "${AGENT_COLLECTOR}" &> /dev/null
 
         if [ $? -eq 0 ]
         then
             connected=true
+            break
         fi
         
         attempt=$(( $attempt + 1 ))
     done
 
-    kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=10000 | grep $AGENT_COLLECTOR &> /dev/null
-    if [ $? -ne 0 ]
-    then
-        echo " FAIL"
-        echo
-        echo "  Either the selected region (URL) is not your region."
-        panic_msg
-    fi
-
     if [ "$connected" = true ]
     then
-        echo " OK"
+        echo "  OK"
         touch $WORK_DIR/user_data_AGENT_OK
     else
-        echo " FAIL"
-        echo
-        echo "  Either the selected region (URL) is not your region or the Agent Key is wrong."
+        echo "  FAIL. Either the selected region is not your region or the Agent Key is wrong."
         panic_msg
     fi
 }
@@ -322,25 +335,34 @@ function test_agent () {
 ##
 function clean_setup () {
 
-    if [ -f $WORK_DIR/user_data_AGENT_OK ]
+    if [ "$USE_AGENT" == true ]
     then
-        rm $WORK_DIR/user_data_AGENT_OK
-    else
-        panic_msg
+      if [ -f $WORK_DIR/user_data_AGENT_OK ]
+      then
+          rm $WORK_DIR/user_data_AGENT_OK
+      else
+          panic_msg
+      fi
     fi
 
-    if [ -f $WORK_DIR/user_data_MONITOR_API_OK ]
+    if [ "$USE_MONITOR_API" == true ]
     then
-        rm $WORK_DIR/user_data_MONITOR_API_OK
-    else
-        panic_msg
+      if [ -f $WORK_DIR/user_data_MONITOR_API_OK ]
+      then
+          rm $WORK_DIR/user_data_MONITOR_API_OK
+      else
+          panic_msg
+      fi
     fi
 
-    if [ -f $WORK_DIR/user_data_SECURE_API_OK ]
+    if [ "$USE_SECURE_API" == true ]
     then
-        rm $WORK_DIR/user_data_SECURE_API_OK
-    else
-        panic_msg
+      if [ -f $WORK_DIR/user_data_SECURE_API_OK ]
+      then
+          rm $WORK_DIR/user_data_SECURE_API_OK
+      else
+          panic_msg
+      fi
     fi
 
     if [ -d $TRACK_DIR ]
@@ -458,30 +480,38 @@ function check_flags () {
 # Execute setup.
 ##
 function setup () {
+    mkdir -p $WORK_DIR/
+
     check_flags $@
+
+    intro
+
     select_region
+
+    if [ "$USE_AGENT" = true ]
+    then
+        deploy_agent
+    fi
 
     if [ "$USE_MONITOR_API" = true ]
     then
-        configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_URL}
+        configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
     fi
     
     if [ "$USE_SECURE_API" = true ]
     then
-        configure_API "SECURE" ${SECURE_URL} ${SECURE_URL}
+        configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
     fi
-
-    mkdir -p $WORK_DIR/
-    # chmod +x $TRACK_DIR/agent-install-helm.sh
 
     # nginx is already installed by track-setup, we overwrite config
     cp $TRACK_DIR/nginx.default.conf /etc/nginx/nginx.conf
 
     if [ "$USE_AGENT" = true ]
     then
-        deploy_agent
         test_agent
     fi
+
+    clean_setup
 }
 
 
