@@ -10,8 +10,8 @@ CLUSTER_NAME=$1
 ACCESS_KEY=$2
 COLLECTOR=$3
 
-helm repo add sysdig https://charts.sysdig.com > /dev/null
-helm repo update > /dev/null
+helm repo add sysdig https://charts.sysdig.com &> /dev/null
+helm repo update &> /dev/null
 
 if [ "$USE_NODE_ANALYZER" = true ]
 then
@@ -34,7 +34,7 @@ then
 fi
 
 # echo "Deploying Sysdig Agent with Helm"
-kubectl create ns sysdig-agent > /dev/null
+kubectl create ns sysdig-agent &> /dev/null
 helm install sysdig-agent \
     --set clusterName="insq_${CLUSTER_NAME}" \
     --namespace sysdig-agent \
@@ -47,4 +47,4 @@ helm install sysdig-agent \
     --set resources.limits.memory=2048Mi \
     -f $AGENT_CONF_DIR/values.yaml \
     ${HELM_OPTS} \
-sysdig/sysdig > /dev/null
+sysdig/sysdig &> /dev/null
