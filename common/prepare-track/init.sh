@@ -306,7 +306,7 @@ function test_agent () {
 
     attempt=0
     MAX_ATTEMPTS=40 # 2 minutes
-    CONNECTED_MSG="Sending scraper version promscrape_v2 to backend"
+    CONNECTED_MSG="Sending scraper version"
     connected=false
 
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
