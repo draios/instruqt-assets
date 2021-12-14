@@ -297,16 +297,22 @@ function deploy_agent () {
 # Test if the Agent connected successfully to the collector endpoint.
 ##
 function test_agent () {
-    echo -n "  Testing if Sysdig Agent is running correctly..."
+    if [ "$USE_MONITOR_API" == true ] || [ "$USE_SECURE_API" == true ]
+    then
+        echo "Testing if Sysdig Agent is running correctly..."
+    else
+        echo -n "  Testing if Sysdig Agent is running correctly..."
+    fi
 
     attempt=0
     MAX_ATTEMPTS=40 # 2 minutes
+    CONNECTED_MSG="Sending scraper version promscrape_v2 to backend"
     connected=false
 
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
         sleep 3
-        kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "Connected to collector" &> /dev/null
+        kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "${CONNECTED_MSG}" &> /dev/null
 
         if [ $? -eq 0 ]
         then
