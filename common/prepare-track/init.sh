@@ -301,7 +301,7 @@ function test_agent () {
     then
         echo "Testing if Sysdig Agent is running correctly..."
     else
-        echo -n "  Testing if Sysdig Agent is running correctly..."
+        echo "  Testing if Sysdig Agent is running correctly..."
     fi
 
     attempt=0
