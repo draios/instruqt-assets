@@ -139,7 +139,7 @@ function select_region () {
 
     #based on selected region, values are defined
     echo -e "\n   ${REGION} selected.\n"
-    set_values $REGION
+    set_values "$REGION"
 }
 
 ##
