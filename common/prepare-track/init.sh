@@ -328,7 +328,7 @@ function test_agent () {
         FOUND_COLLECTOR=`kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | rev | cut -d' ' -f 1 | rev`
         if [ "${FOUND_COLLECTOR}" == "${AGENT_COLLECTOR}"]
         then
-            echo "  OK"
+            echo "  Sysdig Agent successfully installed."
             touch $WORK_DIR/user_data_AGENT_OK
         else
             echo "  FAIL"
