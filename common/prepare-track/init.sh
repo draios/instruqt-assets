@@ -139,7 +139,7 @@ function select_region () {
 
     #based on selected region, values are defined
     echo -e "\n   ${REGION} selected.\n"
-    set_values $REGION
+    set_values "$REGION"
 }
 
 ##
@@ -178,7 +178,7 @@ function configure_API () {
 
         # Test connection
         echo -n "  Testing connection to API... "
-        curl -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep 'HTTP/2 200'
+        curl -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep 'HTTP/2 200' &> /dev/null
         
         if [ $? -eq 0 ]
         then
@@ -186,7 +186,8 @@ function configure_API () {
             echo "${API_TOKEN}" > $WORK_DIR/user_data_${PRODUCT}_API_OK
             export SYSDIG_${PRODUCT}_API_TOKEN="${API_TOKEN}"
         else
-            echo "  FAIL. Either the selected region is not your region or the key is wrong."
+            echo "  FAIL"
+            echo "  Failed to connect to API Endpoint with selected Region and API Key(s)."
             panic_msg
         fi
         echo
@@ -296,20 +297,22 @@ function deploy_agent () {
 # Test if the Agent connected successfully to the collector endpoint.
 ##
 function test_agent () {
-    if [ "$USE_MONITOR_API" == true ] || [ "$USE_SECURE_API" == true ]; then
-      echo "Testing if Sysdig Agent is running correctly..."
+    if [ "$USE_MONITOR_API" == true ] || [ "$USE_SECURE_API" == true ]
+    then
+        echo "Testing if Sysdig Agent is running correctly..."
     else
-      echo "  Testing if Sysdig Agent is running correctly..."
+        echo "  Testing if Sysdig Agent is running correctly..."
     fi
 
     attempt=0
     MAX_ATTEMPTS=40 # 2 minutes
+    CONNECTED_MSG="Sending scraper version"
     connected=false
 
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
         sleep 3
-        kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "${AGENT_COLLECTOR}" &> /dev/null
+        kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "${CONNECTED_MSG}" &> /dev/null
 
         if [ $? -eq 0 ]
         then
@@ -322,10 +325,21 @@ function test_agent () {
 
     if [ "$connected" = true ]
     then
-        echo "  OK"
-        touch $WORK_DIR/user_data_AGENT_OK
+        FOUND_COLLECTOR=`kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | rev | cut -d' ' -f 1 | rev`
+        if [ "${FOUND_COLLECTOR}" == "${AGENT_COLLECTOR}"]
+        then
+            echo "  Sysdig Agent successfully installed."
+            touch $WORK_DIR/user_data_AGENT_OK
+        else
+            echo "  FAIL"
+            echo "  Agent connected to wrong region."
+            echo "    Selected collector: ${AGENT_COLLECTOR}"
+            echo "    Found collector: ${FOUND_COLLECTOR}"
+            panic_msg
+        fi
     else
-        echo "  FAIL. Either the selected region is not your region or the Agent Key is wrong."
+        echo "  FAIL"
+        echo "  Agent failed to connect to back-end. Check your Agent Key."
         panic_msg
     fi
 }
