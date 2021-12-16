@@ -496,6 +496,8 @@ function check_flags () {
 function setup () {
     mkdir -p $WORK_DIR/
 
+    cp $TRACK_DIR/nginx.default.conf /etc/nginx/nginx.conf
+
     check_flags $@
 
     intro
@@ -517,8 +519,6 @@ function setup () {
         configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
     fi
 
-    # nginx is already installed by track-setup, we overwrite config
-    cp $TRACK_DIR/nginx.default.conf /etc/nginx/nginx.conf
 
     if [ "$USE_AGENT" = true ]
     then
