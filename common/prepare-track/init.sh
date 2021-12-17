@@ -305,7 +305,7 @@ function test_agent () {
     fi
 
     attempt=0
-    MAX_ATTEMPTS=40 # 2 minutes
+    MAX_ATTEMPTS=60 # 3 minutes
     CONNECTED_MSG="Sending scraper version"
     connected=false
 
@@ -325,7 +325,7 @@ function test_agent () {
 
     if [ "$connected" = true ]
     then
-        FOUND_COLLECTOR=`kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | rev | cut -d' ' -f 1 | rev`
+        FOUND_COLLECTOR=`kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
         if [ "${FOUND_COLLECTOR}" == "${AGENT_COLLECTOR}" ]
         then
             echo "  Sysdig Agent successfully installed."
