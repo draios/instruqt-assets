@@ -22,6 +22,7 @@ sysdig:
     k8s_extra_resources:
       include:
         - horizontalpodautoscalers
+        - services
     prometheus:
       enabled: true
       ingest_calculated: false
