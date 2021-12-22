@@ -320,7 +320,7 @@ function test_agent () {
                 docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}"
                 ;;
             host)
-                echo 'journalctl -u dragent | grep -q "${CONNECTED_MSG}"'
+                grep -q "${CONNECTED_MSG}" /opt/draios/logs/draios.log
                 ;;
         esac
 
@@ -343,7 +343,7 @@ function test_agent () {
                 FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
                 ;;
             host)
-                FOUND_COLLECTOR=`echo 'journalctl -u dragent | grep -q "${CONNECTED_MSG}"'`
+                FOUND_COLLECTOR=`grep -q "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
                 ;;
         esac
 
