@@ -128,7 +128,7 @@ function select_region () {
             REGION="Pacific"
             ;;
         5)
-            echo "   Abort init.sh. Region not defined, agent not installed. This track won't might not work properly."
+            echo "   Abort init.sh. Region not defined, agent not installed. This track will not work properly."
             exit 0
             ;;
         *)
@@ -312,7 +312,17 @@ function test_agent () {
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
         sleep 3
-        kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "${CONNECTED_MSG}" &> /dev/null
+        case "$INSTALL_WITH" in
+            helm)
+                kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}"
+                ;;
+            docker)
+                docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}"
+                ;;
+            host)
+                grep -q "${CONNECTED_MSG}" /opt/draios/logs/draios.log
+                ;;
+        esac
 
         if [ $? -eq 0 ]
         then
@@ -325,7 +335,18 @@ function test_agent () {
 
     if [ "$connected" = true ]
     then
-        FOUND_COLLECTOR=`kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
+        case "$INSTALL_WITH" in
+            helm)
+                FOUND_COLLECTOR=`kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
+                ;;
+            docker)
+                FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
+                ;;
+            host)
+                FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
+                ;;
+        esac
+
         if [ "${FOUND_COLLECTOR}" == "${AGENT_COLLECTOR}" ]
         then
             echo "  Sysdig Agent successfully installed."

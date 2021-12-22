@@ -30,4 +30,4 @@ curl -s https://download.sysdig.com/stable/install-agent | sudo bash -s -- \
     --access_key ${ACCESS_KEY} \
     --collector ${COLLECTOR} \
     --secure true \
-    ${HOST_OPTS}
+    ${HOST_OPTS} >> /opt/sysdig/host_install.out 2>&1 &
