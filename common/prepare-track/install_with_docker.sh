@@ -6,6 +6,7 @@
 #   install_with_docker.sh ${CLUSTER_NAME} ${ACCESS_KEY} ${COLLECTOR}
 ##
 
+OUTPUT=/opt/sysdig/docker_install.out
 CLUSTER_NAME=$1
 ACCESS_KEY=$2
 COLLECTOR=$3
@@ -21,7 +22,7 @@ then
             -e ACCESS_KEY=${ACCESS_KEY} \
             -e SCHEDULE=@dailydefault \
             -v /:/host:ro  \
-            quay.io/sysdig/host-analyzer:latest
+            quay.io/sysdig/host-analyzer:latest >> ${OUTPUT} 2>&1 &
     else
         echo "ERROR: Cannot deploy Node Analyzer. No valid endpoint."
     fi
@@ -37,7 +38,7 @@ then
             -e AM_COLLECTOR_ENDPOINT=${NIA_ENDPOINT} \
             -e ACCESS_KEY=${ACCESS_KEY} \
             -v /var/run:/var/run  \
-            quay.io/sysdig/node-image-analyzer:latest
+            quay.io/sysdig/node-image-analyzer:latest >> ${OUTPUT} 2>&1 &
     else
         echo "ERROR: Cannot deploy Node Image Analyzer. No valid endpoint."
     fi
@@ -62,4 +63,4 @@ docker run -d --name sysdig-agent \
     -v /lib/modules:/host/lib/modules:ro \
     -v /usr:/host/usr:ro \
     --shm-size=512m \
-    sysdig/agent
+    sysdig/agent >> ${OUTPUT} 2>&1 &
