@@ -1,33 +1,5 @@
 sysdig: 
   settings: 
-    command_line:
-      enabled: true
     feature:  
       mode: troubleshooting
     new_k8s: true
-    security:
-      enabled: true
-    commandlines_capture:
-      enabled: true
-    memdump:
-      enabled: true
-    10s_flush_enable: true
-    app_checks_enabled: false
-    autodrop:
-      enabled: true
-      upper_threshold: 80
-    metrics_excess_log: true
-    use_promscrape: true
-    promscrape_fastproto: true
-    k8s_extra_resources:
-      include:
-        - horizontalpodautoscalers
-        - services
-    prometheus:
-      enabled: true
-      ingest_calculated: false
-      ingest_raw: true
-      max_metrics: 10000
-      max_metrics_per_process: 20000
-      prom_service_discovery: true
-    snaplen: 512
