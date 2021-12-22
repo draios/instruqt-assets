@@ -343,7 +343,7 @@ function test_agent () {
                 FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
                 ;;
             host)
-                FOUND_COLLECTOR=`grep -q "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
+                FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
                 ;;
         esac
 
