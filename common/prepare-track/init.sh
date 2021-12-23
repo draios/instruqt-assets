@@ -98,7 +98,7 @@ function set_values () {
     # Tabs url_redirect
     sed -i -e "s@_MONITOR_URL_@$MONITOR_URL@g" /etc/nginx/nginx.conf
     sed -i -e "s@_SECURE_URL_@$SECURE_URL@g" /etc/nginx/nginx.conf
-    sudo systemctl restart nginx
+    systemctl restart nginx
 }
 
 ##
