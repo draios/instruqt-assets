@@ -283,7 +283,8 @@ function intro () {
 ##
 function deploy_agent () {
     AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
-
+    echo ${AGENT_DEPLOY_DATE} > $WORK_DIR/agent_deploy_date
+    
     echo "Configuring Sysdig Agent"
     echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
     read -p "  Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
