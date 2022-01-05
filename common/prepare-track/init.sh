@@ -39,7 +39,7 @@ USE_PROMETHEUS=false
 TEST_AGENT_ACCESS_KEY=ZTRlNDFiMGUtYTg5Yi00YWU4LWJlZjYtMzA4Y2FmZDIwMjAx
 TEST_MONITOR_API=MzI1NGFhODktYTcyZi00ZDlkLWJkMWEtMGYzZjQyZjc2ZTgw
 TEST_SECURE_API=ZDg2NGY1YmUtNThiNi00OTUyLWI0ODItY2I1OWJkMTMzZjZj
-
+TEST_REGION=2
 
 ###############################    FUNCTIONS    ###############################
 ##
@@ -125,11 +125,10 @@ function select_region () {
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
     then
-        REGION_N=1
+        REGION_N=${TEST_REGION}
     else
         read -p "   Select Region (type number): "  REGION_N; 
     fi
-
 
     case $REGION_N in
         1)
