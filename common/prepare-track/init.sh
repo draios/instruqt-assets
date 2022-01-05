@@ -192,7 +192,7 @@ function configure_API () {
 
         if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
         then
-            if [[ ${${PRODUCT}} == "MONITOR"]];
+            if [[ ${PRODUCT} == "MONITOR" ]];
             then
                 API_TOKEN=$(echo -n ${TEST_MONITOR_API} | base64 --decode)
             else #SECURE
