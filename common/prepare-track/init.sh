@@ -35,6 +35,11 @@ USE_NODE_ANALYZER=false
 USE_NODE_IMAGE_ANALYZER=false
 USE_PROMETHEUS=false
 
+##############################    GLOBAL VARS    ##############################
+TEST_AGENT_ACCESS_KEY=ZTRlNDFiMGUtYTg5Yi00YWU4LWJlZjYtMzA4Y2FmZDIwMjAx
+TEST_MONITOR_API=MzI1NGFhODktYTcyZi00ZDlkLWJkMWEtMGYzZjQyZjc2ZTgw
+TEST_SECURE_API=ZDg2NGY1YmUtNThiNi00OTUyLWI0ODItY2I1OWJkMTMzZjZj
+TEST_REGION=2
 
 ###############################    FUNCTIONS    ###############################
 ##
@@ -96,9 +101,14 @@ function set_values () {
     PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
 
     # Tabs url_redirect
-    sed -i -e "s@_MONITOR_URL_@$MONITOR_URL@g" /etc/nginx/nginx.conf
-    sed -i -e "s@_SECURE_URL_@$SECURE_URL@g" /etc/nginx/nginx.conf
-    systemctl restart nginx
+    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
+    then
+        systemctl stop nginx
+    else
+        sed -i -e "s@_MONITOR_URL_@$MONITOR_URL@g" /etc/nginx/nginx.conf
+        sed -i -e "s@_SECURE_URL_@$SECURE_URL@g" /etc/nginx/nginx.conf
+        systemctl restart nginx
+    fi   
 }
 
 ##
@@ -112,8 +122,14 @@ function select_region () {
     echo "   3) EMEA"
     echo "   4) Pacific"
     echo "   5) Abort install"
-    read -p "   Select Region (type number): "  REGION_N; 
-    
+
+    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
+    then
+        REGION_N=${TEST_REGION}
+    else
+        read -p "   Select Region (type number): "  REGION_N; 
+    fi
+
     case $REGION_N in
         1)
             REGION="US East (default)"
@@ -174,7 +190,17 @@ function configure_API () {
     do
         attempt=$(( $attempt + 1 ))
 
-        read -p "  Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN;
+        if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
+        then
+            if [[ ${PRODUCT} == "MONITOR" ]];
+            then
+                API_TOKEN=$(echo -n ${TEST_MONITOR_API} | base64 --decode)
+            else #SECURE
+                API_TOKEN=$(echo -n ${TEST_SECURE_API} | base64 --decode)
+            fi
+        else
+            read -p "  Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN;
+        fi
 
         # Test connection
         echo -n "  Testing connection to API... "
@@ -287,7 +313,14 @@ function deploy_agent () {
     
     echo "Configuring Sysdig Agent"
     echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
-    read -p "  Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
+
+    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
+    then
+        AGENT_ACCESS_KEY=$(echo -n ${TEST_AGENT_ACCESS_KEY} | base64 --decode)
+    else
+        read -p "  Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
+    fi
+
     echo -e "  The agent is being installed in the background.\n"
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
