@@ -101,14 +101,9 @@ function set_values () {
     PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
 
     # Tabs url_redirect
-    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
-    then
-        systemctl stop nginx
-    else
-        sed -i -e "s@_MONITOR_URL_@$MONITOR_URL@g" /etc/nginx/nginx.conf
-        sed -i -e "s@_SECURE_URL_@$SECURE_URL@g" /etc/nginx/nginx.conf
-        systemctl restart nginx
-    fi   
+    sed -i -e "s@_MONITOR_URL_@$MONITOR_URL@g" /etc/nginx/nginx.conf
+    sed -i -e "s@_SECURE_URL_@$SECURE_URL@g" /etc/nginx/nginx.conf
+    systemctl restart nginx
 }
 
 ##
