@@ -544,10 +544,6 @@ function check_flags () {
 # Execute setup.
 ##
 function setup () {
-
-    # debug test mode
-    echo 'INSTRUQT_USER_ID='${INSTRUQT_USER_ID}
-    
     mkdir -p $WORK_DIR/
 
     cp $TRACK_DIR/nginx.default.conf /etc/nginx/nginx.conf
