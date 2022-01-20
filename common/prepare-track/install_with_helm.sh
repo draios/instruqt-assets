@@ -46,6 +46,7 @@ helm install sysdig-agent \
     --set resources.requests.memory=1024Mi \
     --set resources.limits.cpu=2 \
     --set resources.limits.memory=2048Mi \
+    --set sysdig.settings.cri.socket_path=/run/k3s/containerd/containerd.sock \
     -f ${AGENT_CONF_DIR}/values.yaml \
     ${HELM_OPTS} \
 sysdig/sysdig >> ${OUTPUT} 2>&1 &
