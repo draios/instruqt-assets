@@ -1,7 +1,5 @@
 sysdig: 
   settings: 
-    cri:
-      socket_path: /run/k3s/containerd/containerd.sock
     feature:  
       mode: troubleshooting
     new_k8s: true
