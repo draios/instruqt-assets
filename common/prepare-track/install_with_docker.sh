@@ -46,7 +46,7 @@ fi
 
 if [ "$USE_PROMETHEUS" = true ]
 then
-    DOCKER_OPTS="-v $(dirname $0)/prometheus.yaml:/opt/draios/etc/prometheus.yaml:rw $DOCKER_OPTS"
+    DOCKER_OPTS="-v ${AGENT_CONF_DIR}/prometheus.yaml:/opt/draios/etc/prometheus.yaml:rw $DOCKER_OPTS"
 fi
 
 docker run -d --name sysdig-agent \
@@ -62,5 +62,7 @@ docker run -d --name sysdig-agent \
     -v /boot:/host/boot:ro \
     -v /lib/modules:/host/lib/modules:ro \
     -v /usr:/host/usr:ro \
+    -v ${AGENT_CONF_DIR}/values.yaml:/opt/draios/etc/dragent.yaml:rw \
+    ${DOCKER_OPTS} \
     --shm-size=512m \
     sysdig/agent >> ${OUTPUT} 2>&1 &
