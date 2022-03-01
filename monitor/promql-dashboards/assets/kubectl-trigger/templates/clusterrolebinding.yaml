@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "kubectl-trigger.fullname" . }}
+  labels:
+{{ include "kubectl-trigger.labels" . | indent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "kubectl-trigger.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: edit
+  apiGroup: rbac.authorization.k8s.io

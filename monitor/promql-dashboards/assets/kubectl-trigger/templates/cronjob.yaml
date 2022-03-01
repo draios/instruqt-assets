@@ -1,0 +1,63 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ include "kubectl-trigger.fullname" . }}
+  labels:
+{{ include "kubectl-trigger.labels" . | indent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  failedJobsHistoryLimit: {{ .Values.failedJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ .Values.successfulJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: {{ include "kubectl-trigger.name" . }}
+            app.kubernetes.io/instance: {{ .Release.Name }}
+        spec:
+          serviceAccountName: {{ include "kubectl-trigger.fullname" . }}
+          containers:
+            - name: {{ .Chart.Name }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command:
+                - {{ .Values.interpreter }}
+              args:
+                - /script/main.sh
+              volumeMounts:
+                - name: manifests-volume
+                  mountPath: /manifests
+                - name: script-volume
+                  mountPath: /script
+                {{ if .Values.kubeconfig }}
+                - name: kubeconfig-volume
+                  mountPath: /kubeconfig
+                {{ end }}
+                {{ if .Values.apitoken }}
+                - name: apitoken-volume
+                  mountPath: /apitoken
+                {{ end }}
+              {{ if .Values.kubeconfig }}
+              env:
+                - name: KUBECONFIG
+                  value: /kubeconfig/kubeconfig
+              {{ end }}
+          restartPolicy: {{ .Values.restartPolicy }}
+          volumes:
+            - name: manifests-volume
+              configMap:
+                name: {{ include "kubectl-trigger.fullname" . }}-manifests
+            - name: script-volume
+              configMap:
+                name: {{ include "kubectl-trigger.fullname" . }}-script
+            {{ if .Values.kubeconfig }}
+            - name: kubeconfig-volume
+              secret:
+                secretName: {{ include "kubectl-trigger.fullname" . }}
+            {{ end }}
+            {{ if .Values.apitoken }}
+            - name: apitoken-volume
+              secret:
+                secretName: {{ include "kubectl-trigger.fullname" . }}-apitoken
+            {{ end }}
