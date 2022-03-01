@@ -1,0 +1,65 @@
+---
+- hosts: masters
+  gather_facts: false
+  tasks:
+    - name: ensure /var/lib/k8s_audit exists
+      file:
+        path: /var/lib/k8s_audit
+        state: directory
+        owner: root
+        group: root
+        mode: "755"
+
+    - name: ensure audit-policy.yaml file is present
+      get_url:
+        url: https://raw.githubusercontent.com/falcosecurity/falco/dev/examples/k8s_audit_config/audit-policy.yaml
+        dest: /var/lib/k8s_audit/audit-policy.yaml
+        owner: root
+        group: root
+        mode: "600"
+
+    - name: ensure webhook-config.yaml file is present
+      copy:
+        dest: /var/lib/k8s_audit/webhook-config.yaml
+        owner: root
+        group: root
+        mode: "600"
+        content: |
+          apiVersion: v1
+          kind: Config
+          clusters:
+          - name: sysdig-agent
+            cluster:
+              server: http://localhost:7765/k8s_audit
+          contexts:
+          - context:
+              cluster: sysdig-agent
+              user: ""
+            name: default-context
+          current-context: default-context
+          preferences: {}
+          users: []
+
+    - name: ensure apiserver-config.patch.sh is present
+      get_url:
+        url: https://raw.githubusercontent.com/falcosecurity/falco/dev/examples/k8s_audit_config/apiserver-config.patch.sh
+        dest: /var/lib/k8s_audit/apiserver-config.patch.sh
+        owner: root
+        group: root
+        mode: "700"
+
+    - name: ensure kube apiserver is patched
+      command:
+        argv:
+          - /var/lib/k8s_audit/apiserver-config.patch.sh
+          - /etc/kubernetes/manifests/kube-apiserver.manifest
+          - kops
+          - static
+
+    - name: ensure that audit.log file is removed every week
+      cron:
+        name: "remove /var/lib/k8s_audit/audit.log"
+        special_time: daily
+        job: "rm /var/lib/k8s_audit/audit.log"
+        user: root
+        state: present
