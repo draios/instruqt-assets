@@ -1,0 +1,170 @@
+repositories:
+  - name: stable
+    url: https://charts.helm.sh/stable
+  - name: incubator
+    url: https://charts.helm.sh/incubator
+releases:
+  # This is a workaround around Helm3
+  # https://github.com/roboll/helmfile/issues/891
+  - name: namespaces
+    chart: incubator/raw
+    values:
+      - resources:
+        - apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: sysdig-agent
+          spec:
+        - apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: sock-shop
+          spec:
+
+  #Monitor demo 3.5
+  - name: sock-shop-delay-monitor-event-trigger
+    namespace: sock-shop
+    chart: ./monitor-event-trigger
+    atomic: true
+    needs: ["namespaces"]
+    values:
+      - apitoken: {{ requiredEnv "KUBE_MONITOR_API_TOKEN" }}
+        schedule: "0,10,20,30,40,50 * * * *"
+        eventPayload: '{"event":{"name":"Sock-shop - New cartdb version deployed ","filter":"kubernetes.cluster.name = \"demo-kube-aws\" and kubernetes.deployment.name = \"carts-db\" and kubernetes.namespace.name = \"sock-shop\" and kubernetes.node.name = \"ip-172-20-63-191.ec2.internal\" and kubernetes.replicaSet.name = \"carts-db-8ddc45d8d\" and kubernetes.service.name = \"carts-db\"","description":"deploy","severity":"2","tags":{"build":"lag"}}}'
+
+  - name: sock-shop-delay-trigger
+    namespace: sock-shop
+    chart: ./kubectl-trigger
+    atomic: true
+    needs: ["namespaces"]
+    values:
+      - schedule: "0,10,20,30,40,50 * * * *"
+        script: "kubectl apply -f /manifests"
+        manifests:
+          cart-db-delay-deployment.yaml: |
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: carts-db
+              labels:
+                name: carts-db
+              namespace: sock-shop
+            spec:
+              replicas: 1
+              template:
+                metadata:
+                  labels:
+                    name: carts-db
+                spec:
+                  containers:
+                  - name: carts-db
+                    image: mongo
+                    ports:
+                    - name: mongo
+                      containerPort: 27017
+                    resources:
+                      requests:
+                        cpu: 10m
+                        memory: 64Mi
+                      limits:
+                        cpu: 10m
+                        memory: 300Mi
+                    securityContext:
+                      capabilities:
+                        drop:
+                          - all
+                        add:
+                          - CHOWN
+                          - SETGID
+                          - SETUID
+                      readOnlyRootFilesystem: true
+                    volumeMounts:
+                    - mountPath: /tmp
+                      name: tmp-volume
+                  volumes:
+                    - name: tmp-volume
+                      emptyDir:
+                        medium: Memory
+                  nodeSelector:
+                    beta.kubernetes.io/os: linux
+  #Monitor demo 3.5
+  - name: sock-shop-fix-monitor-event-trigger
+    namespace: sock-shop
+    chart: ./monitor-event-trigger
+    atomic: true
+    needs: ["namespaces"]
+    values:
+      - apitoken: {{ requiredEnv "KUBE_MONITOR_API_TOKEN" }}
+        schedule: "5,15,25,35,45,55 * * * *"
+        eventPayload: '{"event":{"name":"Sock-shop - New cartdb version deployed ","filter":"kubernetes.cluster.name = \"demo-kube-aws\" and kubernetes.deployment.name = \"carts-db\" and kubernetes.namespace.name = \"sock-shop\" and kubernetes.node.name = \"ip-172-20-63-191.ec2.internal\" and kubernetes.replicaSet.name = \"carts-db-8ddc45d8d\" and kubernetes.service.name = \"carts-db\"","description":"deploy","severity":"2","tags":{"build":"lag"}}}'
+
+  - name: sock-shop-fix-trigger
+    namespace: sock-shop
+    chart: ./kubectl-trigger
+    atomic: true
+    needs: ["namespaces"]
+    values:
+      - script: "kubectl apply -f /manifests"
+        schedule: "5,15,25,35,45,55 * * * *"
+        manifests:
+          cart-db-fix-deployment.yaml: |
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: carts-db
+              labels:
+                name: carts-db
+              namespace: sock-shop
+            spec:
+              replicas: 1
+              template:
+                metadata:
+                  labels:
+                    name: carts-db
+                spec:
+                  containers:
+                  - name: carts-db
+                    image: mongo
+                    ports:
+                    - name: mongo
+                      containerPort: 27017
+                    resources:
+                      requests:
+                        cpu: 100m
+                        memory: 64Mi
+                      limits:
+                        cpu: 100m
+                        memory: 300Mi
+                    securityContext:
+                      capabilities:
+                        drop:
+                          - all
+                        add:
+                          - CHOWN
+                          - SETGID
+                          - SETUID
+                      readOnlyRootFilesystem: true
+                    volumeMounts:
+                    - mountPath: /tmp
+                      name: tmp-volume
+                  volumes:
+                    - name: tmp-volume
+                      emptyDir:
+                        medium: Memory
+                  nodeSelector:
+                    beta.kubernetes.io/os: linux
+
+  - name: sysdig-agent
+    namespace: sysdig-agent
+    chart: stable/sysdig
+    atomic: true
+    version: 1.7.6
+    needs: ["namespaces"]
+    values:
+      - sysdig:
+          accessKey: {{ requiredEnv "KUBE_SYSDIG_AGENT_ACCESS_KEY" }}
+          settings:
+            tags: role:demo-kube-aws
+            k8s_cluster_name: demo-kube-aws
+            collector: {{ requiredEnv "KUBE_SYSDIG_AGENT_COLLECTOR" }}
+      - dragent.yaml
