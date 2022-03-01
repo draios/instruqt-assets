@@ -1,0 +1,198 @@
+sysdig:
+  settings:
+    snaplen: 512
+    autodrop:
+      enabled: true
+      upper_threshold: 80
+    jmx:
+      per_process_beans:
+        voting:
+          pattern: "worker-jar"
+          beans:
+            - query: "worker:type=Metric,*"
+              attributes:
+                - name: Dogs
+                  alias: Dogs
+                - name: Cats
+                  alias: Cats
+                - name: Votes
+                  alias: Votes
+    #Enable prometheus metrics
+    metrics_excess_log: true
+    metrics_filter:
+      # beginning of kube-apiserver
+      - include: "apiserver_request_total"
+      - include: "apiserver_request_duration_seconds*"
+      - include: "workqueue_adds_total"
+      - include: "workqueue_depth"
+      - include: "workqueue_queue_duration_seconds*"
+      - include: "etcd_helper_cache_entry_total"
+      - include: "etcd_helper_cache_hit_total"
+      - include: "etcd_helper_cache_miss_total"
+      - include: "etcd_request_cache_get_duration_seconds*"
+      - include: "etcd_request_cache_add_duration_seconds*"
+      - include: "go_goroutines"
+      # end of kube-apiserver
+
+      # beginning of kube-controller-manager
+      - include: "workqueue_adds_total"
+      - include: "workqueue_depth"
+      - include: "workqueue_queue_duration_seconds*"
+      - include: "rest_client_requests_total"
+      - include: "rest_client_request_latency_seconds*"
+      - include: "go_goroutines"
+      # end of kube-controller-manager
+
+      # beginning of kube-controller-manager
+      - include: "kubelet_running_pod_count"
+      - include: "kubelet_running_container_count"
+      - include: "volume_manager_total_volumes"
+      - include: "kubelet_node_config_error"
+      - include: "kubelet_runtime_operations_total"
+      - include: "kubelet_runtime_operations_errors_total"
+      - include: "kubelet_runtime_operations_duration_seconds*"
+      - include: "kubelet_pod_start_duration_seconds*"
+      - include: "kubelet_pod_worker_duration_seconds*"
+      - include: "storage_operation_duration_seconds*"
+      - include: "storage_operation_errors_total*"
+      - include: "kubelet_cgroup_manager_duration_seconds*"
+      - include: "kubelet_pleg_relist_duration_seconds*"
+      - include: "kubelet_pleg_relist_interval_seconds*"
+      - include: "rest_client_requests_total*"
+      - include: "rest_client_request_latency_seconds*"
+      - include: "go_goroutines"
+      # end of kube-controller-manager
+
+      # beginning of kube-proxy
+      - include: "kubeproxy_sync_proxy_rules_duration_seconds*"
+      - include: "kubeproxy_network_programming_duration_seconds*"
+      - include: "rest_client_requests_total"
+      - include: "rest_client_request_latency_seconds*"
+      - include: "go_goroutines"
+      # end of kube-proxy
+
+      # beginning of kube-dns
+      - include: "skydns_skydns_dns_request_count_total"
+      - include: "skydns_skydns_dns_request_duration_seconds*"
+      - include: "skydns_skydns_dns_response_size_bytes*"
+      - include: "skydns_skydns_dns_cachemiss_count_total"
+      - include: "skydns_skydns_dns_error_count_total"
+      # end of kube-dns
+
+      # beginning of CoreDNS
+      - include: "coredns_dns_request_count_total"
+      - include: "coredns_dns_request_type_count_total"
+      - include: "coredns_dns_request_do_count_total"
+      - include: "coredns_dns_request_size_bytes*"
+      - include: "coredns_dns_response_rcode_count_total"
+      - include: "coredns_dns_request_duration_milliseconds*"
+      - include: "coredns_dns_response_size_bytes*"
+      - include: "coredns_cache_size"
+      - include: "coredns_cache_hits_total"
+      - include: "coredns_cache_misses_total"
+      # end of CoreDNS
+
+      # beginning of kube-scheduler
+      - include: "scheduler_e2e_scheduling_duration_seconds*"
+      - include: "scheduler_binding_duration_seconds*"
+      - include: "scheduler_scheduling_algorithm_duration_seconds*"
+      - include: "scheduler_volume_scheduling_duration_seconds*"
+      - include: "rest_client_requests_total"
+      - include: "rest_client_request_latency_seconds*"
+      - include: "go_goroutines"
+      # end of kube-scheduler
+
+    prometheus:
+      enabled: true
+      histograms: true
+      ingest_raw: true
+      max_metrics: 3000
+      max_metrics_per_process: 20000
+      # process_filter:
+      #   - include:
+      #       kubernetes.pod.label.k8s-app: kube-apiserver
+      #       port: 8080
+      #       conf:
+      #         tags:
+      #           kubernetes.component.name: kube-apiserver
+      #         host: 127.0.0.1
+      #         port: 8080
+      #         use_https: false
+      #         auth_token_path: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+      #   - include:
+      #       kubernetes.pod.label.k8s-app: kube-controller-manager
+      #       port: 10252
+      #       conf:
+      #         tags:
+      #           kubernetes.component.name: kube-controller-manager
+      #         host: 127.0.0.1
+      #         port: 10252
+      #         use_https: false
+
+      #   - include:
+      #       process.name: kubelet
+      #       port: 10255
+      #       conf:
+      #         tags:
+      #           kubernetes.component.name: kubelet
+      #         host: 127.0.0.1
+      #         port: 10255
+      #         use_https: false
+
+      #   - include:
+      #       kubernetes.pod.label.k8s-app: kube-proxy
+      #       port: 10249
+      #       conf:
+      #         host: 127.0.0.1
+      #         port: 10249
+      #         tags:
+      #           kubernetes.component.name: kube-proxy
+
+      #   - include:
+      #       kubernetes.pod.label.k8s-app: kube-dns
+      #       conf:
+      #         tags:
+      #           kubernetes.component.name: kube-dns
+      #         host: 127.0.0.1
+      #         path: "{kubernetes.pod.annotation.prometheus.io/path}"
+      #         port: "{kubernetes.pod.annotation.prometheus.io/port}"
+
+      #   - include:
+      #       kubernetes.pod.label.k8s-app: kube-dns
+      #       port: 9153
+      #       conf:
+      #         tags:
+      #           kubernetes.component.name: coredns
+      #         path: 127.0.0.1
+      #         port: 9153
+
+      #   - include:
+      #       kubernetes.pod.label.k8s-app: kube-scheduler
+      #       port: 10251
+      #       conf:
+      #         tags:
+      #           kubernetes.component.name: kube-scheduler
+      #         host: 127.0.0.1
+      #         port: 10251
+      #         use_https: false
+    #######################################
+    #
+    app_checks:
+      - name: ntp
+        check_module: ntp
+        pattern:
+          comm: ntpd
+      - name: hash-browns
+        check_module: go_expvar
+        pattern:
+          comm: server
+        conf:
+          expvar_url: "http://localhost:{port}/debug/vars" # automatically match url using the listening port
+          # Add custom metrics if you want
+          # metrics:
+          #   - path: points_processed
+          #     type: rate # rate or gauge
+          #     alias: points.processed.count
+    percentiles: [50, 95, 99]
+    tags: role:cluster
