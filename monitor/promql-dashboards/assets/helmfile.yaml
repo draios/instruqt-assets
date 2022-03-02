@@ -154,17 +154,17 @@ releases:
                   nodeSelector:
                     beta.kubernetes.io/os: linux
 
-  - name: sysdig-agent
-    namespace: sysdig-agent
-    chart: stable/sysdig
-    atomic: true
-    version: 1.7.6
-    needs: ["namespaces"]
-    values:
-      - sysdig:
-          accessKey: {{ requiredEnv "KUBE_SYSDIG_AGENT_ACCESS_KEY" }}
-          settings:
-            tags: role:demo-kube-aws
-            k8s_cluster_name: demo-kube-aws
-            collector: {{ requiredEnv "KUBE_SYSDIG_AGENT_COLLECTOR" }}
-      - dragent.yaml
+ # - name: sysdig-agent
+ #   namespace: sysdig-agent
+ #   chart: stable/sysdig
+ #   atomic: true
+ #   version: 1.7.6
+ #   needs: ["namespaces"]
+ #   values:
+ #     - sysdig:
+ #         accessKey: {{ requiredEnv "KUBE_SYSDIG_AGENT_ACCESS_KEY" }}
+ #         settings:
+ #           tags: role:demo-kube-aws
+ #           k8s_cluster_name: demo-kube-aws
+ #           collector: {{ requiredEnv "KUBE_SYSDIG_AGENT_COLLECTOR" }}
+ #     - dragent.yaml
