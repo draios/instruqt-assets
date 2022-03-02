@@ -13,11 +13,6 @@ releases:
         - apiVersion: v1
           kind: Namespace
           metadata:
-            name: sysdig-agent
-          spec:
-        - apiVersion: v1
-          kind: Namespace
-          metadata:
             name: sock-shop
           spec:
 
