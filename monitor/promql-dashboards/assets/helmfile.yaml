@@ -28,7 +28,7 @@ releases:
     atomic: true
     needs: ["namespaces"]
     values:
-      - apitoken: {{ requiredEnv "KUBE_MONITOR_API_TOKEN" }}
+      - apitoken: {{ requiredEnv "SYSDIG_MONITOR_API_TOKEN" }}
         schedule: "0,10,20,30,40,50 * * * *"
         eventPayload: '{"event":{"name":"Sock-shop - New cartdb version deployed ","filter":"kubernetes.cluster.name = \"demo-kube-aws\" and kubernetes.deployment.name = \"carts-db\" and kubernetes.namespace.name = \"sock-shop\" and kubernetes.node.name = \"ip-172-20-63-191.ec2.internal\" and kubernetes.replicaSet.name = \"carts-db-8ddc45d8d\" and kubernetes.service.name = \"carts-db\"","description":"deploy","severity":"2","tags":{"build":"lag"}}}'
 
@@ -94,7 +94,7 @@ releases:
     atomic: true
     needs: ["namespaces"]
     values:
-      - apitoken: {{ requiredEnv "KUBE_MONITOR_API_TOKEN" }}
+      - apitoken: {{ requiredEnv "SYSDIG_MONITOR_API_TOKEN" }}
         schedule: "5,15,25,35,45,55 * * * *"
         eventPayload: '{"event":{"name":"Sock-shop - New cartdb version deployed ","filter":"kubernetes.cluster.name = \"demo-kube-aws\" and kubernetes.deployment.name = \"carts-db\" and kubernetes.namespace.name = \"sock-shop\" and kubernetes.node.name = \"ip-172-20-63-191.ec2.internal\" and kubernetes.replicaSet.name = \"carts-db-8ddc45d8d\" and kubernetes.service.name = \"carts-db\"","description":"deploy","severity":"2","tags":{"build":"lag"}}}'
 
