@@ -4,24 +4,24 @@ repositories:
   - name: incubator
     url: https://charts.helm.sh/incubator
 releases:
-  # This is a workaround around Helm3
-  # https://github.com/roboll/helmfile/issues/891
-  - name: namespaces
-    chart: incubator/raw
-    values:
-      - resources:
-        - apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: sock-shop
-          spec:
+#  # This is a workaround around Helm3
+#  # https://github.com/roboll/helmfile/issues/891
+#  - name: namespaces
+#    chart: incubator/raw
+#    values:
+#      - resources:
+#        - apiVersion: v1
+#          kind: Namespace
+#          metadata:
+#            name: sock-shop
+#          spec:
 
   #Monitor demo 3.5
   - name: sock-shop-delay-monitor-event-trigger
     namespace: sock-shop
     chart: ./monitor-event-trigger
     atomic: true
-    needs: ["namespaces"]
+ #   needs: ["namespaces"]
     values:
       - apitoken: {{ requiredEnv "SYSDIG_MONITOR_API_TOKEN" }}
         schedule: "0,10,20,30,40,50 * * * *"
@@ -31,7 +31,7 @@ releases:
     namespace: sock-shop
     chart: ./kubectl-trigger
     atomic: true
-    needs: ["namespaces"]
+ #   needs: ["namespaces"]
     values:
       - schedule: "0,10,20,30,40,50 * * * *"
         script: "kubectl apply -f /manifests"
@@ -87,7 +87,7 @@ releases:
     namespace: sock-shop
     chart: ./monitor-event-trigger
     atomic: true
-    needs: ["namespaces"]
+  #  needs: ["namespaces"]
     values:
       - apitoken: {{ requiredEnv "SYSDIG_MONITOR_API_TOKEN" }}
         schedule: "5,15,25,35,45,55 * * * *"
@@ -97,7 +97,7 @@ releases:
     namespace: sock-shop
     chart: ./kubectl-trigger
     atomic: true
-    needs: ["namespaces"]
+  #  needs: ["namespaces"]
     values:
       - script: "kubectl apply -f /manifests"
         schedule: "5,15,25,35,45,55 * * * *"
