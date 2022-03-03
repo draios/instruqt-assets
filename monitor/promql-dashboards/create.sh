@@ -1,6 +1,6 @@
 #!/bin/sh
 
-pushd /root/assets/
+cd /root/assets/
 helmfile sync
 kubectl apply -f complete-sock-shop.yaml -n sock-shop
-popd
+cd /root
