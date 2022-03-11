@@ -4,6 +4,6 @@
 #
 
 while true; do
-    sleep 30
-    stress -c 1 -t 20
+  sleep 30
+  stress -c 1 -t 20
 done
