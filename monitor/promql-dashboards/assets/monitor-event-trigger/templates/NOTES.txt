@@ -1,0 +1,5 @@
+A monitor-event-trigger CronJob has been deployed in your cluster.
+
+It will apply the Kubernetes manifests periodically scheduled: {{ .Values.schedule }}
+
+No further action should be required.
