@@ -9,6 +9,13 @@ if [ -z $1 ] || [ -z $2 ]; then
   exit 1
 fi
 
+# wait for the agent to be running
+if [ ! -z $3 ]; then
+  until (kubectl get pods -n sysdig-agent | grep Running | grep 1/1)
+  do sleep 1;
+  done
+fi
+
 CHUNKSIZE=10
 
 SIZE=$1
