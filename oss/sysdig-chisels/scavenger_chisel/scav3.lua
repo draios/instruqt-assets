@@ -41,7 +41,7 @@ function on_event()
 
                 -- creates the 
                 file_name = string.gsub(name, "/", "_")
-                fp = io.output(file_name)
+                fp = io.output("/root/scav_output/" .. file_name)
                 io.write(content)
                 io.close(fp)
             end
