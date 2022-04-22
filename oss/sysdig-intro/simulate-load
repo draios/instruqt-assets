@@ -1,0 +1,62 @@
+#!/bin/bash
+
+HOST=localhost:80
+
+init_wp() {
+curl "http://$HOST/wp-admin/setup-config.php?step=1" \
+-H 'Pragma: no-cache' \
+-H 'Accept-Encoding: gzip, deflate' \
+-H 'Accept-Language: en-US,en;q=0.8,it;q=0.6' \
+-H 'Upgrade-Insecure-Requests: 1' \
+-H 'User-Agent: sysdig-init' \
+-H 'Content-Type: application/x-www-form-urlencoded' \
+-H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' \
+-H 'Connection: keep-alive' --data 'language=' --compressed > /dev/null 2>&1
+
+sleep 1
+
+curl "http://$HOST/wp-admin/setup-config.php?step=2" \
+-H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' \
+-H 'Upgrade-Insecure-Requests: 1' \
+-H 'Content-Type: application/x-www-form-urlencoded' \
+--data 'dbname=mysql&uname=root&pwd=password&dbhost=mysql&prefix=wp_&language=&submit=Submit' \
+--compressed > /dev/null 2>&1
+
+curl "http://$HOST/wp-admin/install.php?step=2" \
+-H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' \
+-H 'Upgrade-Insecure-Requests: 1' \
+-H 'Content-Type: application/x-www-form-urlencoded' \
+--data 'weblog_title=sysdig-demo&user_name=sysdig-user&admin_password=pRLRFO%28%267vkQ1eMSKT&admin_password2=pRLRFO%28%267vkQ1eMSKT&admin_email=no-reply%40sysdig.com&Submit=Install+WordPress&language=en_US' \
+--compressed > /dev/null 2>&1
+
+sleep 1
+
+generate_read
+}
+
+generate_read() {
+    for i in {1..360}; do 
+        curl "http://$HOST/" > /dev/null 2>&1 &
+    done
+}
+
+generate_write() {
+    echo "*****GENERATE 10 POSTS*****"
+    for i in {1..10}; do 
+        docker run -it --rm \
+        --volumes-from wp \
+        --network container:wp \
+        -e WORDPRESS_DB_USER=root \
+        -e WORDPRESS_DB_PASSWORD=password \
+        wordpress:cli post create --post_type=page --post_status=publish --post_author=sysdig-user --post_title="Post $RANDOM" 
+    done
+    echo "*****COMPLETE*****"
+}
+
+if [[ $1 = "init" ]]; then
+    init_wp
+elif [[ $1 = "read" ]]; then
+    generate_read
+elif [[ $1 = "write" ]]; then
+    generate_write
+fi
