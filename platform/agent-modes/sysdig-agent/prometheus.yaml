@@ -1,4 +1,3 @@
-
 prometheus:
   file: true
   yaml:
