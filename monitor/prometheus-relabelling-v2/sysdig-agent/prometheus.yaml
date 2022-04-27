@@ -9,3 +9,6 @@ prometheus:
         insecure_skip_verify: true
       kubernetes_sd_configs:
       - role: pod
+    - job_name: node-exporter
+      static_configs:
+      - targets: ['localhost:9100']
