@@ -1,0 +1,7 @@
+sysdig:
+  settings:
+    prometheus:
+      enabled: true
+    feature:
+      mode: troubleshooting
+    new_k8s: true
