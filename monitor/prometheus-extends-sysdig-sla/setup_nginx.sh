@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# copy the current nginx config (it will be used later)
+cp /etc/nginx/nginx.conf /root/nginx.conf
+
 # remove last closing brackets
 sed -i '$ d' /etc/nginx/nginx.conf
 
@@ -7,7 +10,7 @@ sed -i '$ d' /etc/nginx/nginx.conf
 cat <<EOF >> /etc/nginx/nginx.conf
     server {
         listen 8000 default_server;
-        listen [::]:8080 default_server;
+        listen [::]:8000 default_server;
         location = /basic_status {
             stub_status;
         }
