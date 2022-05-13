@@ -25,7 +25,7 @@ fi
 if [ "$USE_NODE_IMAGE_ANALYZER" = true ]
 then
     HELM_OPTS="--set nodeImageAnalyzer.deploy=true \
-               --set nodeImageAnalyzer.settings.containerdSocketPath=unix:///$SOCKET_PATH \
+               --set nodeImageAnalyzer.settings.containerdSocketPath=unix://$SOCKET_PATH \
                $HELM_OPTS"
 else
     HELM_OPTS="--set nodeImageAnalyzer.deploy=false $HELM_OPTS"
