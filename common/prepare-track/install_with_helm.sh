@@ -7,6 +7,7 @@
 ##
 
 OUTPUT=/opt/sysdig/helm_install.out
+SOCKET_PATH=/run/k3s/containerd/containerd.sock
 CLUSTER_NAME=$1
 ACCESS_KEY=$2
 COLLECTOR=$3
@@ -23,7 +24,9 @@ fi
 
 if [ "$USE_NODE_IMAGE_ANALYZER" = true ]
 then
-    HELM_OPTS="--set nodeImageAnalyzer.deploy=true $HELM_OPTS"
+    HELM_OPTS="--set nodeImageAnalyzer.deploy=true \
+               --set nodeImageAnalyzer.settings.containerdSocketPath=unix://$SOCKET_PATH \
+               $HELM_OPTS"
 else
     HELM_OPTS="--set nodeImageAnalyzer.deploy=false $HELM_OPTS"
 fi
@@ -46,7 +49,7 @@ helm install sysdig-agent \
     --set resources.requests.memory=1024Mi \
     --set resources.limits.cpu=2 \
     --set resources.limits.memory=2048Mi \
-    --set sysdig.settings.cri.socket_path=/run/k3s/containerd/containerd.sock \
+    --set sysdig.settings.cri.socket_path=$SOCKET_PATH \
     -f ${AGENT_CONF_DIR}/values.yaml \
     ${HELM_OPTS} \
 sysdig/sysdig >> ${OUTPUT} 2>&1 &
