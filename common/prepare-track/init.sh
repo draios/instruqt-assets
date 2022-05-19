@@ -5,6 +5,8 @@
 # AUTHORS:
 #   Pablo J. López Zaldívar <pablo.lopezzaldivar@sysdig.com>
 #   Paul Hodgetts <paul.hodgetts@sysdig.com>
+#
+#   Current SaaS regions: https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges/
 ###
 
 trap '' 2 # Signal capture quit with Ctrl+C
@@ -64,7 +66,14 @@ function set_values () {
     REGION=$1
 
     case $REGION in
-        *"US West"*)
+        *"AWS US East"*)
+            MONITOR_URL='https://app.sysdigcloud.com'
+            SECURE_URL='https://secure.sysdig.com'
+            AGENT_COLLECTOR='collector.sysdigcloud.com'
+            NIA_ENDPOINT='https://collector-static.sysdigcloud.com/internal/scanning/scanning-analysis-collector'
+            ;;
+
+        *"AWS US West"*)
             DOMAIN='us2.app.sysdig.com'
             MONITOR_URL='https://'$DOMAIN
             SECURE_URL=$MONITOR_URL'/secure/'
@@ -88,11 +97,12 @@ function set_values () {
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
             ;;
         
-        *) # Default to US East
-            MONITOR_URL='https://app.sysdigcloud.com'
-            SECURE_URL='https://secure.sysdig.com'
-            AGENT_COLLECTOR='collector.sysdigcloud.com'        
-            NIA_ENDPOINT='https://collector-static.sysdigcloud.com/internal/scanning/scanning-analysis-collector'
+        *) # Default to GCP US West
+            DOMAIN='app.us4.sysdig.com'
+            MONITOR_URL='https://'$DOMAIN
+            SECURE_URL=$MONITOR_URL'/secure/'
+            AGENT_COLLECTOR='ingest.us4.sysdig.com'
+            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
             ;;
     esac
 
@@ -112,11 +122,12 @@ function set_values () {
 function select_region () {
     echo
     echo "Please select one of the existing SaaS Regions: "
-    echo "   1) US East (default)"
-    echo "   2) US West"
-    echo "   3) EMEA"
-    echo "   4) Pacific"
-    echo "   5) Abort install"
+    echo "   1) GCP US West (default)"
+    echo "   2) AWS US East"
+    echo "   3) AWS US West"
+    echo "   4) EMEA"
+    echo "   5) Pacific"
+    echo "   6) Abort install"
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
     then
@@ -127,18 +138,21 @@ function select_region () {
 
     case $REGION_N in
         1)
-            REGION="US East (default)"
+            REGION="GCP US West (default)"
             ;;
         2)
-            REGION="US West"
+            REGION="AWS US East)"
             ;;
         3)
-            REGION="EMEA"
+            REGION="AWS US West"
             ;;
         4)
-            REGION="Pacific"
+            REGION="EMEA"
             ;;
         5)
+            REGION="Pacific"
+            ;;
+        6)
             echo "   Abort init.sh. Region not defined, agent not installed. This track will not work properly."
             exit 0
             ;;
