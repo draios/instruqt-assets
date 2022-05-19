@@ -47,6 +47,7 @@ sed -i "s/# collector_port: 6666/ collector_port: 6443/g" sysdig-agent/sysdig-ag
 
 
 # create resources
+kubectl create namespace sysdig-agent
 kubectl create secret generic sysdig-agent --from-literal=access-key=$ACCESSKEY -n sysdig-agent
 kubectl apply -f sysdig-agent/sysdig-agent-clusterrole.yaml -n sysdig-agent
 kubectl create serviceaccount sysdig-agent -n sysdig-agent
