@@ -43,7 +43,7 @@ wget https://raw.githubusercontent.com/draios/sysdig-cloud-scripts/master/agent_
 cd ..
 
 sed -i "s/# collector: 192.168.1.1/collector: $COLLECTOR_ADDRESS/g" sysdig-agent/sysdig-agent-configmap.yaml
-sed -i "s/# collector_port: 6666/ collector_port: 6443/g" sysdig-agent/sysdig-agent-configmap.yaml
+sed -i "s/# collector_port: 6666/collector_port: 6443/g" sysdig-agent/sysdig-agent-configmap.yaml
 
 
 # create resources
