@@ -6,7 +6,7 @@
 
 echo "Sysdig Agent install script using Docker"
 echo 
-read -p "Please enter your Sysdig Key :" ACCESSKEY
+read -p "Please enter your Sysdig Key (Settings > Agent Installation > Access Key): " ACCESSKEY
 echo 
 echo "Select region to define collector address :"
 PS3='Please select one of the options above (type name or number): '
