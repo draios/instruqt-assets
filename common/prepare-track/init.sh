@@ -3,8 +3,7 @@
 # Sysdig Agent deploy helper for Sysdig Training tracks.
 #
 # AUTHORS:
-#   Pablo J. López Zaldívar <pablo.lopezzaldivar@sysdig.com>
-#   Paul Hodgetts <paul.hodgetts@sysdig.com>
+#   Sysdig Education Team <team-training@sysdig.com>
 #
 #   Current SaaS regions: https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges/
 ###
@@ -100,7 +99,7 @@ function set_values () {
         *) # Default to GCP US West
             DOMAIN='app.us4.sysdig.com'
             MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure/'
+            SECURE_URL=$MONITOR_URL'/secure'
             AGENT_COLLECTOR='ingest.us4.sysdig.com'
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
             ;;
@@ -141,7 +140,7 @@ function select_region () {
             REGION="GCP US West (default)"
             ;;
         2)
-            REGION="AWS US East)"
+            REGION="AWS US East"
             ;;
         3)
             REGION="AWS US West"
