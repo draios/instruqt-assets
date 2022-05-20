@@ -53,8 +53,6 @@ docker run -d \
 	-v /boot:/host/boot:ro \
 	-v /lib/modules:/host/lib/modules:ro \
 	-v /usr:/host/usr:ro \
-
-
 	--shm-size=512m \
 sysdig/agent
 
