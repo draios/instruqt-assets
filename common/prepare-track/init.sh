@@ -76,7 +76,7 @@ function set_values () {
         *"AWS US West"*)
             DOMAIN='us2.app.sysdig.com'
             MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure/'
+            SECURE_URL=$MONITOR_URL'/secure'
             AGENT_COLLECTOR='ingest-'$DOMAIN
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
             ;;
@@ -84,7 +84,7 @@ function set_values () {
         *"EMEA"*)
             DOMAIN='eu1.app.sysdig.com'
             MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure/'
+            SECURE_URL=$MONITOR_URL'/secure'
             AGENT_COLLECTOR='ingest-'$DOMAIN
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
             ;;
@@ -92,7 +92,7 @@ function set_values () {
         *"Pacific"*)
             DOMAIN='app.au1.sysdig.com'
             MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure/'
+            SECURE_URL=$MONITOR_URL'/secure'
             AGENT_COLLECTOR='ingest.au1.sysdig.com'
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
             ;;
