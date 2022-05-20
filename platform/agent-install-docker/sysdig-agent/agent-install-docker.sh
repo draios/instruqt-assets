@@ -53,8 +53,8 @@ docker run -d \
 	-v /boot:/host/boot:ro \
 	-v /lib/modules:/host/lib/modules:ro \
 	-v /usr:/host/usr:ro \
-    #-v $(pwd)/dragent.yaml:/opt/draios/etc/dragent.yaml:rw \
-    #-v $(pwd)/prometheus.yaml:/opt/draios/etc/prometheus.yaml:rw \
+
+
 	--shm-size=512m \
 sysdig/agent
 
