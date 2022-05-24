@@ -35,6 +35,7 @@ USE_SECURE_API=false
 USE_NODE_ANALYZER=false
 USE_NODE_IMAGE_ANALYZER=false
 USE_PROMETHEUS=false
+USE_AUDIT_LOG=false
 
 ##############################    GLOBAL VARS    ##############################
 TEST_AGENT_ACCESS_KEY=[REDACTED]
@@ -307,6 +308,10 @@ function intro () {
       echo "    - Enable the Agent Prometheus collector."
     fi
 
+    if [ "$USE_AUDIT_LOG" == true ]; then
+      echo "    - Enable K8s audit log support for Sysdig Secure."
+    fi
+
     echo "  Follow the instructions below."
     echo
     echo "----------------------------------------------------------"
@@ -530,6 +535,9 @@ function check_flags () {
                     ;;
                 --prometheus | -p)
                     export USE_PROMETHEUS=true
+                    ;;
+                --log | -l)
+                    export USE_AUDIT_LOG=true
                     ;;
                 --help | -h)
                     help
