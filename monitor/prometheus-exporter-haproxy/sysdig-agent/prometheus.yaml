@@ -1,0 +1,19 @@
+prometheus:
+  file: true
+  yaml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+    scrape_configs:
+    - job_name: 'haproxy'
+      metrics_path: /metrics
+      params:
+        scope:
+          - backend
+          - frontend
+          - global
+      sysdig_sd_configs:
+      - tags:
+          namespace: default
+          deployment: haproxy-ingress-kubernetes-ingress
+
