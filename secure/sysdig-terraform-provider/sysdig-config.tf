@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    sysdig = {
+      source = "sysdiglabs/sysdig"
+      version = "0.5.37"
+    }
+  }
+}
 
 variable "sysdig_secure_api_token" {
   default = ""
