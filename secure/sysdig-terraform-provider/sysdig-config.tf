@@ -12,11 +12,10 @@ provider "sysdig" {
 }
 
 #sysdig-secure-notification-channel
-resource "sysdig_secure_notification_channel" "sample-email" {
+resource "sysdig_secure_notification_channel_email" "sample-email" {
   name                 = "Example Channel (from Terraform)"
   enabled              = true
-  type                 = "EMAIL"
-  recipients           = "myemail@sample.com"
+  recipients           = ["myemail@sample.com"]
   notify_when_ok       = false
   notify_when_resolved = false
 }
@@ -48,5 +47,5 @@ resource "sysdig_secure_policy" "sample" {
     }
   }
 
-  notification_channels = [sysdig_secure_notification_channel.sample-email.id]
+  notification_channels = [sysdig_secure_notification_channel_email.sample-email.id]
 }
