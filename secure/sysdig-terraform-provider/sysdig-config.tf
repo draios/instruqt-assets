@@ -33,7 +33,6 @@ resource "sysdig_secure_rule_container" "sample" {
   name        = "Example Container Rule (from Terraform)"
   description = "This rule is just for training"
   tags        = ["container", "cis"]
-
   matching   = true // default
   containers = ["foo", "foo:bar"]
 }
