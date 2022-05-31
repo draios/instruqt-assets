@@ -2,11 +2,10 @@
 
 while true ; do
   # pick a node
-  #nodes[0]="node01"
-  #nodes[1]="controlplane"
-  #rand=$[ $RANDOM % 2 ]
-  #TARGETNODE=${nodes[$rand]}
-  TARGETNODE="node01"
+  nodes[0]="node01"
+  nodes[1]="controlplane"
+  rand=$[ $RANDOM % 2 ]
+  TARGETNODE=${nodes[$rand]}
 
   echo "kubelet restarting on node \"$TARGETNODE\""
   ssh $TARGETNODE 'systemctl restart kubelet'
