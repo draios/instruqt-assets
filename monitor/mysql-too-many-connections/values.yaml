@@ -1,0 +1,13 @@
+sysdig: 
+  settings: 
+    feature:  
+      mode: troubleshooting
+    new_k8s: true
+app_checks:
+  - name: mysql
+    pattern:
+      comm: mysqld
+    conf:
+      server: 127.0.0.1
+      user: sysdig-cloud
+      pass: sysdig-cloud-password
