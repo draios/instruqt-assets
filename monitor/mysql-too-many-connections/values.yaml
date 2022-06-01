@@ -3,11 +3,14 @@ sysdig:
     feature:  
       mode: troubleshooting
     new_k8s: true
-app_checks:
-  - name: mysql
-    pattern:
-      comm: mysqld
-    conf:
-      server: 127.0.0.1
-      user: sysdig-cloud
-      pass: sysdig-cloud-password
+    snaplen: 512
+    autodrop:
+      enabled: true
+      upper_threshold: 80      
+    app_checks:
+      - name: ntp
+        check_module: ntp
+        pattern:
+          comm: ntpd
+    percentiles: [50, 95, 99]
+    tags: role:cluster
