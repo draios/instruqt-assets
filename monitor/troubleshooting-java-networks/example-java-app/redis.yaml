@@ -1,0 +1,47 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: redis
+  labels:
+    name: redis-deployment
+    app: demo
+spec:
+  replicas: 1
+  # selector identifies the set of Pods that this
+  # replication controller is responsible for managing
+  selector:
+    matchLabels:
+     name: redis
+     role: redisdb
+     app: demo
+  template:
+    spec:
+      containers:
+        - name: redis
+          image: redis:2.8.19
+          ports:
+          - containerPort: 6379
+            name: redis
+          command: [ "redis-server", "--appendonly", "yes" ]
+    metadata:
+      labels:
+        # Important: these labels need to match the selector above
+        # The api server enforces this constraint.
+        name: redis
+        role: redisdb
+        app: demo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: redis
+  name: redis
+spec:
+  ports:
+    - port: 6379
+      targetPort: 6379
+  selector:
+    name: redis
+    app: demo
+    role: redisdb
