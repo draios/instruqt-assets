@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sysdig-agent
+data:
+  dragent.yaml: |
+    configmap: true
+    ### Agent tags
+    # tags: linux:ubuntu,dept:dev,local:nyc
+
+    #### Sysdig Software related config ####
+
+    # Sysdig collector address
+    # collector: 192.168.1.1
+
+    # Collector TCP port
+    # collector_port: 6666
+
+    # Whether collector accepts ssl
+    # ssl: true
+
+    # collector certificate validation
+    # ssl_verify_certificate: true
+
+    #######################################
+    new_k8s: true
+    k8s_cluster_name: Sysdig Training Cluster
+    app_checks:
+      - name: mysql
+        pattern:
+          comm: mysqld
+        conf:
+          server: 127.0.0.1
+          user: sysdig-cloud
+          pass: sysdig-cloud-password
+    security:
+      k8s_audit_server_url: 0.0.0.0
+      k8s_audit_server_port: 7765
+    prometheus:
+      enabled: true
+      ingest_raw: true
+      interval: 10
+      log_errors: true
+      max_metrics: 10000
+      max_metrics_per_process: 2000
+      max_tags_per_metric: 5000
+      # histograms: true
+      process_filter:
+        - include:
+            process.name: grok_exporter
+            conf:
+              host: localhost
+              port: 9144
+              path: '/metrics'
