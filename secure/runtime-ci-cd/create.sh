@@ -25,10 +25,4 @@ Please click on the Jenkins tab above to access its web interface.
 Username: admin
 Password: $(kubectl get secret --namespace jenkins jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode)
 ____________________________________________________________________________
-
-
-Deploying Sysdig Agent...
-
 EOF
-
-bash ./install_sysdig-agent.sh
