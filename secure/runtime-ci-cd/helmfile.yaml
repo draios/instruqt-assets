@@ -1,9 +1,9 @@
 ---
 repositories:
   - name: stable
-    url: https://kubernetes-charts.storage.googleapis.com
+    url: https://charts.helm.sh/stable
   - name: incubator
-    url: https://kubernetes-charts-incubator.storage.googleapis.com/
+    url: https://charts.helm.sh/incubator
 
 releases:
   # This is a workaround around Helm3
