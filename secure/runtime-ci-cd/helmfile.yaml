@@ -1,0 +1,35 @@
+---
+repositories:
+  - name: stable
+    url: https://kubernetes-charts.storage.googleapis.com
+  - name: incubator
+    url: https://kubernetes-charts-incubator.storage.googleapis.com/
+
+releases:
+  # This is a workaround around Helm3
+  # https://github.com/roboll/helmfile/issues/891
+  - name: namespaces
+    chart: incubator/raw
+    wait: true
+    values:
+      - resources:
+        - apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: jenkins
+          spec:
+
+  - name: jenkins
+    namespace: jenkins
+    atomic: true
+    chart: stable/jenkins
+    values:
+    - persistence:
+        enabled: false
+      master:
+        adminPassword: sysdig
+        serviceType: NodePort
+        nodePort: 31337
+      agent:
+        privileged: false
+
