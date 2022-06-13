@@ -1,5 +1,5 @@
-sysdig: 
-  settings: 
-    feature:  
+sysdig:
+  settings:
+    feature:
       mode: troubleshooting
     new_k8s: true

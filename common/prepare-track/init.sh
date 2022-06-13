@@ -504,46 +504,39 @@ function help () {
 # Check and consume script flags.
 ##
 function check_flags () {
-    if [ $# -eq 0 ]
-    then
-        USE_AGENT=true
-        USE_MONITOR_API=true
-        USE_SECURE_API=true
-    else
-        while [ ! $# -eq 0 ]
-        do
-            case "$1" in
-                --agent | -a)
-                    USE_AGENT=true
-                    ;;
-                --monitor | -m)
-                    USE_MONITOR_API=true
-                    ;;
-                --secure | -s)
-                    USE_SECURE_API=true
-                    ;;
-                --node-analyzer | -n)
-                    export USE_NODE_ANALYZER=true
-                    ;;
-                --node-image-analyzer | -N)
-                    export USE_NODE_IMAGE_ANALYZER=true
-                    ;;
-                --prometheus | -p)
-                    export USE_PROMETHEUS=true
-                    ;;
-                --help | -h)
-                    help
-                    exit 0
-                    ;;
-                *)
-                    echo "Unkown argument: $1"
-                    help
-                    exit 1
-                    ;;
-            esac
-            shift
-        done
-    fi
+    while [ ! $# -eq 0 ]
+    do
+        case "$1" in
+            --agent | -a)
+                USE_AGENT=true
+                ;;
+            --monitor | -m)
+                USE_MONITOR_API=true
+                ;;
+            --secure | -s)
+                USE_SECURE_API=true
+                ;;
+            --node-analyzer | -n)
+                export USE_NODE_ANALYZER=true
+                ;;
+            --node-image-analyzer | -N)
+                export USE_NODE_IMAGE_ANALYZER=true
+                ;;
+            --prometheus | -p)
+                export USE_PROMETHEUS=true
+                ;;
+            --help | -h)
+                help
+                exit 0
+                ;;
+            *)
+                echo "Unkown argument: $1"
+                help
+                exit 1
+                ;;
+        esac
+        shift
+    done
 
     if (([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_NODE_IMAGE_ANALYZER" = true ]) \
        ||  [ "$USE_PROMETHEUS" = true ]) && [ "$USE_AGENT" != true ]
