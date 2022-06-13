@@ -283,6 +283,8 @@ function intro () {
     echo "  Welcome! This script configures the lab environment."
     echo "  It will:"
 
+    echo "    - Set up your Sysdig region."
+
     if [ "$USE_MONITOR_API" == true ]; then
       echo "    - Set up the environment for Monitor API usage."
     fi
