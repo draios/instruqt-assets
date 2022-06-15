@@ -1,0 +1,13 @@
+prometheus:
+  file: true
+  yaml: |
+    enabled: true
+    prom_service_discovery: true
+    log_errors: true
+    max_metrics: 200000
+    max_metrics_per_process: 200000
+    max_tags_per_metric: 100
+    ingest_raw: true
+    ingest_calculated: false
+    global:
+      scrape_interval: 10s
