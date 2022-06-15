@@ -1,0 +1,12 @@
+sysdig:
+  settings:
+    feature:
+      mode: troubleshooting
+    new_k8s: true
+    metrics_excess_log: true
+    k8s_cluster_name: YourClusterName
+    10s_flush_enable: true
+    app_checks_enabled: false
+    use_promscrape: true
+    promscrape_fastproto: true
+
