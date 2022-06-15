@@ -4,9 +4,20 @@ sysdig:
       mode: troubleshooting
     new_k8s: true
     metrics_excess_log: true
-    k8s_cluster_name: YourClusterName
     10s_flush_enable: true
-    app_checks_enabled: false
+    app_checks_enabled: true
     use_promscrape: true
     promscrape_fastproto: true
+    app_checks:
+    - name: ntp
+      check_module: ntp
+      pattern:
+        comm: ntpd
+    - name: mysql
+      pattern:
+        comm: mysqld
+      conf:
+        server: 127.0.0.1
+        user: sysdig-cloud
+        pass: sysdig-cloud-password
 
