@@ -37,11 +37,11 @@ spec:
             timeoutSeconds: 5
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "250m"
+              memory: "2048Mi"
+              cpu: "1000m"
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "3072Mi"
+              cpu: "2000m"
     metadata:
       labels:
         # Important: these labels need to match the selector above
