@@ -18,13 +18,11 @@ spec:
     spec:
       containers:
         - name: mongo
-          image: mongo
+          image: mongo:4.0
           ports:
             - containerPort: 27017
               name: mongo
           command: ["mongod", "--smallfiles", "--bind_ip", "0.0.0.0"]
-        - name: mongo-statsd
-          image: ltagliamonte/demo-mongo-statsd
     metadata:
       labels:
         # Important: these labels need to match the selector above
