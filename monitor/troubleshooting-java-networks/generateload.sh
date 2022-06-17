@@ -1,6 +1,6 @@
 #!/bin/bash
 count=0
-EXTERNALIP=`kubectl get services -n example-java-app |grep java-app-svc | awk '{print $4}'`
+EXTERNALIP=`kubectl get services -n example-java-app |grep java-app-svc | awk '{print $4}' | cut -d, -f1`
 while true
 do
   echo count: $count
