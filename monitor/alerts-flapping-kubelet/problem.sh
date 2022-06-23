@@ -8,7 +8,7 @@ while true ; do
   TARGETNODE=${nodes[$rand]}
 
   echo "kubelet restarting on node \"$TARGETNODE\""
-  ssh $TARGETNODE 'systemctl restart kubelet'
+  ssh -o strictHostKeyChecking=no $TARGETNODE 'systemctl restart kubelet'
 
   SLEEPYTIME=$(( ( RANDOM % 8 )  + 1 ))
   echo "Sleeping for $SLEEPYTIME seconds"
