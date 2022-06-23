@@ -2,8 +2,8 @@
 
 while true ; do
   # pick a node
-  nodes[0]="node01"
-  nodes[1]="controlplane"
+  nodes[0]="server"
+  nodes[1]="worker1"
   rand=$[ $RANDOM % 2 ]
   TARGETNODE=${nodes[$rand]}
 
