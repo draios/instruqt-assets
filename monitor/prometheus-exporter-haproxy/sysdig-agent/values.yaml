@@ -1,21 +1,7 @@
-sysdig: 
-  settings: 
+sysdig:
+  settings:
+    prometheus:
+      enabled: true
     feature:
       mode: troubleshooting
     new_k8s: true
-    prometheus:
-      enabled: true
-      histograms: true
-      ingest_raw: true
-      ingest_calculated: false
-      interval: 10
-      log_errors: true
-      max_metrics: 3000
-      max_metrics_per_process: 20000
-      process_filter:
-      - include:
-          kubernetes.pod.annotation.prometheus.io/scrape: true
-          conf:
-              path: "{kubernetes.pod.annotation.prometheus.io/path}"
-              port: "{kubernetes.pod.annotation.prometheus.io/port}"
-    snaplen: 512
