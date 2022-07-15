@@ -301,7 +301,8 @@ function deploy_cloud_connector () {
     CLOUD_CONNECTOR_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
     echo ${CLOUD_CONNECTOR_DEPLOY_DATE} > $WORK_DIR/cloud_connector_deploy_date
     
-    echo "Configuring Cloud Connector for $CLOUD_PROVIDER"
+    echo "Configuring Sysdig CloudVision for $CLOUD_PROVIDER"
+
     if [ $CLOUD_PROVIDER = "aws"]
     then
         CLOUD_REGION="us-east-1"
@@ -477,7 +478,9 @@ function test_agent () {
 # and sets the TEST_CLOUD_ACCOUNT_ID variable with the cloud account id
 ##
 function track_has_cloud_account () {
-
+    TODO: try to use the replacements they use with %s 
+    see here: https://docs.instruqt.com/how-to-guides/manage-sandboxes/access-cloud-accounts/azure-subscriptions
+    and review all the vars!! also for aws and gcp, not only azure
     if [ ! -z "$INSTRUQT_AWS_ACCOUNTS" ]
     then
         CLOUD_PROVIDER=aws
@@ -488,10 +491,10 @@ function track_has_cloud_account () {
         CLOUD_PROVIDER=gcp
         CLOUD_ACCOUNT_ID=$INSTRUQT_GCP_PROJECT_GCPACCOUNT_PROJECT_ID
     fi
-    if [ ! -z "$INSTRUQT_AZURE_PROJECTS" ]
+    if [ ! -z "$INSTRUQT_AZURE_SUBSCRIPTIONS" ]
     then
         CLOUD_PROVIDER=azure
-        CLOUD_ACCOUNT_ID=$INSTRUQT_AZURE_ACCOUNT_AZUREACCOUNT_ACCOUNT_ID
+        CLOUD_ACCOUNT_ID=$INSTRUQT_AZURE_SUBSCRIPTION_AZUREACCOUNT_ACCOUNT_ID
     fi
     if [ -z $CLOUD_PROVIDER ]
     then
