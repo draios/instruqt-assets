@@ -60,24 +60,28 @@ function panic_msg () {
 # Define nginx.conf values to enable redirect
 # to the Sysdig Region selected by the user
 ##
-function configure_redirect_sysdig_tab () {
-    if [ "$USE_CLOUD" = false ]
-    then
-        cp $TRACK_DIR/nginx.default.conf /etc/nginx/nginx.conf
-        sed -i -e "s@_MONITOR_URL_@$MONITOR_URL@g" /etc/nginx/nginx.conf
-        sed -i -e "s@_SECURE_URL_@$SECURE_URL@g" /etc/nginx/nginx.conf
-        systemctl restart nginx
-    else # cloud account
-        OLD_STRING="http {"
-        NEW_STRING"http {
+function config_sysdig_tab_redirect () {
+    OLD_STRING="http {"
+    NEW_STRING="http {
     server {
         listen 8997;
         listen [::]:8997;
         server_name localhost;
-        rewrite ^/(.*)$ _MONITOR_URL_/$1 redirect;
+        rewrite ^/(.*)$ $MONITOR_URL/\$1 redirect;
+    }
+    server {
+        listen 8998;
+        listen [::]:8998;
+        server_name localhost;
+        rewrite ^/(.*)$ $SECURE_URL/\$1 redirect;
     }
 "
-        sed -i -e "s@$OLD_STRING@$NEW_STRING@g" /etc/nginx/nginx.conf
+    sed -i -e "s@$OLD_STRING@$NEW_STRING@g" /etc/nginx/nginx.conf
+
+    if [ "$USE_CLOUD" = false ]
+    then
+        systemctl restart nginx
+    else
         pkill -f nginx
         nginx -g "daemon off;" &
     fi
@@ -137,7 +141,7 @@ function set_values () {
     SECURE_API_ENDPOINT=$MONITOR_URL
     PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
 
-    configure_redirect_sysdig_tab
+    config_sysdig_tab_redirect
 }
 
 ##
@@ -362,6 +366,10 @@ function intro () {
 
     if [ "$USE_PROMETHEUS" == true ]; then
       echo "    - Enable the Agent Prometheus collector."
+    fi
+
+    if [ "$USE_CLOUD" == true ]; then
+      echo "    - Enable CloudVision."
     fi
 
     echo "  Follow the instructions below."
