@@ -57,6 +57,33 @@ function panic_msg () {
 }
 
 ##
+# Define nginx.conf values to enable redirect
+# to the Sysdig Region selected by the user
+##
+function configure_redirect_sysdig_tab () {
+    if [ "$USE_CLOUD" = false ]
+    then
+        cp $TRACK_DIR/nginx.default.conf /etc/nginx/nginx.conf
+        sed -i -e "s@_MONITOR_URL_@$MONITOR_URL@g" /etc/nginx/nginx.conf
+        sed -i -e "s@_SECURE_URL_@$SECURE_URL@g" /etc/nginx/nginx.conf
+        systemctl restart nginx
+    else # cloud account
+        OLD_STRING="http {"
+        NEW_STRING"http {
+    server {
+        listen 8997;
+        listen [::]:8997;
+        server_name localhost;
+        rewrite ^/(.*)$ _MONITOR_URL_/$1 redirect;
+    }
+"
+        sed -i -e "s@$OLD_STRING@$NEW_STRING@g" /etc/nginx/nginx.conf
+        pkill -f nginx
+        nginx -g "daemon off;" &
+    fi
+}
+
+##
 # Define URL and endpoints for the selected region.
 #
 # This is used to define the URL of the track-TABS, for API queries and define
@@ -110,27 +137,7 @@ function set_values () {
     SECURE_API_ENDPOINT=$MONITOR_URL
     PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
 
-    # Tabs url_redirect
-    if [ "$USE_CLOUD" != true ]
-    then
-        cp $TRACK_DIR/nginx.default.conf /etc/nginx/nginx.conf
-        sed -i -e "s@_MONITOR_URL_@$MONITOR_URL@g" /etc/nginx/nginx.conf
-        sed -i -e "s@_SECURE_URL_@$SECURE_URL@g" /etc/nginx/nginx.conf
-        systemctl restart nginx
-    else
-
-        OLD_STRING="http {"
-        NEW_STRING"http {
-    server {
-        listen 8997;
-        listen [::]:8997;
-        server_name localhost;
-        rewrite ^/(.*)$ _MONITOR_URL_/$1 redirect;
-    }
-"
-        sed -i -e "s@$OLD_STRING@$NEW_STRING@g" /etc/nginx/nginx.conf
-    fi
-
+    configure_redirect_sysdig_tab
 }
 
 ##
@@ -283,6 +290,36 @@ function install_agent () {
 }
 
 ##
+# Retrieve cloud access data from track envars
+# to deploy the cloud connector
+##
+function deploy_cloud_connector () {
+    CLOUD_CONNECTOR_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
+    echo ${CLOUD_CONNECTOR_DEPLOY_DATE} > $WORK_DIR/cloud_connector_deploy_date
+    
+    echo "Configuring Cloud Connector for $CLOUD_PROVIDER"
+    if [ $CLOUD_PROVIDER = "aws"]
+    then
+        CLOUD_REGION="us-east-1"
+    elif [ $CLOUD_PROVIDER = "gcp"]
+    then
+        CLOUD_REGION="us-east-1"
+        CLOUD_ACCOUNT_ID=$CLOUD_ACCOUNT_ID
+
+    elif [ $CLOUD_PROVIDER = "azure"]
+    then
+        CLOUD_ACCOUNT_ID=$CLOUD_ACCOUNT_ID
+    fi
+
+    if 
+
+    echo -e "  CloudVision is being installed in the background.\n"
+    # ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
+
+    source $TRACK_DIR/install_cloud_with_terraform.sh $SYSDIG_SECURE_API_TOKEN $SECURE_URL $PROVIDER $CLOUD_REGION $CLOUD_ACCOUNT_ID
+}
+
+##
 # Display banner with welcome message.
 ##
 function intro () {
@@ -333,7 +370,7 @@ function intro () {
 }
 
 ##
-# Ask for region, Agent Key and accordingly deploy a Sysdig Agent.
+# Ask for Agent Key and deploy a Sysdig Agent.
 ##
 function deploy_agent () {
     AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
@@ -426,6 +463,104 @@ function test_agent () {
         panic_msg
     fi
 }
+
+##
+# Check that the track includes a cloud account
+# and sets the TEST_CLOUD_ACCOUNT_ID variable with the cloud account id
+##
+function track_has_cloud_account () {
+
+    if [ ! -z "$INSTRUQT_AWS_ACCOUNTS" ]
+    then
+        CLOUD_PROVIDER=aws
+        CLOUD_ACCOUNT_ID=$INSTRUQT_AWS_ACCOUNT_AWSACCOUNT_ACCOUNT_ID
+    fi
+    if [ ! -z "$INSTRUQT_GCP_PROJECTS" ]
+    then
+        CLOUD_PROVIDER=gcp
+        CLOUD_ACCOUNT_ID=$INSTRUQT_GCP_PROJECT_GCPACCOUNT_PROJECT_ID
+    fi
+    if [ ! -z "$INSTRUQT_AZURE_PROJECTS" ]
+    then
+        CLOUD_PROVIDER=azure
+        CLOUD_ACCOUNT_ID=$INSTRUQT_AZURE_ACCOUNT_AZUREACCOUNT_ACCOUNT_ID
+    fi
+    if [ -z $CLOUD_PROVIDER ]
+    then
+        echo "  FAIL"
+        echo "  This track does not include a cloud account but it should."
+        panic_msg
+    fi
+}
+
+##
+# Test if the Cloud account is connected successfully.
+##
+function test_cloud_connector () {
+    echo "Testing if the cloud account is connected..."
+
+    attempt=0
+    MAX_ATTEMPTS=60 # 3 minutes
+    connected=false
+
+    while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
+    do
+        sleep 3
+        
+        curl -s --header "Content-Type: application/json"   \
+        -H 'Authorization: Bearer '"${SECURE_KEY}" \
+        --request GET \
+        https://secure.sysdig.com/api/cloud/v2/dataSources/accounts\?limit\=50\&offset\=0 \
+        | jq '.[] | "\(.provider) \(.id) \(.cloudConnectorLastSeenAt)"' \
+        | grep $
+
+# "aws 040609360573 2022-07-12T10:09:23.740365Z"
+# "aws 059797578166 null"
+# "aws 109082292238 2022-07-14T08:28:21.489197Z"
+# "aws 736741930934 null"
+
+
+        if [ $? -eq 0 ]
+        then
+            connected=true
+            break
+        fi
+        
+        attempt=$(( $attempt + 1 ))
+    done
+
+    if [ "$connected" = true ]
+    then
+        case "$INSTALL_WITH" in
+            helm)
+                FOUND_COLLECTOR=`kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
+                ;;
+            docker)
+                FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
+                ;;
+            host)
+                FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
+                ;;
+        esac
+
+        if [ "${FOUND_COLLECTOR}" == "${AGENT_COLLECTOR}" ]
+        then
+            echo "  Sysdig Agent successfully installed."
+            touch $WORK_DIR/user_data_AGENT_OK
+        else
+            echo "  FAIL"
+            echo "  Agent connected to wrong region."
+            echo "    Selected collector: ${AGENT_COLLECTOR}"
+            echo "    Found collector: ${FOUND_COLLECTOR}"
+            panic_msg
+        fi
+    else
+        echo "  FAIL"
+        echo "  Agent failed to connect to back-end. Check your Agent Key."
+        panic_msg
+    fi
+}
+#-----------end pablo
 
 ##
 # Delete files only needed while running the script.
@@ -537,6 +672,10 @@ function check_flags () {
             --secure | -s)
                 USE_SECURE_API=true
                 ;;
+            --cloud | -c)
+                USE_CLOUD=true
+                USE_SECURE_API=true
+                ;;
             --node-analyzer | -n)
                 export USE_NODE_ANALYZER=true
                 ;;
@@ -545,9 +684,6 @@ function check_flags () {
                 ;;
             --prometheus | -p)
                 export USE_PROMETHEUS=true
-                ;;
-            --cloud | -c)
-                export USE_CLOUD=true
                 ;;
             --help | -h)
                 help
@@ -597,6 +733,11 @@ function setup () {
         configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
     fi
 
+    if [ "$USE_CLOUD" = true ]
+    then
+        track_has_cloud_account
+        deploy_cloud_connector
+    fi
 
     if [ "$USE_AGENT" = true ]
     then
