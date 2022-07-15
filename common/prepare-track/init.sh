@@ -35,6 +35,7 @@ USE_SECURE_API=false
 USE_NODE_ANALYZER=false
 USE_NODE_IMAGE_ANALYZER=false
 USE_PROMETHEUS=false
+USE_CLOUD=false
 
 ##############################    GLOBAL VARS    ##############################
 TEST_AGENT_ACCESS_KEY=ZTRlNDFiMGUtYTg5Yi00YWU4LWJlZjYtMzA4Y2FmZDIwMjAx
@@ -110,9 +111,26 @@ function set_values () {
     PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
 
     # Tabs url_redirect
-    sed -i -e "s@_MONITOR_URL_@$MONITOR_URL@g" /etc/nginx/nginx.conf
-    sed -i -e "s@_SECURE_URL_@$SECURE_URL@g" /etc/nginx/nginx.conf
-    systemctl restart nginx
+    if [ "$USE_CLOUD" != true ]
+    then
+        cp $TRACK_DIR/nginx.default.conf /etc/nginx/nginx.conf
+        sed -i -e "s@_MONITOR_URL_@$MONITOR_URL@g" /etc/nginx/nginx.conf
+        sed -i -e "s@_SECURE_URL_@$SECURE_URL@g" /etc/nginx/nginx.conf
+        systemctl restart nginx
+    else
+
+        OLD_STRING="http {"
+        NEW_STRING"http {
+    server {
+        listen 8997;
+        listen [::]:8997;
+        server_name localhost;
+        rewrite ^/(.*)$ _MONITOR_URL_/$1 redirect;
+    }
+"
+        sed -i -e "s@$OLD_STRING@$NEW_STRING@g" /etc/nginx/nginx.conf
+    fi
+
 }
 
 ##
@@ -478,6 +496,7 @@ function help () {
     echo "OPTIONS:"
     echo
     echo "  -a, --agent                 Deploy a Sysdig Agent."
+    echo "  -c, --cloud                 Set up environment for cloud-connector."
     echo "  -h, --help                  Show this help."
     echo "  -m, --monitor               Set up environment for Monitor API usage."
     echo "  -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent."
@@ -527,6 +546,9 @@ function check_flags () {
             --prometheus | -p)
                 export USE_PROMETHEUS=true
                 ;;
+            --cloud | -c)
+                export USE_CLOUD=true
+                ;;
             --help | -h)
                 help
                 exit 0
@@ -553,8 +575,6 @@ function check_flags () {
 ##
 function setup () {
     mkdir -p $WORK_DIR/
-
-    cp $TRACK_DIR/nginx.default.conf /etc/nginx/nginx.conf
 
     check_flags $@
 
