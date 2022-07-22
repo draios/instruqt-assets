@@ -1,3 +1,30 @@
+falco:
+  syslog_output:
+    enabled: false
+  file_output:
+    enabled: true
+    keep_alive: true
+    filename: /tmp/falco-alerts/alerts.txt
+
+collectors:
+  containerd:
+    socket: /run/k3s/containerd/containerd.sock
+
+extra:
+  args: 
+  - -U
+
+mounts:
+  volumes:
+  - hostPath:
+      path: "/root/falco-alerts"
+      type: ""
+    name: "falco-alerts"
+  volumeMounts:
+  - mountPath: "/tmp/falco-alerts"
+    name: "falco-alerts"
+    readOnly: false
+    
 customRules:
   custom_rules_from_default: |-
 
