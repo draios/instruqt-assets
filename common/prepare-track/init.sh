@@ -303,10 +303,15 @@ function install_agent () {
 ##
 function deploy_cloud_connector () {
     CLOUD_CONNECTOR_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
+    CLOUD_REGION=""
+    CLOUD_ACCOUNT_ID=""
     echo ${CLOUD_CONNECTOR_DEPLOY_DATE} > $WORK_DIR/cloud_connector_deploy_date
     
     echo "Configuring Sysdig CloudVision for $CLOUD_PROVIDER"
 
+
+    # we are defining here some values (region) but in future we might want the user to choose its region
+    # right now there's not a reason to select one or another
     if [ $CLOUD_PROVIDER = "aws"]
     then
         CLOUD_REGION="us-east-1"
@@ -319,8 +324,6 @@ function deploy_cloud_connector () {
     then
         CLOUD_ACCOUNT_ID=$CLOUD_ACCOUNT_ID
     fi
-
-    if 
 
     echo -e "  CloudVision is being installed in the background.\n"
     # ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`

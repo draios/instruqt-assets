@@ -21,7 +21,7 @@ then
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_URL" \
         -var="training_aws_region=$CLOUD_REGION" \
-        -y
+        -y >> ${OUTPUT} 2>&1
 fi
 
 if [ "$PROVIDER" == "gcp" ]
@@ -32,7 +32,7 @@ then
         -var="training_secure_url=$SECURE_URL" \
         -var="training_gcp_region=$CLOUD_REGION" \
         -var="training_gcp_project=$CLOUD_ACCOUNT_ID" \
-        -y
+        -y >> ${OUTPUT} 2>&1
 fi
 
 if [ "$PROVIDER" == "azure" ]
@@ -42,5 +42,5 @@ then
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_URL" \
         -var="training_azure_subscription=$CLOUD_ACCOUNT_ID" \
-        -y
+        -y >> ${OUTPUT} 2>&1
 fi
