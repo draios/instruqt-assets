@@ -1,5 +1,6 @@
 falco:
   rules_file:
+  - /etc/falco/falco_rules.yaml
   - /etc/falco/rules.d/custom_rules_from_default.yaml
 
   syslog_output:
