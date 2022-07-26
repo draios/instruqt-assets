@@ -1,4 +1,7 @@
 falco:
+  rules_file:
+  - /etc/falco/rules.d/custom_rules_from_default.yaml
+
   syslog_output:
     enabled: false
   file_output:
@@ -26,7 +29,7 @@ mounts:
     readOnly: false
     
 customRules:
-  custom_rules_from_default: |-
+  custom_rules_from_default.yaml: |-
 
     - rule: Read sensitive file untrusted
       desc: >
