@@ -36,6 +36,8 @@ USE_NODE_ANALYZER=false
 USE_NODE_IMAGE_ANALYZER=false
 USE_PROMETHEUS=false
 USE_CLOUD=false
+USE_REGION_CLOUD=false
+USE_AGENT_REGION=false
 
 ##############################    GLOBAL VARS    ##############################
 TEST_AGENT_ACCESS_KEY=ZTRlNDFiMGUtYTg5Yi00YWU4LWJlZjYtMzA4Y2FmZDIwMjAx
@@ -78,10 +80,12 @@ function config_sysdig_tab_redirect () {
 "
     sed -i -e "s@$OLD_STRING@$NEW_STRING@g" /etc/nginx/nginx.conf
 
-    if [ "$USE_CLOUD" = false ]
+    if [ "$USE_AGENT_REGION" = true ]
     then
         systemctl restart nginx
-    else
+    fi
+
+    if [ "$USE_CLOUD_REGION" = true ]
         pkill -f nginx
         nginx -g "daemon off;" &
     fi
@@ -321,7 +325,7 @@ function deploy_cloud_connector () {
     echo -e "  CloudVision is being installed in the background.\n"
     # ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
-    source $TRACK_DIR/install_cloud_with_terraform.sh $SYSDIG_SECURE_API_TOKEN $SECURE_URL $PROVIDER $CLOUD_REGION $CLOUD_ACCOUNT_ID
+    source $TRACK_DIR/cloud/install_with_terraform.sh $PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_URL $CLOUD_REGION $CLOUD_ACCOUNT_ID
 }
 
 ##
@@ -354,6 +358,7 @@ function intro () {
     fi
 
     if [ "$USE_AGENT" == true ]; then
+      echo "    - Set up Instruqt tab with access to the Sysdig Dashboard."
       echo "    - Deploy a Sysdig Agent."
     fi
 
@@ -370,6 +375,7 @@ function intro () {
     fi
 
     if [ "$USE_CLOUD" == true ]; then
+      echo "    - Set up Instruqt tab with access to the Sysdig Dashboard."
       echo "    - Enable CloudVision."
     fi
 
@@ -676,15 +682,23 @@ function check_flags () {
         case "$1" in
             --agent | -a)
                 USE_AGENT=true
+                USE_AGENT_REGION=true
+                ;;
+            --region)
+                USE_AGENT_REGION=true
+                ;;
+            --cloud | -c)
+                USE_CLOUD=true
+                USE_CLOUD_REGION=true
+                USE_SECURE_API=true
+                ;;
+            --region-cloud)
+                USE_CLOUD_REGION=true
                 ;;
             --monitor | -m)
                 USE_MONITOR_API=true
                 ;;
             --secure | -s)
-                USE_SECURE_API=true
-                ;;
-            --cloud | -c)
-                USE_CLOUD=true
                 USE_SECURE_API=true
                 ;;
             --node-analyzer | -n)
@@ -727,7 +741,10 @@ function setup () {
 
     intro
 
-    select_region
+    if [ "$USE_AGENT_REGION" = true ] || [ "$USE_CLOUD_REGION" = true ]
+    then
+        select_region
+    fi
 
     if [ "$USE_AGENT" = true ]
     then
@@ -755,6 +772,12 @@ function setup () {
         test_agent
     fi
 
+    if [ "$USE_CLOUD" = true ]
+    then
+        track_has_cloud_account
+        deploy_cloud_connector
+    fi
+    
     clean_setup
 }
 
