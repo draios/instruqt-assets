@@ -1,10 +1,6 @@
 falco:
   syslog_output:
     enabled: false
-  file_output:
-    enabled: true
-    keep_alive: true
-    filename: /tmp/falco-alerts/alerts.txt
 
 collectors:
   containerd:
@@ -14,17 +10,8 @@ extra:
   args: 
   - -U
 
-mounts:
-  volumes:
-  - hostPath:
-      path: "/root/falco-alerts"
-      type: ""
-    name: "falco-alerts"
-  volumeMounts:
-  - mountPath: "/tmp/falco-alerts"
-    name: "falco-alerts"
-    readOnly: false
-    
+tty: true
+
 customRules:
   custom_rules_from_default.yaml: |-
 
