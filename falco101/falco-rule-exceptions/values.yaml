@@ -1,17 +1,3 @@
-falco:
-  syslog_output:
-    enabled: false
-
-collectors:
-  containerd:
-    socket: /run/k3s/containerd/containerd.sock
-
-extra:
-  args: 
-  - -U
-
-tty: true
-
 customRules:
   custom_rules_from_default.yaml: |-
 
