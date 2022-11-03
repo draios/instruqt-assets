@@ -35,6 +35,9 @@ USE_SECURE_API=false
 USE_NODE_ANALYZER=false
 USE_NODE_IMAGE_ANALYZER=false
 USE_PROMETHEUS=false
+USE_CLOUD=false
+USE_REGION_CLOUD=false
+USE_AGENT_REGION=false
 
 ##############################    GLOBAL VARS    ##############################
 TEST_AGENT_ACCESS_KEY=ZTRlNDFiMGUtYTg5Yi00YWU4LWJlZjYtMzA4Y2FmZDIwMjAx
@@ -53,6 +56,29 @@ function panic_msg () {
     echo
     echo "You can ask for help using Intercom or get in touch with us at team-training@sysdig.com"
     exit 1
+}
+
+##
+# Define nginx.conf values to enable redirect
+# to the Sysdig Region selected by the user
+##
+function config_sysdig_tab_redirect () {
+    OLD_STRING="http {"
+    NEW_STRING="http {     server {         listen 8997;         server_name localhost;         rewrite ^/(.*)$ $MONITOR_URL/\$1 redirect;     }     server {         listen 8998;         server_name localhost;         rewrite ^/(.*)$ $SECURE_URL/\$1 redirect;     } "
+
+    sed -i -e "s@${OLD_STRING}@${NEW_STRING}@g" /etc/nginx/nginx.conf
+
+    if [ "$USE_AGENT_REGION" = true ]
+    then
+        systemctl restart nginx
+    fi
+
+    if [ "$USE_CLOUD_REGION" = true ]
+    then
+        pkill -f nginx
+        touch /tmp/region_set_OK
+        nginx
+    fi
 }
 
 ##
@@ -109,10 +135,7 @@ function set_values () {
     SECURE_API_ENDPOINT=$MONITOR_URL
     PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
 
-    # Tabs url_redirect
-    sed -i -e "s@_MONITOR_URL_@$MONITOR_URL@g" /etc/nginx/nginx.conf
-    sed -i -e "s@_SECURE_URL_@$SECURE_URL@g" /etc/nginx/nginx.conf
-    systemctl restart nginx
+    config_sysdig_tab_redirect
 }
 
 ##
@@ -294,6 +317,7 @@ function intro () {
     fi
 
     if [ "$USE_AGENT" == true ]; then
+      echo "    - Set up Instruqt tab with access to the Sysdig Dashboard."
       echo "    - Deploy a Sysdig Agent."
     fi
 
@@ -309,13 +333,18 @@ function intro () {
       echo "    - Enable the Agent Prometheus collector."
     fi
 
+    if [ "$USE_CLOUD" == true ]; then
+      echo "    - Set up Instruqt tab with access to the Sysdig Dashboard."
+      echo "    - Enable CloudVision."
+    fi
+
     echo "  Follow the instructions below."
     echo
     echo "----------------------------------------------------------"
 }
 
 ##
-# Ask for region, Agent Key and accordingly deploy a Sysdig Agent.
+# Ask for Agent Key and deploy a Sysdig Agent.
 ##
 function deploy_agent () {
     AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
@@ -410,6 +439,131 @@ function test_agent () {
 }
 
 ##
+# Check that the track includes a cloud account
+# and sets the TEST_CLOUD_ACCOUNT_ID variable with the cloud account id
+#
+# NOTE: this won't work with >1 cloud accounts attached to the sandbox
+#
+##
+function track_has_cloud_account () {
+    if [ ! -z "$INSTRUQT_AWS_ACCOUNTS" ]
+    then
+        CLOUD_PROVIDER=aws
+        cloudvarname=INSTRUQT_AWS_ACCOUNT_${INSTRUQT_AWS_ACCOUNTS}_ACCOUNT_ID
+        CLOUD_ACCOUNT_ID=${!cloudvarname}
+    fi
+    if [ ! -z "$INSTRUQT_GCP_PROJECTS" ]
+    then
+        CLOUD_PROVIDER=gcp
+        cloudvarname=INSTRUQT_GCP_PROJECT_${INSTRUQT_GCP_PROJECTS}_PROJECT_ID
+        CLOUD_ACCOUNT_ID=${!cloudvarname}
+        # terraform config to use the service account with role.owner permissions
+        sakeyvarname=INSTRUQT_GCP_PROJECT_${INSTRUQT_GCP_PROJECTS}_SERVICE_ACCOUNT_KEY
+        SA_KEY=${!sakeyvarname}
+        export TF_VAR_project=$CLOUD_ACCOUNT_ID
+        grep $CLOUD_ACCOUNT_ID /root/.bashrc || echo "export TF_VAR_project=\"$CLOUD_ACCOUNT_ID\"" >> /root/.bashrc
+        # export GOOGLE_CREDENTIALS=$(echo $SA_KEY | base64 -d | jq 'tostring')
+        export GOOGLE_CREDENTIALS=$(pwd)/creds.json
+        echo "export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS" >> /root/.bashrc
+        echo $SA_KEY | base64 -d > creds.json
+
+    fi
+    if [ ! -z "$INSTRUQT_AZURE_SUBSCRIPTIONS" ]
+    then
+        CLOUD_PROVIDER=azure
+        cloudvarname=INSTRUQT_AZURE_SUBSCRIPTION_${INSTRUQT_AZURE_SUBSCRIPTIONS}_SUBSCRIPTION_ID
+        CLOUD_ACCOUNT_ID=${!cloudvarname}
+
+    fi
+    if [ -z $CLOUD_PROVIDER ]
+    then
+        echo "  FAIL"
+        echo "  This track does not include a cloud account but it should."
+        panic_msg
+    fi
+}
+
+##
+# Retrieve cloud access data from track envars
+# to deploy the cloud connector
+##
+function deploy_cloud_connector () {
+    CLOUD_CONNECTOR_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
+    CLOUD_REGION=""
+    echo ${CLOUD_CONNECTOR_DEPLOY_DATE} > $WORK_DIR/cloud_connector_deploy_date
+    
+    echo "Configuring Sysdig CloudVision for $CLOUD_PROVIDER"
+
+
+    # we are defining here some values (region) but in future we might want the user to choose its region
+    # right now there's not a reason to select one or another
+    if [ $CLOUD_PROVIDER = "aws" ]
+    then
+        CLOUD_REGION="us-east-1"
+    elif [ $CLOUD_PROVIDER = "gcp" ]
+    then
+        CLOUD_REGION="us-east1"
+    elif [ $CLOUD_PROVIDER = "azure" ]
+    then
+        CLOUD_REGION="foo"
+    fi
+
+    echo -e "  CloudVision is being installed in the background.\n"
+    # ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
+
+    source $TRACK_DIR/cloud/install_with_terraform.sh $CLOUD_PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_URL $CLOUD_REGION $CLOUD_ACCOUNT_ID
+}
+
+##
+# Test if the Cloud account is connected successfully.
+##
+function test_cloud_connector () {
+    echo "Testing if the cloud account is connected..."
+
+    attempt=0
+    MAX_ATTEMPTS=60 # 3 minutes
+    connected=false
+
+    while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
+    do
+        sleep 3
+        
+        curl -s --header "Content-Type: application/json"   \
+        -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
+        --request GET \
+        https://secure.sysdig.com/api/cloud/v2/dataSources/accounts\?limit\=50\&offset\=0 \
+        | jq '.[] | "\(.provider) \(.id) \(.cloudConnectorLastSeenAt)"' \
+        | grep $
+
+        # "aws 040609360573 2022-07-12T10:09:23.740365Z"
+        # "aws 059797578166 null"
+        # "aws 109082292238 2022-07-14T08:28:21.489197Z"
+        # "aws 736741930934 null"
+        # deployment date in: CLOUD_CONNECTOR_DEPLOY_DATE
+
+        # TODO, filter by date, then by provider, maybe I can change the query above to the API to do the filtering before
+        # if [ $? -eq 0 ]
+        # then
+        #     connected=true
+        #     break
+        # fi
+        
+        attempt=$(( $attempt + 1 ))
+    done
+
+    if [ "$connected" = true ]
+    then
+        echo "  Sysdig Vision successfully installed."
+        touch $WORK_DIR/user_data_CLOUDVISION_OK
+    else
+        echo "  FAIL"
+        echo "  Sysdig Vision installation went wrong. Use the provided channels to report this issue."
+        panic_msg
+    fi
+
+}
+
+##
 # Delete files only needed while running the script.
 ##
 function clean_setup () {
@@ -446,9 +600,10 @@ function clean_setup () {
 
     if [ -d $TRACK_DIR ]
     then
-        rm -rf $TRACK_DIR/
-        sed -i '/init.sh/d' /root/.profile  # removes the script from .profile so it is not executed in new challenges
-        touch $WORK_DIR/user_data_OK # flag environment configured with user data
+        # rm -rf $TRACK_DIR/
+        # sed -i '/init.sh/d' /root/.profile  # removes the script from .profile so it is not executed in new challenges
+        # touch $WORK_DIR/user_data_OK # flag environment configured with user data
+        echo "CLEANUP-DEBUG: Remove nothing yet"
     else
         panic_msg
     fi
@@ -478,12 +633,15 @@ function help () {
     echo "OPTIONS:"
     echo
     echo "  -a, --agent                 Deploy a Sysdig Agent."
+    echo "  -c, --cloud                 Set up environment for cloud-connector."
     echo "  -h, --help                  Show this help."
     echo "  -m, --monitor               Set up environment for Monitor API usage."
     echo "  -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent."
     echo "  -N, --node-image-analyzer   Enable Image Node Analyzer. Use with -a/--agent."
     echo "  -p, --prometheus            Enable Prometheus. Use with -a/--agent."
     echo "  -s, --secure                Set up environment for Secure API usage."
+    echo "  -r, --region                Set up environment with user's Sysdig Region for normal track."
+    echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track."
     echo
     echo
     echo "ENVIRONMENT VARIABLES:"
@@ -511,6 +669,18 @@ function check_flags () {
         case "$1" in
             --agent | -a)
                 USE_AGENT=true
+                USE_AGENT_REGION=true
+                ;;
+            --region | -r)
+                USE_AGENT_REGION=true
+                ;;
+            --cloud | -c)
+                USE_CLOUD=true
+                USE_CLOUD_REGION=true
+                USE_SECURE_API=true
+                ;;
+            --region-cloud | -q)
+                USE_CLOUD_REGION=true
                 ;;
             --monitor | -m)
                 USE_MONITOR_API=true
@@ -554,13 +724,14 @@ function check_flags () {
 function setup () {
     mkdir -p $WORK_DIR/
 
-    cp $TRACK_DIR/nginx.default.conf /etc/nginx/nginx.conf
-
     check_flags $@
 
     intro
 
-    select_region
+    if [ "$USE_AGENT_REGION" = true ] || [ "$USE_CLOUD_REGION" = true ]
+    then
+        select_region
+    fi
 
     if [ "$USE_AGENT" = true ]
     then
@@ -577,12 +748,23 @@ function setup () {
         configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
     fi
 
+    if [ "$USE_CLOUD" = true ]
+    then
+        track_has_cloud_account
+        deploy_cloud_connector
+    fi
 
     if [ "$USE_AGENT" = true ]
     then
         test_agent
     fi
 
+    if [ "$USE_CLOUD" = true ]
+    then
+        # test_cloud_connector
+        echo This script is not testing cloudVision installer!
+    fi
+    
     clean_setup
 }
 
