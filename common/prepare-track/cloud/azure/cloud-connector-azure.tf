@@ -34,7 +34,7 @@ provider "azurerm" {
 module "secure_for_cloud_example_single_subscription" {
   source = "sysdiglabs/secure-for-cloud/azurerm//examples/single-subscription"
 
-  deploy_scanning = true
+  deploy_scanning = false
 
   deploy_active_directory=false
 } 
