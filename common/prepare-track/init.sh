@@ -494,7 +494,6 @@ function deploy_cloud_connector () {
     
     echo "Configuring Sysdig CloudVision for $CLOUD_PROVIDER"
 
-
     # we are defining here some values (region) but in future we might want the user to choose its region
     # right now there's not a reason to select one or another
     if [ $CLOUD_PROVIDER = "aws" ]
