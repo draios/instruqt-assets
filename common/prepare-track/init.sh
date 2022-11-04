@@ -489,6 +489,7 @@ function track_has_cloud_account () {
 ##
 function deploy_cloud_connector () {
     CLOUD_CONNECTOR_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
+    CLOUD_CONNECTOR_DEPLOY_QUERY=$(date -d '+1 hour' +"%FT%H:%M:%S")
     CLOUD_REGION=""
     echo ${CLOUD_CONNECTOR_DEPLOY_DATE} > $WORK_DIR/cloud_connector_deploy_date
     
@@ -525,27 +526,40 @@ function test_cloud_connector () {
 
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
-        sleep 3
+        sleep 30
         
         curl -s --header "Content-Type: application/json"   \
         -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
         --request GET \
         https://secure.sysdig.com/api/cloud/v2/dataSources/accounts\?limit\=50\&offset\=0 \
-        | jq '.[] | "\(.provider) \(.id) \(.cloudConnectorLastSeenAt)"' \
-        | grep $
+        | jq '[.[] | {provider: .provider, id: .id, lastSeen: .cloudConnectorLastSeenAt}] | sort_by(.lastSeen) | reverse | .[] | "\(.provider) \(.id) \(.lastSeen)"' \
+        | cut -f1 -d"." \
+        | sed '/null/d' \
+        | sed 's/^.//' \
+        > .cloudProvidersLastSeen
+        echo "list of cloud accounts"
+        cat .cloudProvidersLastSeen
+        # sed -i -e '/${CLOUD_PROVIDER}/!d' .cloudProvidersLastSeen # remove entries from other cloud providers
+        # sed "/text\|$CLOUD_ACCOUNT_ID/!d" .cloudProvidersLastSeen # remove entries from other account ids
 
-        # "aws 040609360573 2022-07-12T10:09:23.740365Z"
-        # "aws 059797578166 null"
-        # "aws 109082292238 2022-07-14T08:28:21.489197Z"
-        # "aws 736741930934 null"
-        # deployment date in: CLOUD_CONNECTOR_DEPLOY_DATE
+        CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH=$(date --date "$CLOUD_CONNECTOR_DEPLOY_QUERY" +%s)
 
-        # TODO, filter by date, then by provider, maybe I can change the query above to the API to do the filtering before
-        # if [ $? -eq 0 ]
-        # then
-        #     connected=true
-        #     break
-        # fi
+        while read line; do # reading each line
+            # check if the account id matches, no need to check provider
+            if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID}" ]]
+            then 
+                LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f3) # extract date
+                LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
+
+                echo "test date: $LAST_SEEN_DATE later than"
+                if [[ "${LAST_SEEN_DATE_EPOCH}" > "${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}" ]]
+                then
+                    echo $LAST_SEEN_DATE_EPOCH ">" ${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}
+                    connected=true
+                    break
+                fi
+            fi
+        done < .cloudProvidersLastSeen
         
         attempt=$(( $attempt + 1 ))
     done
@@ -760,8 +774,7 @@ function setup () {
 
     if [ "$USE_CLOUD" = true ]
     then
-        # test_cloud_connector
-        echo This script is not testing cloudVision installer!
+        test_cloud_connector
     fi
     
     clean_setup

@@ -24,7 +24,7 @@ then
     cd aws
     echo "  Initializing Terraform modules, backend and provider plugins" \
     && terraform init >> ${OUTPUT} 2>&1 \
-    && echo "    Terraform has been successfully initialized. Applying..." \
+    && echo "    Terraform has been successfully initialized. Applying... (this will take a few minutes)" \
     && terraform apply -auto-approve \
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_URL" \
