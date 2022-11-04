@@ -492,6 +492,7 @@ function deploy_cloud_connector () {
     CLOUD_CONNECTOR_DEPLOY_QUERY=$(date -d '+1 hour' +"%FT%H:%M:%S")
     CLOUD_REGION=""
     echo ${CLOUD_CONNECTOR_DEPLOY_DATE} > $WORK_DIR/cloud_connector_deploy_date
+    echo ${CLOUD_CONNECTOR_DEPLOY_QUERY} > $WORK_DIR/cloud_connector_deploy_query
     
     echo "Configuring Sysdig CloudVision for $CLOUD_PROVIDER"
 
@@ -518,7 +519,7 @@ function deploy_cloud_connector () {
 # Test if the Cloud account is connected successfully.
 ##
 function test_cloud_connector () {
-    echo "Testing if the cloud account is connected..."
+    echo "    Testing if the cloud account is connected..."
 
     attempt=0
     MAX_ATTEMPTS=60 # 3 minutes
@@ -526,7 +527,7 @@ function test_cloud_connector () {
 
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
-        sleep 30
+        sleep 10
         
         curl -s --header "Content-Type: application/json"   \
         -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
@@ -537,6 +538,8 @@ function test_cloud_connector () {
         | sed '/null/d' \
         | sed 's/^.//' \
         > .cloudProvidersLastSeen
+
+        echo "deploy date: $(cat $WORK_DIR/cloud_connector_deploy_query)"
         echo "list of cloud accounts"
         cat .cloudProvidersLastSeen
         # sed -i -e '/${CLOUD_PROVIDER}/!d' .cloudProvidersLastSeen # remove entries from other cloud providers
