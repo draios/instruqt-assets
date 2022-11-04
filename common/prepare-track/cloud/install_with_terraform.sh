@@ -8,7 +8,7 @@
 
 # logs
 OUTPUT=/opt/sysdig/cloud/terraform_install.out
-mkdir /opt/sysdig/cloud/
+mkdir -p /opt/sysdig/cloud/
 touch $OUTPUT
 
 PROVIDER=$1
@@ -23,14 +23,14 @@ if [ "$PROVIDER" == "aws" ]
 then
     cd aws
     echo "  Initializing Terraform modules, backend and provider plugins" \
-    terraform init >> ${OUTPUT} 2>&1 \
+    && terraform init >> ${OUTPUT} 2>&1 \
     && echo "    Terraform has been successfully initialized. Applying..." \
     && terraform apply -auto-approve \
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_URL" \
         -var="training_aws_region=$CLOUD_REGION" \
         >> ${OUTPUT} 2>&1 \
-    && echo "    Terraform apply completed! Check all TF deployment logs at: $OUTPUT" \
+    && echo "    Terraform apply completed! Check all TF deployment logs at: $OUTPUT"
 fi
 
 if [ "$PROVIDER" == "gcp" ]
