@@ -22,11 +22,15 @@ cd /root/prepare-track/cloud
 if [ "$PROVIDER" == "aws" ]
 then
     cd aws
-    terraform init && terraform apply -auto-approve \
+    echo "  Initializing Terraform modules, backend and provider plugins" \
+    terraform init >> ${OUTPUT} 2>&1 \
+    && echo "    Terraform has been successfully initialized. Applying..." \
+    && terraform apply -auto-approve \
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_URL" \
         -var="training_aws_region=$CLOUD_REGION" \
-        >> ${OUTPUT} 2>&1
+        >> ${OUTPUT} 2>&1 \
+    && echo "    Terraform apply completed! Check all TF deployment logs at: $OUTPUT" \
 fi
 
 if [ "$PROVIDER" == "gcp" ]
