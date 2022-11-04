@@ -32,4 +32,7 @@ provider "aws" {
 
 module "secure-for-cloud_example_single-account" {
   source = "sysdiglabs/secure-for-cloud/aws//examples/single-account"
+
+  # deploy_beta_image_scanning_ecr=true
+
 }
