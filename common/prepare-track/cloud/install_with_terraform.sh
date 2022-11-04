@@ -6,6 +6,7 @@
 #   install_with_terraform.sh $PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_URL $CLOUD_REGION $CLOUD_ACCOUNT_ID
 ##
 
+# logs
 OUTPUT=/opt/sysdig/cloud/terraform_install.out
 mkdir /opt/sysdig/cloud/
 touch $OUTPUT
@@ -16,12 +17,6 @@ SECURE_URL=$3
 CLOUD_REGION=$4
 CLOUD_ACCOUNT_ID=$5
 
-echo "pablo-------------------------------------"
-echo $SYSDIG_SECURE_API_TOKEN
-echo $SECURE_URL
-echo $CLOUD_ACCOUNT_ID
-echo "pablo-------------------------------------"
-
 cd /root/prepare-track/cloud
 
 if [ "$PROVIDER" == "aws" ]
@@ -30,8 +25,8 @@ then
     terraform init && terraform apply -auto-approve \
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_URL" \
-        -var="training_aws_region=$CLOUD_REGION" #\
-        #-y >> ${OUTPUT} 2>&1
+        -var="training_aws_region=$CLOUD_REGION" \
+        >> ${OUTPUT} 2>&1
 fi
 
 if [ "$PROVIDER" == "gcp" ]
