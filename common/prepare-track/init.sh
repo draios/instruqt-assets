@@ -489,7 +489,7 @@ function track_has_cloud_account () {
 ##
 function deploy_cloud_connector () {
     CLOUD_CONNECTOR_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
-    CLOUD_CONNECTOR_DEPLOY_QUERY=$(date -d '+1 hour' +"%FT%H:%M:%S")
+    CLOUD_CONNECTOR_DEPLOY_QUERY=$(date +"%FT%H:%M:%S") # don't substrack to match same timezone than returned by providersLastSeen
     CLOUD_REGION=""
     echo ${CLOUD_CONNECTOR_DEPLOY_DATE} > $WORK_DIR/cloud_connector_deploy_date
     echo ${CLOUD_CONNECTOR_DEPLOY_QUERY} > $WORK_DIR/cloud_connector_deploy_query
@@ -522,7 +522,7 @@ function test_cloud_connector () {
     echo "    Testing if the cloud account is connected..."
 
     attempt=0
-    MAX_ATTEMPTS=60 # 3 minutes
+    MAX_ATTEMPTS=36 # 6 minutes
     connected=false
 
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
@@ -539,9 +539,7 @@ function test_cloud_connector () {
         | sed 's/^.//' \
         > .cloudProvidersLastSeen
 
-        echo "deploy date: $(cat $WORK_DIR/cloud_connector_deploy_query)"
-        echo "list of cloud accounts"
-        cat .cloudProvidersLastSeen
+        # cat .cloudProvidersLastSeen
         # sed -i -e '/${CLOUD_PROVIDER}/!d' .cloudProvidersLastSeen # remove entries from other cloud providers
         # sed "/text\|$CLOUD_ACCOUNT_ID/!d" .cloudProvidersLastSeen # remove entries from other account ids
 
@@ -554,10 +552,9 @@ function test_cloud_connector () {
                 LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f3) # extract date
                 LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
 
-                echo "test date: $LAST_SEEN_DATE later than"
                 if [[ "${LAST_SEEN_DATE_EPOCH}" > "${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}" ]]
                 then
-                    echo $LAST_SEEN_DATE_EPOCH ">" ${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}
+                    echo "    Found cloud account: $line"
                     connected=true
                     break
                 fi
@@ -576,7 +573,6 @@ function test_cloud_connector () {
         echo "  Sysdig Vision installation went wrong. Use the provided channels to report this issue."
         panic_msg
     fi
-
 }
 
 ##
