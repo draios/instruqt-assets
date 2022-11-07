@@ -612,10 +612,9 @@ function clean_setup () {
 
     if [ -d $TRACK_DIR ]
     then
-        # rm -rf $TRACK_DIR/
-        # sed -i '/init.sh/d' /root/.profile  # removes the script from .profile so it is not executed in new challenges
-        # touch $WORK_DIR/user_data_OK # flag environment configured with user data
-        echo "CLEANUP-DEBUG: Remove nothing yet"
+        rm -rf $TRACK_DIR/
+        sed -i '/init.sh/d' /root/.profile  # removes the script from .profile so it is not executed in new challenges
+        touch $WORK_DIR/user_data_OK # flag environment configured with user data
     else
         panic_msg
     fi
