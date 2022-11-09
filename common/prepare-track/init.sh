@@ -563,8 +563,7 @@ function test_cloud_connector () {
             then 
                 LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f3) # extract date
                 LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
-                echo "compare: ${LAST_SEEN_DATE_EPOCH} > ${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}"
-                echo "compare: ${LAST_SEEN_DATE} > ${CLOUD_CONNECTOR_DEPLOY_QUERY}"
+
                 if [[ "${LAST_SEEN_DATE_EPOCH}" > "${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}" ]]
                 then
                     echo "    Found cloud account: $line"
@@ -764,12 +763,6 @@ function setup () {
         select_region
     fi
 
-    if [ "$USE_AGENT" = true ]
-    then
-        deploy_agent
-        test_agent
-    fi
-
     if [ "$USE_MONITOR_API" = true ]
     then
         configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
@@ -778,6 +771,12 @@ function setup () {
     if [ "$USE_SECURE_API" = true ]
     then
         configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
+    fi
+
+    if [ "$USE_AGENT" = true ]
+    then
+        deploy_agent
+        test_agent
     fi
 
     if [ "$USE_CLOUD" = true ]

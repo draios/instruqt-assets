@@ -29,7 +29,7 @@ then
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_URL" \
         -var="training_aws_region=$CLOUD_REGION" \
-        -var="deploy_scanner=$CLOUD_SCAN_ENGINE" \
+        -var="deploy_scanner=$USE_CLOUD_SCAN_ENGINE" \
         >> ${OUTPUT} 2>&1 \
     && echo "    Terraform apply completed! Check all TF deployment logs at: $OUTPUT"
 fi
@@ -46,7 +46,7 @@ then
         -var="training_gcp_region=$CLOUD_REGION" \
         -var="training_gcp_project=$CLOUD_ACCOUNT_ID" \
         -var="gcp_creds=$GOOGLE_CREDENTIALS" \
-        -var="deploy_scanner=$CLOUD_SCAN_ENGINE" \
+        -var="deploy_scanner=$USE_CLOUD_SCAN_ENGINE" \
         >> ${OUTPUT} 2>&1 \
     && echo "    Terraform apply completed! Check all TF deployment logs at: $OUTPUT"
 fi
@@ -58,6 +58,6 @@ then
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_URL" \
         -var="training_azure_subscription=$CLOUD_ACCOUNT_ID" \
-        -var="deploy_scanner=$CLOUD_SCAN_ENGINE" #\
+        -var="deploy_scanner=$USE_CLOUD_SCAN_ENGINE" #\
         #-y >> ${OUTPUT} 2>&1
 fi
