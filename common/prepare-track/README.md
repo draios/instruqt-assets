@@ -22,13 +22,16 @@ in production.
 OPTIONS:
 
   -a, --agent                 Deploy a Sysdig Agent.
+  -c, --cloud                 Set up environment for Sysdig Secure for Cloud.
   -h, --help                  Show this help.
   -m, --monitor               Set up environment for Monitor API usage.
   -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent.
   -N, --node-image-analyzer   Enable Image Node Analyzer. Use with -a/--agent.
   -p, --prometheus            Enable Prometheus. Use with -a/--agent.
   -s, --secure                Set up environment for Secure API usage.
-
+  -r, --region                Set up environment with user's Sysdig Region for a track with a host.
+  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account.
+  -v, --vulnmanag             Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud.
 
 ENVIRONMENT VARIABLES:
 
@@ -43,4 +46,5 @@ ENVIRONMENT VARIABLES:
   DOCKER_OPTS                 Additional options for Docker installation.
 
   HOST_OPTS                   Additional options for Host installation.
+
 ```

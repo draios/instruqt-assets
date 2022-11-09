@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ##
-# Deploy the Sysdig Cloud Connector for Sysdig Secure for Cloud in AWS
+# Deploy the Sysdig Secure for Cloud infra for different cloud vendors
 #
 # Usage:
 #   install_with_terraform.sh $PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_URL $CLOUD_REGION $CLOUD_ACCOUNT_ID
@@ -29,6 +29,7 @@ then
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_URL" \
         -var="training_aws_region=$CLOUD_REGION" \
+        -var="deploy_scanner=$CLOUD_SCAN_ENGINE" \
         >> ${OUTPUT} 2>&1 \
     && echo "    Terraform apply completed! Check all TF deployment logs at: $OUTPUT"
 fi
@@ -45,6 +46,7 @@ then
         -var="training_gcp_region=$CLOUD_REGION" \
         -var="training_gcp_project=$CLOUD_ACCOUNT_ID" \
         -var="gcp_creds=$GOOGLE_CREDENTIALS" \
+        -var="deploy_scanner=$CLOUD_SCAN_ENGINE" \
         >> ${OUTPUT} 2>&1 \
     && echo "    Terraform apply completed! Check all TF deployment logs at: $OUTPUT"
 fi
@@ -55,6 +57,7 @@ then
     terraform init && terraform apply -auto-approve \
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_URL" \
-        -var="training_azure_subscription=$CLOUD_ACCOUNT_ID" #\
+        -var="training_azure_subscription=$CLOUD_ACCOUNT_ID" \
+        -var="deploy_scanner=$CLOUD_SCAN_ENGINE" #\
         #-y >> ${OUTPUT} 2>&1
 fi
