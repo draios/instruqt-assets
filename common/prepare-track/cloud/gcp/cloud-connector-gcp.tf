@@ -31,6 +31,11 @@ variable "gcp_creds" {
   description = "Auth credentials for the GCP SA from Instruqt"
 }
 
+variable "deploy_scanner" {
+  type        = bool
+  description = "If true, deploys the Sysdig Scanner for ECR and Fargate"
+}
+
 provider "sysdig" {
   sysdig_secure_url       = var.training_secure_url
   sysdig_secure_api_token = var.training_secure_api_token
@@ -51,5 +56,5 @@ provider "google-beta" {
 module "secure-for-cloud_example_single-project" {
   source = "sysdiglabs/secure-for-cloud/google//examples/single-project"
   
-  deploy_scanning = true
+  deploy_scanning = var.deploy_scanner
 }

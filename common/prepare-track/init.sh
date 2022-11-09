@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ###
-# Sysdig Agent deploy helper for Sysdig Training tracks.
+# Sysdig Agent and cloud_infra deploy helper for Sysdig Training tracks.
 #
 # AUTHORS:
 #   Sysdig Education Team <team-training@sysdig.com>
@@ -36,6 +36,7 @@ USE_NODE_ANALYZER=false
 USE_NODE_IMAGE_ANALYZER=false
 USE_PROMETHEUS=false
 USE_CLOUD=false
+USE_CLOUD_SCAN_ENGINE=false
 USE_REGION_CLOUD=false
 USE_AGENT_REGION=false
 
@@ -76,7 +77,6 @@ function config_sysdig_tab_redirect () {
     if [ "$USE_CLOUD_REGION" = true ]
     then
         pkill -f nginx
-        touch /tmp/region_set_OK
         nginx
     fi
 }
@@ -441,7 +441,15 @@ function test_agent () {
 ##
 # Check that the track includes a cloud account
 # and sets the TEST_CLOUD_ACCOUNT_ID variable with the cloud account id
-#
+# 
+# Instruqt can attach a burner cloud account with a track. It inyects 
+# credentials to use the account in the host or cloud_container. This
+# function checks if there's a cloud account in the track and in that case
+# it sets the requiered env vars to use it and deploy sysdig secure for cloud.
+# 
+# To learn more about it:
+# https://docs.instruqt.com/how-to-guides/manage-sandboxes/access-cloud-accounts
+# 
 # NOTE: this won't work with >1 cloud accounts attached to the sandbox
 #
 ##
@@ -451,21 +459,29 @@ function track_has_cloud_account () {
         CLOUD_PROVIDER=aws
         cloudvarname=INSTRUQT_AWS_ACCOUNT_${INSTRUQT_AWS_ACCOUNTS}_ACCOUNT_ID
         CLOUD_ACCOUNT_ID=${!cloudvarname}
+        CLOUD_ACCOUNT_ID_TEST=${CLOUD_ACCOUNT_ID}
     fi
     if [ ! -z "$INSTRUQT_GCP_PROJECTS" ]
     then
         CLOUD_PROVIDER=gcp
         cloudvarname=INSTRUQT_GCP_PROJECT_${INSTRUQT_GCP_PROJECTS}_PROJECT_ID
         CLOUD_ACCOUNT_ID=${!cloudvarname}
-        # terraform config to use the service account with role.owner permissions
+
+        # terraform config to use the service account with role.owner permissions.
+        # the user account provided by instruqt do not have org-level permissions and these
+        # are required for the sysdig-cloud GCP installer
         sakeyvarname=INSTRUQT_GCP_PROJECT_${INSTRUQT_GCP_PROJECTS}_SERVICE_ACCOUNT_KEY
         SA_KEY=${!sakeyvarname}
+        echo $SA_KEY | base64 -d > creds.json # credentials for the Service Account
         export TF_VAR_project=$CLOUD_ACCOUNT_ID
         grep $CLOUD_ACCOUNT_ID /root/.bashrc || echo "export TF_VAR_project=\"$CLOUD_ACCOUNT_ID\"" >> /root/.bashrc
-        # export GOOGLE_CREDENTIALS=$(echo $SA_KEY | base64 -d | jq 'tostring')
+
+        # set the path for terraform to use the service account credentials
         export GOOGLE_CREDENTIALS=$(pwd)/creds.json
         echo "export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS" >> /root/.bashrc
-        echo $SA_KEY | base64 -d > creds.json
+
+        # get org ID, this is required to test that the install was successful later
+        CLOUD_ACCOUNT_ID_TEST=$(gcloud projects get-ancestors $CLOUD_ACCOUNT_ID | grep organization | cut -d' ' -f1,8)
 
     fi
     if [ ! -z "$INSTRUQT_AZURE_SUBSCRIPTIONS" ]
@@ -473,6 +489,7 @@ function track_has_cloud_account () {
         CLOUD_PROVIDER=azure
         cloudvarname=INSTRUQT_AZURE_SUBSCRIPTION_${INSTRUQT_AZURE_SUBSCRIPTIONS}_SUBSCRIPTION_ID
         CLOUD_ACCOUNT_ID=${!cloudvarname}
+        CLOUD_ACCOUNT_ID_TEST=${CLOUD_ACCOUNT_ID}
 
     fi
     if [ -z $CLOUD_PROVIDER ]
@@ -489,7 +506,7 @@ function track_has_cloud_account () {
 ##
 function deploy_cloud_connector () {
     CLOUD_CONNECTOR_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
-    CLOUD_CONNECTOR_DEPLOY_QUERY=$(date +"%FT%H:%M:%S") # don't substrack to match same timezone than returned by providersLastSeen
+    CLOUD_CONNECTOR_DEPLOY_QUERY=$(date +"%FT%H:%M:%S") # get deployment date that match format and timezone of the date returned by sysdig API CloudProvidersLastSeen
     CLOUD_REGION=""
     echo ${CLOUD_CONNECTOR_DEPLOY_DATE} > $WORK_DIR/cloud_connector_deploy_date
     echo ${CLOUD_CONNECTOR_DEPLOY_QUERY} > $WORK_DIR/cloud_connector_deploy_query
@@ -510,7 +527,6 @@ function deploy_cloud_connector () {
     fi
 
     echo -e "  CloudVision is being installed in the background.\n"
-    # ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
     source $TRACK_DIR/cloud/install_with_terraform.sh $CLOUD_PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_URL $CLOUD_REGION $CLOUD_ACCOUNT_ID
 }
@@ -539,19 +555,16 @@ function test_cloud_connector () {
         | sed 's/^.//' \
         > .cloudProvidersLastSeen
 
-        # cat .cloudProvidersLastSeen
-        # sed -i -e '/${CLOUD_PROVIDER}/!d' .cloudProvidersLastSeen # remove entries from other cloud providers
-        # sed "/text\|$CLOUD_ACCOUNT_ID/!d" .cloudProvidersLastSeen # remove entries from other account ids
-
         CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH=$(date --date "$CLOUD_CONNECTOR_DEPLOY_QUERY" +%s)
 
         while read line; do # reading each line
             # check if the account id matches, no need to check provider
-            if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID}" ]]
+            if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID_TEST}" ]]
             then 
                 LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f3) # extract date
                 LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
-
+                echo "compare: ${LAST_SEEN_DATE_EPOCH} > ${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}"
+                echo "compare: ${LAST_SEEN_DATE} > ${CLOUD_CONNECTOR_DEPLOY_QUERY}"
                 if [[ "${LAST_SEEN_DATE_EPOCH}" > "${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}" ]]
                 then
                     echo "    Found cloud account: $line"
@@ -612,7 +625,7 @@ function clean_setup () {
 
     if [ -d $TRACK_DIR ]
     then
-        rm -rf $TRACK_DIR/
+        mv -r $TRACK_DIR/ /tmp/$TRACK_DIR
         sed -i '/init.sh/d' /root/.profile  # removes the script from .profile so it is not executed in new challenges
         touch $WORK_DIR/user_data_OK # flag environment configured with user data
     else
@@ -644,15 +657,16 @@ function help () {
     echo "OPTIONS:"
     echo
     echo "  -a, --agent                 Deploy a Sysdig Agent."
-    echo "  -c, --cloud                 Set up environment for cloud-connector."
+    echo "  -c, --cloud                 Set up environment for Sysdig Secure for Cloud."
     echo "  -h, --help                  Show this help."
     echo "  -m, --monitor               Set up environment for Monitor API usage."
     echo "  -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent."
     echo "  -N, --node-image-analyzer   Enable Image Node Analyzer. Use with -a/--agent."
     echo "  -p, --prometheus            Enable Prometheus. Use with -a/--agent."
     echo "  -s, --secure                Set up environment for Secure API usage."
-    echo "  -r, --region                Set up environment with user's Sysdig Region for normal track."
-    echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track."
+    echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
+    echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account."
+    echo "  -v, --vulnmanag             Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
     echo
     echo
     echo "ENVIRONMENT VARIABLES:"
@@ -668,6 +682,9 @@ function help () {
     echo "  DOCKER_OPTS                 Additional options for Docker installation."
     echo
     echo "  HOST_OPTS                   Additional options for Host installation."
+    echo
+
+
 }
 
 
@@ -708,6 +725,9 @@ function check_flags () {
             --prometheus | -p)
                 export USE_PROMETHEUS=true
                 ;;
+            --vulnmanag | -v)
+                export USE_CLOUD_SCAN_ENGINE=true
+                ;;
             --help | -h)
                 help
                 exit 0
@@ -747,6 +767,7 @@ function setup () {
     if [ "$USE_AGENT" = true ]
     then
         deploy_agent
+        test_agent
     fi
 
     if [ "$USE_MONITOR_API" = true ]
@@ -763,15 +784,6 @@ function setup () {
     then
         track_has_cloud_account
         deploy_cloud_connector
-    fi
-
-    if [ "$USE_AGENT" = true ]
-    then
-        test_agent
-    fi
-
-    if [ "$USE_CLOUD" = true ]
-    then
         test_cloud_connector
     fi
     

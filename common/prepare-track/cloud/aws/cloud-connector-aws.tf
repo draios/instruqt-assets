@@ -21,6 +21,11 @@ variable "training_aws_region" {
   description = "The AWS Region"
 }
 
+variable "deploy_scanner" {
+  type        = bool
+  description = "If true, deploys the Sysdig Scanner for ECR and Fargate"
+}
+
 provider "sysdig" {
   sysdig_secure_url       = var.training_secure_url
   sysdig_secure_api_token = var.training_secure_api_token
@@ -33,6 +38,7 @@ provider "aws" {
 module "secure-for-cloud_example_single-account" {
   source = "sysdiglabs/secure-for-cloud/aws//examples/single-account"
 
-  # deploy_beta_image_scanning_ecr=true
-
+  deploy_image_scanning_ecs = var.deploy_scanner
+  deploy_image_scanning_ecr = var.deploy_scanner
+  deploy_beta_image_scanning_ecr = var.deploy_scanner
 }
