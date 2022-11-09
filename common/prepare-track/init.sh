@@ -576,7 +576,7 @@ function test_cloud_connector () {
             if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID}" ]]
             then 
                 # the account_id matches
-                LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f3) # extract date
+                LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f4) # extract date
                 LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
                 # is this account date_last_seen value greater than the deployment_date in this script?
                 # ^ this means, we want the cloud account to be active now
