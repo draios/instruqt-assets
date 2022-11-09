@@ -474,7 +474,6 @@ function track_has_cloud_account () {
         CLOUD_PROVIDER=aws
         cloudvarname=INSTRUQT_AWS_ACCOUNT_${INSTRUQT_AWS_ACCOUNTS}_ACCOUNT_ID
         CLOUD_ACCOUNT_ID=${!cloudvarname}
-        CLOUD_ACCOUNT_ID_TEST=${CLOUD_ACCOUNT_ID}
     fi
 
     if [ ! -z "$INSTRUQT_GCP_PROJECTS" ]
@@ -495,9 +494,6 @@ function track_has_cloud_account () {
         # set the path for terraform to use the service account credentials
         export GOOGLE_CREDENTIALS=$(pwd)/creds.json
         echo "export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS" >> /root/.bashrc
-
-        # get org ID, this is required to test that the install was successful later
-        CLOUD_ACCOUNT_ID_TEST=$(gcloud projects get-ancestors $CLOUD_ACCOUNT_ID | grep organization | cut -d' ' -f1,8)
     fi
 
     if [ ! -z "$INSTRUQT_AZURE_SUBSCRIPTIONS" ]
@@ -505,7 +501,6 @@ function track_has_cloud_account () {
         CLOUD_PROVIDER=azure
         cloudvarname=INSTRUQT_AZURE_SUBSCRIPTION_${INSTRUQT_AZURE_SUBSCRIPTIONS}_SUBSCRIPTION_ID
         CLOUD_ACCOUNT_ID=${!cloudvarname}
-        CLOUD_ACCOUNT_ID_TEST=${CLOUD_ACCOUNT_ID}
     fi
 
     if [ -z $CLOUD_PROVIDER ]
@@ -568,7 +563,7 @@ function test_cloud_connector () {
         -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
         --request GET \
         https://secure.sysdig.com/api/cloud/v2/dataSources/accounts\?limit\=50\&offset\=0 \
-        | jq '[.[] | {provider: .provider, id: .id, lastSeen: .cloudConnectorLastSeenAt}] | sort_by(.lastSeen) | reverse | .[] | "\(.provider) \(.id) \(.lastSeen)"' \
+        | jq '[.[] | {provider: .provider, id: .id, alias: .alias, lastSeen: .cloudConnectorLastSeenAt}] | sort_by(.lastSeen) | reverse | .[] | "\(.provider) \(.id) \(.alias) \(.lastSeen)"' \
         | cut -f1 -d"." \
         | sed '/null/d' \
         | sed 's/^.//' \
@@ -578,7 +573,7 @@ function test_cloud_connector () {
 
         while read line; do # reading each cloud provider connected to the sysdig account
             
-            if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID_TEST}" ]]
+            if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID}" ]]
             then 
                 # the account_id matches
                 LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f3) # extract date
