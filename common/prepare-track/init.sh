@@ -62,6 +62,11 @@ function panic_msg () {
 ##
 # Define nginx.conf values to enable redirect
 # to the Sysdig Region selected by the user
+# 
+# This function applies different changes depending
+# on the type of resources attached to a track:
+#   - hosts for an agent installation (nginx managed by systemctl)
+#   - container for cloud account (nginx process alone, no systemctl)
 ##
 function config_sysdig_tab_redirect () {
     OLD_STRING="http {"
@@ -86,6 +91,8 @@ function config_sysdig_tab_redirect () {
 #
 # This is used to define the URL of the track-TABS, for API queries and define
 # agent parameters.
+# 
+# Update when a new region is created.
 ##
 function set_values () {
     REGION=$1
@@ -144,12 +151,12 @@ function set_values () {
 function select_region () {
     echo
     echo "Please select one of the existing SaaS Regions: "
+    echo "   0) Abort install"
     echo "   1) GCP US West (default)"
     echo "   2) AWS US East"
     echo "   3) AWS US West"
     echo "   4) EMEA"
     echo "   5) Pacific"
-    echo "   6) Abort install"
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
     then
@@ -159,6 +166,10 @@ function select_region () {
     fi
 
     case $REGION_N in
+        0)
+            echo "   Abort init.sh. Region not defined, agent not installed. This track will not work properly."
+            exit 0
+            ;;
         1)
             REGION="GCP US West (default)"
             ;;
@@ -174,10 +185,6 @@ function select_region () {
         5)
             REGION="Pacific"
             ;;
-        6)
-            echo "   Abort init.sh. Region not defined, agent not installed. This track will not work properly."
-            exit 0
-            ;;
         *)
             echo "${REGION_N} is not a valid an option."
             select_region
@@ -190,7 +197,7 @@ function select_region () {
 }
 
 ##
-# Configure Sysdig API access.
+# Configure Sysdig API access for Monitor or Secure.
 # 
 # Usage:
 #   configure_API ${PRODUCT} ${PRODUCT_URL} ${PRODUCT_API_ENDPOINT}
@@ -252,7 +259,8 @@ function configure_API () {
 }
 
 ##
-# Selects the installation method depending on the environment.
+# For envs where an agent is installed,
+# selects the installation method depending on the environment.
 ##
 function installation_method () {
     if [[ -z "$INSTALL_WITH" ]]
@@ -338,6 +346,9 @@ function intro () {
       echo "    - Enable CloudVision."
     fi
 
+    if [ "$USE_CLOUD_SCAN_ENGINE" == true ]; then
+      echo "    - Deploys the Image Scanner for Cloud Registries."
+    fi
     echo "  Follow the instructions below."
     echo
     echo "----------------------------------------------------------"
@@ -439,18 +450,22 @@ function test_agent () {
 }
 
 ##
-# Check that the track includes a cloud account
-# and sets the TEST_CLOUD_ACCOUNT_ID variable with the cloud account id
+# Checks if the track includes a cloud account
+# and sets the CLOUD_ACCOUNT_ID variable with an identifier of the cloud account
+# that will be used to deploy the required infra in the cloud provider selected
 # 
-# Instruqt can attach a burner cloud account with a track. It inyects 
-# credentials to use the account in the host or cloud_container. This
-# function checks if there's a cloud account in the track and in that case
-# it sets the requiered env vars to use it and deploy sysdig secure for cloud.
+# More info about resources and variables used in this function:
+#    -----------------------------------------------------------------------------
+#    Instruqt can attach a burner cloud account with a track. It inyects 
+#    credentials to use the account in the host or cloud_container. This
+#    function checks if there's a cloud account in the track and in that case
+#    it sets the requiered env vars to use it and deploy sysdig secure for cloud.
 # 
-# To learn more about it:
-# https://docs.instruqt.com/how-to-guides/manage-sandboxes/access-cloud-accounts
+#    To learn more about it:
+#    https://docs.instruqt.com/how-to-guides/manage-sandboxes/access-cloud-accounts
+#    -----------------------------------------------------------------------------
 # 
-# NOTE: this won't work with >1 cloud accounts attached to the sandbox
+# NOTE: this function do not support >1 cloud accounts attached to the track sandbox
 #
 ##
 function track_has_cloud_account () {
@@ -461,6 +476,7 @@ function track_has_cloud_account () {
         CLOUD_ACCOUNT_ID=${!cloudvarname}
         CLOUD_ACCOUNT_ID_TEST=${CLOUD_ACCOUNT_ID}
     fi
+
     if [ ! -z "$INSTRUQT_GCP_PROJECTS" ]
     then
         CLOUD_PROVIDER=gcp
@@ -482,16 +498,16 @@ function track_has_cloud_account () {
 
         # get org ID, this is required to test that the install was successful later
         CLOUD_ACCOUNT_ID_TEST=$(gcloud projects get-ancestors $CLOUD_ACCOUNT_ID | grep organization | cut -d' ' -f1,8)
-
     fi
+
     if [ ! -z "$INSTRUQT_AZURE_SUBSCRIPTIONS" ]
     then
         CLOUD_PROVIDER=azure
         cloudvarname=INSTRUQT_AZURE_SUBSCRIPTION_${INSTRUQT_AZURE_SUBSCRIPTIONS}_SUBSCRIPTION_ID
         CLOUD_ACCOUNT_ID=${!cloudvarname}
         CLOUD_ACCOUNT_ID_TEST=${CLOUD_ACCOUNT_ID}
-
     fi
+
     if [ -z $CLOUD_PROVIDER ]
     then
         echo "  FAIL"
@@ -501,8 +517,7 @@ function track_has_cloud_account () {
 }
 
 ##
-# Retrieve cloud access data from track envars
-# to deploy the cloud connector
+# Deploys the cloud connector.
 ##
 function deploy_cloud_connector () {
     CLOUD_CONNECTOR_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
@@ -545,6 +560,10 @@ function test_cloud_connector () {
     do
         sleep 10
         
+        # asks the sysdig secure API about cloud accounts (provider, account_id, date_last_seen)
+        # ordered by date_last_seen (more recent first)
+        # applies some filtering to use the output usable (date format, quotes, etc.)
+        # and writes it to .cloudProvidersLastSeen
         curl -s --header "Content-Type: application/json"   \
         -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
         --request GET \
@@ -557,13 +576,16 @@ function test_cloud_connector () {
 
         CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH=$(date --date "$CLOUD_CONNECTOR_DEPLOY_QUERY" +%s)
 
-        while read line; do # reading each line
-            # check if the account id matches, no need to check provider
+        while read line; do # reading each cloud provider connected to the sysdig account
+            
             if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID_TEST}" ]]
             then 
+                # the account_id matches
                 LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f3) # extract date
                 LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
-
+                # is this account date_last_seen value greater than the deployment_date in this script?
+                # ^ this means, we want the cloud account to be active now
+                # Instruqt reuses the accounts, so we don't want a false positive for reusing an account
                 if [[ "${LAST_SEEN_DATE_EPOCH}" > "${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}" ]]
                 then
                     echo "    Found cloud account: $line"
@@ -624,6 +646,9 @@ function clean_setup () {
 
     if [ -d $TRACK_DIR ]
     then
+        # we used to remove these files, but they are useful for debugging.
+        # Also, the terraform state file is good to keep it in case we need to destroy the assets
+        # In most cases we don't care about this, as Instruqts manages the cleanup of the envs.
         mv -r $TRACK_DIR/ /tmp/$TRACK_DIR
         sed -i '/init.sh/d' /root/.profile  # removes the script from .profile so it is not executed in new challenges
         touch $WORK_DIR/user_data_OK # flag environment configured with user data
@@ -641,16 +666,15 @@ function help () {
     echo
     echo "  `basename $0` [OPTIONS...]"
     echo
-    echo "Environment start up script. It can be used to deploy a Sysdig Agent and/or set"
-    echo "up some environment variables. When called with NO OPTIONS, it will deploy an"
-    echo "Agent and will ask for Monitor and Secure API keys; same as calling with"
-    echo "'-a/--agent -m/--monitor -s/--secure'. When using the product options"
-    echo "('-m/--monitor' and/or '-s/--secure'), API keys will be stored in file"
-    echo "$WORK_DIR/user_data_\${PRODUCT}_API_OK, and exported to envvar"
-    echo "\$SYSDIG_\${PRODUCT}_API_TOKEN (where \${PRODUCT} is MONITOR or SECURE)."
-    echo
-    echo "WARNING: This script is meant to be used in training materials. Do NOT use it in"
-    echo "production."
+    echo "Environment start up script. It can be used to:"
+    echo "- deploy a Sysdig Agent "
+    echo "- deploy Sysdig Secure for Cloud (AWS, GCP, Azure)"
+    echo "- and/or set up some environment variables."
+    echo ""
+    echo "Review the options below to learn what's available."
+    echo ""
+    echo "WARNING: This script is meant to be used in training materials."
+    echo "Do NOT use it in production."
     echo
     echo
     echo "OPTIONS:"
