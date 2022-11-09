@@ -565,7 +565,6 @@ function test_cloud_connector () {
         https://secure.sysdig.com/api/cloud/v2/dataSources/accounts\?limit\=50\&offset\=0 \
         | jq '[.[] | {provider: .provider, id: .id, alias: .alias, lastSeen: .cloudConnectorLastSeenAt}] | sort_by(.lastSeen) | reverse | .[] | "\(.provider) \(.id) \(.alias) \(.lastSeen)"' \
         | cut -f1 -d"." \
-        | sed '/null/d' \
         | sed 's/^.//' \
         > .cloudProvidersLastSeen
 
@@ -644,7 +643,8 @@ function clean_setup () {
         # we used to remove these files, but they are useful for debugging.
         # Also, the terraform state file is good to keep it in case we need to destroy the assets
         # In most cases we don't care about this, as Instruqts manages the cleanup of the envs.
-        mv -r $TRACK_DIR/ /tmp/$TRACK_DIR
+        mv $TRACK_DIR/ /tmp/
+        test -f /root/creds.json && mv /root/creds.json /tmp/
         sed -i '/init.sh/d' /root/.profile  # removes the script from .profile so it is not executed in new challenges
         touch $WORK_DIR/user_data_OK # flag environment configured with user data
     else
