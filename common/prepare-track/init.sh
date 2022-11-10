@@ -563,9 +563,9 @@ function test_cloud_connector () {
         -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
         --request GET \
         https://secure.sysdig.com/api/cloud/v2/dataSources/accounts\?limit\=50\&offset\=0 \
-        | jq '[.[] | {provider: .provider, id: .id, alias: .alias, lastSeen: .cloudConnectorLastSeenAt}] | sort_by(.lastSeen) | reverse | .[] | "\(.provider) \(.id) \(.alias) \(.lastSeen)"' \
+        | jq -r '[.[] | {provider: .provider, id: .id, alias: .alias, lastSeen: .cloudConnectorLastSeenAt}] | sort_by(.lastSeen) | reverse | .[] | "\(.provider) \(.id) \(.alias) \(.lastSeen)"' \
         | cut -f1 -d"." \
-        | sed 's/^.//' \
+        | awk ' { t = $1; $1 = $(NF); $(NF) = t; print; } ' \
         > .cloudProvidersLastSeen
 
         CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH=$(date --date "$CLOUD_CONNECTOR_DEPLOY_QUERY" +%s)
@@ -575,7 +575,7 @@ function test_cloud_connector () {
             if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID}" ]]
             then 
                 # the account_id matches
-                LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f4) # extract date
+                LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f1) # extract date
                 LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
                 # is this account date_last_seen value greater than the deployment_date in this script?
                 # ^ this means, we want the cloud account to be active now
