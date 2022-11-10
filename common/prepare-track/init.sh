@@ -576,7 +576,8 @@ function test_cloud_connector () {
             then 
                 # the account_id matches
                 LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f1) # extract date
-                LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
+                [[ $LAST_SEEN_DATE == "null" ]] && LAST_SEEN_DATE_EPOCH=0 || LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
+
                 # is this account date_last_seen value greater than the deployment_date in this script?
                 # ^ this means, we want the cloud account to be active now
                 # Instruqt reuses the accounts, so we don't want a false positive for reusing an account
