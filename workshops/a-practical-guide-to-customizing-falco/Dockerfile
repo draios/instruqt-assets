@@ -1,4 +1,4 @@
-FROM openjdk:8u181-jre-alpine
+FROM docker.io/openjdk:8u181-jre-alpine
   
 EXPOSE 1389
 EXPOSE 8888
