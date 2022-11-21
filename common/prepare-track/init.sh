@@ -516,7 +516,7 @@ function track_has_cloud_account () {
 ##
 function deploy_cloud_connector () {
     CLOUD_CONNECTOR_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
-    CLOUD_CONNECTOR_DEPLOY_QUERY=$(date +"%FT%H:%M:%S") # get deployment date that match format and timezone of the date returned by sysdig API CloudProvidersLastSeen
+    CLOUD_CONNECTOR_DEPLOY_QUERY=$(date +"%FT%H:%M:%S") # get a deployment date that matches the format and timezone of the date returned by sysdig API CloudProvidersLastSeen
     CLOUD_REGION=""
     echo ${CLOUD_CONNECTOR_DEPLOY_DATE} > $WORK_DIR/cloud_connector_deploy_date
     echo ${CLOUD_CONNECTOR_DEPLOY_QUERY} > $WORK_DIR/cloud_connector_deploy_query
