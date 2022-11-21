@@ -685,7 +685,7 @@ function help () {
     echo "  -s, --secure                Set up environment for Secure API usage."
     echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
     echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account."
-    echo "  -v, --vulnmanag             Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
+    echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
     echo
     echo
     echo "ENVIRONMENT VARIABLES:"
@@ -783,6 +783,11 @@ function setup () {
         select_region
     fi
 
+    if [ "$USE_AGENT" = true ]
+    then
+        deploy_agent
+    fi
+
     if [ "$USE_MONITOR_API" = true ]
     then
         configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
@@ -795,12 +800,13 @@ function setup () {
 
     if [ "$USE_AGENT" = true ]
     then
-        deploy_agent
         test_agent
     fi
 
     if [ "$USE_CLOUD" = true ]
     then
+        # we can't run `track_has_cloud_account` and `deploy_cloud_connector`
+        # before `configure_API` because they use data set within `configure_API`
         track_has_cloud_account
         deploy_cloud_connector
         test_cloud_connector
