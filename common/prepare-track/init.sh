@@ -456,7 +456,7 @@ function test_agent () {
 # 
 # More info about resources and variables used in this function:
 #    -----------------------------------------------------------------------------
-#    Instruqt can attach a burner cloud account with a track. It inyects 
+#    Instruqt can attach a burner cloud account with a track. It injects 
 #    credentials to use the account in the host or cloud_container. This
 #    function checks if there's a cloud account in the track and in that case
 #    it sets the requiered env vars to use it and deploy sysdig secure for cloud.
