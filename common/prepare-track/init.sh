@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ###
-# Sysdig Agent deploy helper for Sysdig Training tracks.
+# Sysdig Agent and cloud_infra deploy helper for Sysdig Training tracks.
 #
 # AUTHORS:
 #   Sysdig Education Team <team-training@sysdig.com>
@@ -36,6 +36,10 @@ USE_NODE_ANALYZER=false
 USE_NODE_IMAGE_ANALYZER=false
 USE_PROMETHEUS=false
 USE_AUDIT_LOG=false
+USE_CLOUD=false
+USE_CLOUD_SCAN_ENGINE=false
+USE_REGION_CLOUD=false
+USE_AGENT_REGION=false
 
 ##############################    GLOBAL VARS    ##############################
 TEST_AGENT_ACCESS_KEY=[REDACTED]
@@ -57,10 +61,39 @@ function panic_msg () {
 }
 
 ##
+# Define nginx.conf values to enable redirect
+# to the Sysdig Region selected by the user
+# 
+# This function applies different changes depending
+# on the type of resources attached to a track:
+#   - hosts for an agent installation (nginx managed by systemctl)
+#   - container for cloud account (nginx process alone, no systemctl)
+##
+function config_sysdig_tab_redirect () {
+    OLD_STRING="http {"
+    NEW_STRING="http {     server {         listen 8997;         server_name localhost;         rewrite ^/(.*)$ $MONITOR_URL/\$1 redirect;     }     server {         listen 8998;         server_name localhost;         rewrite ^/(.*)$ $SECURE_URL/\$1 redirect;     } "
+
+    sed -i -e "s@${OLD_STRING}@${NEW_STRING}@g" /etc/nginx/nginx.conf
+
+    if [ "$USE_AGENT_REGION" = true ]
+    then
+        systemctl restart nginx
+    fi
+
+    if [ "$USE_CLOUD_REGION" = true ]
+    then
+        pkill -f nginx
+        nginx
+    fi
+}
+
+##
 # Define URL and endpoints for the selected region.
 #
 # This is used to define the URL of the track-TABS, for API queries and define
 # agent parameters.
+# 
+# Update when a new region is created.
 ##
 function set_values () {
     REGION=$1
@@ -110,10 +143,7 @@ function set_values () {
     SECURE_API_ENDPOINT=$MONITOR_URL
     PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
 
-    # Tabs url_redirect
-    sed -i -e "s@_MONITOR_URL_@$MONITOR_URL@g" /etc/nginx/nginx.conf
-    sed -i -e "s@_SECURE_URL_@$SECURE_URL@g" /etc/nginx/nginx.conf
-    systemctl restart nginx
+    config_sysdig_tab_redirect
 }
 
 ##
@@ -122,12 +152,12 @@ function set_values () {
 function select_region () {
     echo
     echo "Please select one of the existing SaaS Regions: "
+    echo "   0) Abort install"
     echo "   1) GCP US West (default)"
     echo "   2) AWS US East"
     echo "   3) AWS US West"
     echo "   4) EMEA"
     echo "   5) Pacific"
-    echo "   6) Abort install"
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
     then
@@ -137,6 +167,10 @@ function select_region () {
     fi
 
     case $REGION_N in
+        0)
+            echo "   Abort init.sh. Region not defined, agent not installed. This track will not work properly."
+            exit 0
+            ;;
         1)
             REGION="GCP US West (default)"
             ;;
@@ -152,10 +186,6 @@ function select_region () {
         5)
             REGION="Pacific"
             ;;
-        6)
-            echo "   Abort init.sh. Region not defined, agent not installed. This track will not work properly."
-            exit 0
-            ;;
         *)
             echo "${REGION_N} is not a valid an option."
             select_region
@@ -168,7 +198,7 @@ function select_region () {
 }
 
 ##
-# Configure Sysdig API access.
+# Configure Sysdig API access for Monitor or Secure.
 # 
 # Usage:
 #   configure_API ${PRODUCT} ${PRODUCT_URL} ${PRODUCT_API_ENDPOINT}
@@ -230,7 +260,8 @@ function configure_API () {
 }
 
 ##
-# Selects the installation method depending on the environment.
+# For envs where an agent is installed,
+# selects the installation method depending on the environment.
 ##
 function installation_method () {
     if [[ -z "$INSTALL_WITH" ]]
@@ -284,6 +315,8 @@ function intro () {
     echo "  Welcome! This script configures the lab environment."
     echo "  It will:"
 
+    echo "    - Set up your Sysdig region."
+
     if [ "$USE_MONITOR_API" == true ]; then
       echo "    - Set up the environment for Monitor API usage."
     fi
@@ -293,6 +326,7 @@ function intro () {
     fi
 
     if [ "$USE_AGENT" == true ]; then
+      echo "    - Set up Instruqt tab with access to the Sysdig Dashboard."
       echo "    - Deploy a Sysdig Agent."
     fi
 
@@ -312,13 +346,22 @@ function intro () {
       echo "    - Enable K8s audit log support for Sysdig Secure."
     fi
 
+    if [ "$USE_CLOUD" == true ]; then
+      echo "    - Set up Instruqt tab with access to the Sysdig Dashboard."
+      echo "    - Enable CloudVision."
+    fi
+
+    if [ "$USE_CLOUD_SCAN_ENGINE" == true ]; then
+      echo "    - Deploys the Image Scanner for Cloud Registries."
+    fi
+
     echo "  Follow the instructions below."
     echo
     echo "----------------------------------------------------------"
 }
 
 ##
-# Ask for region, Agent Key and accordingly deploy a Sysdig Agent.
+# Ask for Agent Key and deploy a Sysdig Agent.
 ##
 function deploy_agent () {
     AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
@@ -413,6 +456,161 @@ function test_agent () {
 }
 
 ##
+# Checks if the track includes a cloud account
+# and sets the CLOUD_ACCOUNT_ID variable with an identifier of the cloud account
+# that will be used to deploy the required infra in the cloud provider selected
+# 
+# More info about resources and variables used in this function:
+#    -----------------------------------------------------------------------------
+#    Instruqt can attach a burner cloud account with a track. It injects 
+#    credentials to use the account in the host or cloud_container. This
+#    function checks if there's a cloud account in the track and in that case
+#    it sets the requiered env vars to use it and deploy sysdig secure for cloud.
+# 
+#    To learn more about it:
+#    https://docs.instruqt.com/how-to-guides/manage-sandboxes/access-cloud-accounts
+#    -----------------------------------------------------------------------------
+# 
+# NOTE: this function do not support >1 cloud accounts attached to the track sandbox
+#
+##
+function track_has_cloud_account () {
+    if [ ! -z "$INSTRUQT_AWS_ACCOUNTS" ]
+    then
+        CLOUD_PROVIDER=aws
+        cloudvarname=INSTRUQT_AWS_ACCOUNT_${INSTRUQT_AWS_ACCOUNTS}_ACCOUNT_ID
+        CLOUD_ACCOUNT_ID=${!cloudvarname}
+    fi
+
+    if [ ! -z "$INSTRUQT_GCP_PROJECTS" ]
+    then
+        CLOUD_PROVIDER=gcp
+        cloudvarname=INSTRUQT_GCP_PROJECT_${INSTRUQT_GCP_PROJECTS}_PROJECT_ID
+        CLOUD_ACCOUNT_ID=${!cloudvarname}
+
+        # terraform config to use the service account with role.owner permissions.
+        # the user account provided by instruqt do not have org-level permissions and these
+        # are required for the sysdig-cloud GCP installer
+        sakeyvarname=INSTRUQT_GCP_PROJECT_${INSTRUQT_GCP_PROJECTS}_SERVICE_ACCOUNT_KEY
+        SA_KEY=${!sakeyvarname}
+        echo $SA_KEY | base64 -d > creds.json # credentials for the Service Account
+        export TF_VAR_project=$CLOUD_ACCOUNT_ID
+        grep $CLOUD_ACCOUNT_ID /root/.bashrc || echo "export TF_VAR_project=\"$CLOUD_ACCOUNT_ID\"" >> /root/.bashrc
+
+        # set the path for terraform to use the service account credentials
+        export GOOGLE_CREDENTIALS=$(pwd)/creds.json
+        echo "export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS" >> /root/.bashrc
+    fi
+
+    if [ ! -z "$INSTRUQT_AZURE_SUBSCRIPTIONS" ]
+    then
+        CLOUD_PROVIDER=azure
+        cloudvarname=INSTRUQT_AZURE_SUBSCRIPTION_${INSTRUQT_AZURE_SUBSCRIPTIONS}_SUBSCRIPTION_ID
+        CLOUD_ACCOUNT_ID=${!cloudvarname}
+    fi
+
+    if [ -z $CLOUD_PROVIDER ]
+    then
+        echo "  FAIL"
+        echo "  This track does not include a cloud account but it should."
+        panic_msg
+    fi
+}
+
+##
+# Deploys the cloud connector.
+##
+function deploy_cloud_connector () {
+    CLOUD_CONNECTOR_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
+    CLOUD_CONNECTOR_DEPLOY_QUERY=$(date +"%FT%H:%M:%S") # get a deployment date that matches the format and timezone of the date returned by sysdig API CloudProvidersLastSeen
+    CLOUD_REGION=""
+    echo ${CLOUD_CONNECTOR_DEPLOY_DATE} > $WORK_DIR/cloud_connector_deploy_date
+    echo ${CLOUD_CONNECTOR_DEPLOY_QUERY} > $WORK_DIR/cloud_connector_deploy_query
+    
+    echo "Configuring Sysdig CloudVision for $CLOUD_PROVIDER"
+
+    # we are defining here some values (region) but in future we might want the user to choose its region
+    # right now there's not a reason to select one or another
+    if [ $CLOUD_PROVIDER = "aws" ]
+    then
+        CLOUD_REGION="us-east-1"
+    elif [ $CLOUD_PROVIDER = "gcp" ]
+    then
+        CLOUD_REGION="us-east1"
+    elif [ $CLOUD_PROVIDER = "azure" ]
+    then
+        CLOUD_REGION="foo"
+    fi
+
+    echo -e "  CloudVision is being installed in the background.\n"
+
+    source $TRACK_DIR/cloud/install_with_terraform.sh $CLOUD_PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_URL $CLOUD_REGION $CLOUD_ACCOUNT_ID
+}
+
+##
+# Test if the Cloud account is connected successfully.
+##
+function test_cloud_connector () {
+    echo "    Testing if the cloud account is connected..."
+
+    attempt=0
+    MAX_ATTEMPTS=36 # 6 minutes
+    connected=false
+
+    while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
+    do
+        sleep 10
+        
+        # asks the sysdig secure API about cloud accounts (provider, account_id, date_last_seen)
+        # ordered by date_last_seen (more recent first)
+        # applies some filtering to use the output usable (date format, quotes, etc.)
+        # and writes it to .cloudProvidersLastSeen
+        curl -s --header "Content-Type: application/json"   \
+        -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
+        --request GET \
+        https://secure.sysdig.com/api/cloud/v2/dataSources/accounts\?limit\=50\&offset\=0 \
+        | jq -r '[.[] | {provider: .provider, id: .id, alias: .alias, lastSeen: .cloudConnectorLastSeenAt}] | sort_by(.lastSeen) | reverse | .[] | "\(.provider) \(.id) \(.alias) \(.lastSeen)"' \
+        | cut -f1 -d"." \
+        | awk ' { t = $1; $1 = $(NF); $(NF) = t; print; } ' \
+        > .cloudProvidersLastSeen
+
+        CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH=$(date --date "$CLOUD_CONNECTOR_DEPLOY_QUERY" +%s)
+
+        while read line; do # reading each cloud provider connected to the sysdig account
+            
+            if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID}" ]]
+            then 
+                # the account_id matches
+                LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f1) # extract date
+                [[ $LAST_SEEN_DATE == "null" ]] && LAST_SEEN_DATE_EPOCH=0 || LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
+
+                # is this account date_last_seen value greater than the deployment_date in this script?
+                # ^ this means, we want the cloud account to be active now
+                # Instruqt reuses the accounts, so we don't want a false positive for reusing an account
+                if [[ "${LAST_SEEN_DATE_EPOCH}" > "${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}" ]]
+                then
+                    echo "    Found cloud account: $line"
+                    connected=true
+                    break
+                fi
+            fi
+        done < .cloudProvidersLastSeen
+        
+        attempt=$(( $attempt + 1 ))
+    done
+
+    if [ "$connected" = true ]
+    then
+        echo "  Sysdig Vision successfully installed."
+        touch $WORK_DIR/user_data_CLOUDVISION_OK
+    else
+        echo "  FAIL"
+        echo "  Sysdig Vision installation went wrong. Use the provided channels to report this issue."
+        panic_msg
+    fi
+}
+
+##
 # Delete files only needed while running the script.
 ##
 function clean_setup () {
@@ -449,7 +647,11 @@ function clean_setup () {
 
     if [ -d $TRACK_DIR ]
     then
-        rm -rf $TRACK_DIR/
+        # we used to remove these files, but they are useful for debugging.
+        # Also, the terraform state file is good to keep it in case we need to destroy the assets
+        # In most cases we don't care about this, as Instruqts manages the cleanup of the envs.
+        mv $TRACK_DIR/ /tmp/
+        test -f /root/creds.json && mv /root/creds.json /tmp/
         sed -i '/init.sh/d' /root/.profile  # removes the script from .profile so it is not executed in new challenges
         touch $WORK_DIR/user_data_OK # flag environment configured with user data
     else
@@ -466,27 +668,30 @@ function help () {
     echo
     echo "  `basename $0` [OPTIONS...]"
     echo
-    echo "Environment start up script. It can be used to deploy a Sysdig Agent and/or set"
-    echo "up some environment variables. When called with NO OPTIONS, it will deploy an"
-    echo "Agent and will ask for Monitor and Secure API keys; same as calling with"
-    echo "'-a/--agent -m/--monitor -s/--secure'. When using the product options"
-    echo "('-m/--monitor' and/or '-s/--secure'), API keys will be stored in file"
-    echo "$WORK_DIR/user_data_\${PRODUCT}_API_OK, and exported to envvar"
-    echo "\$SYSDIG_\${PRODUCT}_API_TOKEN (where \${PRODUCT} is MONITOR or SECURE)."
-    echo
-    echo "WARNING: This script is meant to be used in training materials. Do NOT use it in"
-    echo "production."
+    echo "Environment start up script. It can be used to:"
+    echo "- deploy a Sysdig Agent "
+    echo "- deploy Sysdig Secure for Cloud (AWS, GCP, Azure)"
+    echo "- and/or set up some environment variables."
+    echo ""
+    echo "Review the options below to learn what's available."
+    echo ""
+    echo "WARNING: This script is meant to be used in training materials."
+    echo "Do NOT use it in production."
     echo
     echo
     echo "OPTIONS:"
     echo
     echo "  -a, --agent                 Deploy a Sysdig Agent."
+    echo "  -c, --cloud                 Set up environment for Sysdig Secure for Cloud."
     echo "  -h, --help                  Show this help."
     echo "  -m, --monitor               Set up environment for Monitor API usage."
     echo "  -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent."
     echo "  -N, --node-image-analyzer   Enable Image Node Analyzer. Use with -a/--agent."
     echo "  -p, --prometheus            Enable Prometheus. Use with -a/--agent."
     echo "  -s, --secure                Set up environment for Secure API usage."
+    echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
+    echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account."
+    echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
     echo
     echo
     echo "ENVIRONMENT VARIABLES:"
@@ -502,6 +707,9 @@ function help () {
     echo "  DOCKER_OPTS                 Additional options for Docker installation."
     echo
     echo "  HOST_OPTS                   Additional options for Host installation."
+    echo
+
+
 }
 
 
@@ -509,49 +717,57 @@ function help () {
 # Check and consume script flags.
 ##
 function check_flags () {
-    if [ $# -eq 0 ]
-    then
-        USE_AGENT=true
-        USE_MONITOR_API=true
-        USE_SECURE_API=true
-    else
-        while [ ! $# -eq 0 ]
-        do
-            case "$1" in
-                --agent | -a)
-                    USE_AGENT=true
-                    ;;
-                --monitor | -m)
-                    USE_MONITOR_API=true
-                    ;;
-                --secure | -s)
-                    USE_SECURE_API=true
-                    ;;
-                --node-analyzer | -n)
-                    export USE_NODE_ANALYZER=true
-                    ;;
-                --node-image-analyzer | -N)
-                    export USE_NODE_IMAGE_ANALYZER=true
-                    ;;
-                --prometheus | -p)
-                    export USE_PROMETHEUS=true
-                    ;;
-                --log | -l)
-                    export USE_AUDIT_LOG=true
-                    ;;
-                --help | -h)
-                    help
-                    exit 0
-                    ;;
-                *)
-                    echo "Unkown argument: $1"
-                    help
-                    exit 1
-                    ;;
-            esac
-            shift
-        done
-    fi
+    while [ ! $# -eq 0 ]
+    do
+        case "$1" in
+            --agent | -a)
+                USE_AGENT=true
+                USE_AGENT_REGION=true
+                ;;
+            --region | -r)
+                USE_AGENT_REGION=true
+                ;;
+            --cloud | -c)
+                USE_CLOUD=true
+                USE_CLOUD_REGION=true
+                USE_SECURE_API=true
+                ;;
+            --region-cloud | -q)
+                USE_CLOUD_REGION=true
+                ;;
+            --monitor | -m)
+                USE_MONITOR_API=true
+                ;;
+            --secure | -s)
+                USE_SECURE_API=true
+                ;;
+            --node-analyzer | -n)
+                export USE_NODE_ANALYZER=true
+                ;;
+            --node-image-analyzer | -N)
+                export USE_NODE_IMAGE_ANALYZER=true
+                ;;
+            --prometheus | -p)
+                export USE_PROMETHEUS=true
+                ;;
+            --log | -l)
+                export USE_AUDIT_LOG=true
+                ;;  
+            --vulnmanag | -v)
+                export USE_CLOUD_SCAN_ENGINE=true
+                ;;
+            --help | -h)
+                help
+                exit 0
+                ;;
+            *)
+                echo "Unkown argument: $1"
+                help
+                exit 1
+                ;;
+        esac
+        shift
+    done
 
     if (([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_NODE_IMAGE_ANALYZER" = true ]) \
        ||  [ "$USE_PROMETHEUS" = true ]) && [ "$USE_AGENT" != true ]
@@ -567,13 +783,14 @@ function check_flags () {
 function setup () {
     mkdir -p $WORK_DIR/
 
-    cp $TRACK_DIR/nginx.default.conf /etc/nginx/nginx.conf
-
     check_flags $@
 
     intro
 
-    select_region
+    if [ "$USE_AGENT_REGION" = true ] || [ "$USE_CLOUD_REGION" = true ]
+    then
+        select_region
+    fi
 
     if [ "$USE_AGENT" = true ]
     then
@@ -590,12 +807,20 @@ function setup () {
         configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
     fi
 
-
     if [ "$USE_AGENT" = true ]
     then
         test_agent
     fi
 
+    if [ "$USE_CLOUD" = true ]
+    then
+        # we can't run `track_has_cloud_account` and `deploy_cloud_connector`
+        # before `configure_API` because they use data set within `configure_API`
+        track_has_cloud_account
+        deploy_cloud_connector
+        test_cloud_connector
+    fi
+    
     clean_setup
 }
 

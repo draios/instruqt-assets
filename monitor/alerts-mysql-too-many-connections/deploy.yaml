@@ -1,0 +1,59 @@
+---
+# Source: mysql-exporter/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-exporter-default-mysql-deploy
+  namespace: default
+  labels:
+    helm.sh/chart: mysql-exporter-0.1.7
+    app.kubernetes.io/name: mysql-exporter-default-mysql
+    app.kubernetes.io/instance: mysql-exporter
+    app.kubernetes.io/version: "2"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mysql-exporter-default-mysql
+      app.kubernetes.io/instance: mysql-exporter
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        promcat.sysdig.com/port: "9104"
+        promcat.sysdig.com/target_ns: "default"
+        promcat.sysdig.com/target_workload_type: "deployment"
+        promcat.sysdig.com/target_workload_name: "mysql"
+        promcat.sysdig.com/integration_type: "mysql"
+      labels:
+        app.kubernetes.io/name: mysql-exporter-default-mysql
+        app.kubernetes.io/instance: mysql-exporter
+    spec:
+      affinity: {}
+      containers:
+      - name: mysql-exporter
+        image: "quay.io/sysdig/mysql-exporter:v0.13.5"
+        args:
+        - --config.my-cnf=/tmp/.my.cnf
+        ports:
+          - containerPort: 9104
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: my-cnf
+            mountPath: /tmp/.my.cnf
+            subPath: .my.cnf
+        resources:
+            limits:
+              cpu: 128m
+              memory: 50Mi
+            requests:
+              cpu: 128m
+              memory: 20Mi
+      volumes:
+        - name: my-cnf
+          secret:
+            defaultMode: 420
+            secretName: mysql-exporter
+            items:
+              - key: .my.cnf
+                path: .my.cnf

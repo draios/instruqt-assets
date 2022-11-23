@@ -1,5 +1,5 @@
 customRules:
-  custom_rules_from_default: |-
+  custom_rules_from_default.yaml: |-
 
     - rule: Read sensitive file untrusted
       desc: >

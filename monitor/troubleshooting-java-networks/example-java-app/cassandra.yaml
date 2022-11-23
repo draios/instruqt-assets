@@ -1,0 +1,54 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: cassandra
+  labels:
+    name: cassandra-deployment
+    app: demo
+spec:
+  replicas: 1
+  # selector identifies the set of Pods that this
+  # replication controller is responsible for managing
+  selector:
+    matchLabels:
+     name: cassandra
+     role: cassandradb
+     app: demo
+  template:
+    spec:
+      containers:
+        - name: cassandra
+          image: cassandra:2.0.16
+          ports:
+          - containerPort: 9042
+            name: cassandra
+          - containerPort: 9160
+            name: thrift-client
+          - containerPort: 7000
+            name: internode
+          - containerPort: 7001
+            name: internode-ssl
+          - containerPort: 7199
+            name: jmx
+    metadata:
+      labels:
+        # Important: these labels need to match the selector above
+        # The api server enforces this constraint.
+        name: cassandra
+        role: cassandradb
+        app: demo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: cassandra
+  name: cassandra
+spec:
+  ports:
+    - port: 9042
+      targetPort: cassandra
+  selector:
+    name: cassandra
+    app: demo
+    role: cassandradb
