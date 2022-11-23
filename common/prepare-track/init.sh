@@ -35,6 +35,7 @@ USE_SECURE_API=false
 USE_NODE_ANALYZER=false
 USE_NODE_IMAGE_ANALYZER=false
 USE_PROMETHEUS=false
+USE_AUDIT_LOG=false
 USE_CLOUD=false
 USE_CLOUD_SCAN_ENGINE=false
 USE_REGION_CLOUD=false
@@ -341,6 +342,10 @@ function intro () {
       echo "    - Enable the Agent Prometheus collector."
     fi
 
+    if [ "$USE_AUDIT_LOG" == true ]; then
+      echo "    - Enable K8s audit log support for Sysdig Secure."
+    fi
+
     if [ "$USE_CLOUD" == true ]; then
       echo "    - Set up Instruqt tab with access to the Sysdig Dashboard."
       echo "    - Enable CloudVision."
@@ -349,6 +354,7 @@ function intro () {
     if [ "$USE_CLOUD_SCAN_ENGINE" == true ]; then
       echo "    - Deploys the Image Scanner for Cloud Registries."
     fi
+
     echo "  Follow the instructions below."
     echo
     echo "----------------------------------------------------------"
@@ -744,6 +750,9 @@ function check_flags () {
             --prometheus | -p)
                 export USE_PROMETHEUS=true
                 ;;
+            --log | -l)
+                export USE_AUDIT_LOG=true
+                ;;  
             --vulnmanag | -v)
                 export USE_CLOUD_SCAN_ENGINE=true
                 ;;

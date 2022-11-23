@@ -37,6 +37,11 @@ then
     HELM_OPTS="-f $AGENT_CONF_DIR/prometheus.yaml $HELM_OPTS"
 fi
 
+if [ "$USE_AUDIT_LOG" = true ]
+then
+    HELM_OPTS="--set auditLog.enabled=true $HELM_OPTS"
+fi
+
 # echo "Deploying Sysdig Agent with Helm"
 kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
 helm install sysdig-agent \
