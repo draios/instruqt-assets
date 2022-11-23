@@ -753,7 +753,7 @@ function check_flags () {
             --log | -l)
                 export USE_AUDIT_LOG=true
                 ;;  
-            --vulnmanag | -v)
+            --vuln-management | -v)
                 export USE_CLOUD_SCAN_ENGINE=true
                 ;;
             --help | -h)
