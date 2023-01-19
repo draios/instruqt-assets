@@ -31,6 +31,15 @@ else
     HELM_OPTS="--set nodeImageAnalyzer.deploy=false $HELM_OPTS"
 fi
 
+if [ "$USE_KSPM" = true ]
+then
+    HELM_OPTS="--set global.kspm.deploy=true \
+               $HELM_OPTS"
+else
+    HELM_OPTS="--set global.kspm.deploy=false $HELM_OPTS"
+fi
+
+
 if [ "$USE_PROMETHEUS" = true ]
 then
     HELM_OPTS="--set prometheus.file=true $HELM_OPTS"
