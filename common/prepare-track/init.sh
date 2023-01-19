@@ -28,12 +28,14 @@ MONITOR_URL=''
 SECURE_URL=''
 AGENT_COLLECTOR=''
 NIA_ENDPOINT=''
+SKIP_CLEANUP=false
 
 USE_AGENT=false
 USE_MONITOR_API=false
 USE_SECURE_API=false
 USE_NODE_ANALYZER=false
 USE_NODE_IMAGE_ANALYZER=false
+USE_KSPM=false
 USE_PROMETHEUS=false
 USE_AUDIT_LOG=false
 USE_CLOUD=false
@@ -142,6 +144,9 @@ function set_values () {
     MONITOR_API_ENDPOINT=$MONITOR_URL
     SECURE_API_ENDPOINT=$MONITOR_URL
     PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+    
+    echo "${MONITOR_API_ENDPOINT}" > $WORK_DIR/MONITOR_API_ENDPOINT
+    echo "${SECURE_API_ENDPOINT}" > $WORK_DIR/SECURE_API_ENDPOINT
 
     config_sysdig_tab_redirect
 }
@@ -336,6 +341,10 @@ function intro () {
 
     if [ "$USE_NODE_IMAGE_ANALYZER" == true ]; then
       echo "    - Enable the Agent Image Node Analyzer."
+    fi
+    
+    if [ "$USE_KSPM" == true ]; then
+      echo "    - Enable KSPM."
     fi
 
     if [ "$USE_PROMETHEUS" == true ]; then
@@ -681,12 +690,15 @@ function help () {
     echo
     echo "OPTIONS:"
     echo
+
+    echo "  --skip-cleanup              Skip script setup clean-up actions."
     echo "  -a, --agent                 Deploy a Sysdig Agent."
     echo "  -c, --cloud                 Set up environment for Sysdig Secure for Cloud."
     echo "  -h, --help                  Show this help."
     echo "  -m, --monitor               Set up environment for Monitor API usage."
     echo "  -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent."
     echo "  -N, --node-image-analyzer   Enable Image Node Analyzer. Use with -a/--agent."
+    echo "  -k, --kspm                  Enable KSPM. Use with -k/--kspm."
     echo "  -p, --prometheus            Enable Prometheus. Use with -a/--agent."
     echo "  -s, --secure                Set up environment for Secure API usage."
     echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
@@ -720,6 +732,9 @@ function check_flags () {
     while [ ! $# -eq 0 ]
     do
         case "$1" in
+            --skip-cleanup)
+                SKIP_CLEANUP=true
+                ;;        
             --agent | -a)
                 USE_AGENT=true
                 USE_AGENT_REGION=true
@@ -746,6 +761,9 @@ function check_flags () {
                 ;;
             --node-image-analyzer | -N)
                 export USE_NODE_IMAGE_ANALYZER=true
+                ;;
+            --kspm | -k)
+                export USE_KSPM=true
                 ;;
             --prometheus | -p)
                 export USE_PROMETHEUS=true
@@ -821,7 +839,11 @@ function setup () {
         test_cloud_connector
     fi
     
-    clean_setup
+    if [ "$SKIP_CLEANUP" = false ]
+    then
+        clean_setup
+    fi
+    
 }
 
 
