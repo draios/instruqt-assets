@@ -34,7 +34,6 @@ USE_AGENT=false
 USE_MONITOR_API=false
 USE_SECURE_API=false
 USE_NODE_ANALYZER=false
-USE_NODE_IMAGE_ANALYZER=false
 USE_KSPM=false
 USE_PROMETHEUS=false
 USE_AUDIT_LOG=false
@@ -55,8 +54,8 @@ TEST_REGION=2
 ##
 function panic_msg () {
     echo
-    echo "Some errors were detected configuring this lab. Please, run again this script with:"
-    echo "   /usr/bin/bash $TRACK_DIR/init.sh"
+    echo "Some errors were detected configuring this lab."
+    echo "To restart the config of the environment, reload the terminal window (top right corner of the lab)."
     echo
     echo "You can ask for help using Intercom or get in touch with us at team-training@sysdig.com"
     exit 1
@@ -93,7 +92,10 @@ function config_sysdig_tab_redirect () {
 # Define URL and endpoints for the selected region.
 #
 # This is used to define the URL of the track-TABS, for API queries and define
-# agent parameters.
+# agent parameters like
+#        ${HELM_REGION_ID} values:
+#                    - "us1", "us2", "us4", "eu1" and "au1"
+#                    - not included yet "us3" (listed in helm chart but not in docs)
 # 
 # Update when a new region is created.
 ##
@@ -101,49 +103,80 @@ function set_values () {
     REGION=$1
 
     case $REGION in
-        *"AWS US East"*)
+        *"US East (Virginia) - us1"*)
+            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-east-north-virginia
             MONITOR_URL='https://app.sysdigcloud.com'
             SECURE_URL='https://secure.sysdig.com'
             AGENT_COLLECTOR='collector.sysdigcloud.com'
             NIA_ENDPOINT='https://collector-static.sysdigcloud.com/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=us1
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$SECURE_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
 
-        *"AWS US West"*)
+        *"US West AWS (Oregon) - us2"*)
+            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-west-oregon
             DOMAIN='us2.app.sysdig.com'
             MONITOR_URL='https://'$DOMAIN
             SECURE_URL=$MONITOR_URL'/secure'
             AGENT_COLLECTOR='ingest-'$DOMAIN
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            ;;
-        
-        *"EMEA"*)
-            DOMAIN='eu1.app.sysdig.com'
-            MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR='ingest-'$DOMAIN
-            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=us2
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$MONITOR_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
 
-        *"Pacific"*)
-            DOMAIN='app.au1.sysdig.com'
-            MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR='ingest.au1.sysdig.com'
-            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            ;;
-        
-        *) # Default to GCP US West
+        *"US West GCP (Dallas) - us4"*)
+            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-west-gcp
             DOMAIN='app.us4.sysdig.com'
             MONITOR_URL='https://'$DOMAIN
             SECURE_URL=$MONITOR_URL'/secure'
             AGENT_COLLECTOR='ingest.us4.sysdig.com'
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=us4
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$MONITOR_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+            ;;
+
+        *"European Union (Frankfurt) - eu1"*)
+            DOMAIN='eu1.app.sysdig.com'
+            MONITOR_URL='https://'$DOMAIN
+            SECURE_URL=$MONITOR_URL'/secure'
+            AGENT_COLLECTOR='ingest-'$DOMAIN
+            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=eu1
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$MONITOR_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+            ;;
+
+        *"AP Australia (Sydney) - au1"*)
+            DOMAIN='app.au1.sysdig.com'
+            MONITOR_URL='https://'$DOMAIN
+            SECURE_URL=$MONITOR_URL'/secure'
+            AGENT_COLLECTOR='ingest.au1.sysdig.com'
+            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=au1
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$MONITOR_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+            ;;
+        
+        *) # default to us1 values
+            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-east-north-virginia
+            MONITOR_URL='https://app.sysdigcloud.com'
+            SECURE_URL='https://secure.sysdig.com'
+            AGENT_COLLECTOR='collector.sysdigcloud.com'
+            NIA_ENDPOINT='https://collector-static.sysdigcloud.com/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=us1
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$SECURE_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
     esac
-
-    MONITOR_API_ENDPOINT=$MONITOR_URL
-    SECURE_API_ENDPOINT=$MONITOR_URL
-    PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
     
     echo "${MONITOR_API_ENDPOINT}" > $WORK_DIR/MONITOR_API_ENDPOINT
     echo "${SECURE_API_ENDPOINT}" > $WORK_DIR/SECURE_API_ENDPOINT
@@ -156,17 +189,26 @@ function set_values () {
 ##
 function select_region () {
     echo
-    echo "Please select one of the existing SaaS Regions: "
+    echo "Sysdig SaaS Region"
+    echo "==========================="
+    echo
+    echo "Check the docs if more info about regions is required to find what's yours:"
+    echo "   https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges"
+    echo 
+    echo "Please select your Sysdig SaaS account Region: "
+    echo
     echo "   0) Abort install"
-    echo "   1) GCP US West (default)"
-    echo "   2) AWS US East"
-    echo "   3) AWS US West"
-    echo "   4) EMEA"
-    echo "   5) Pacific"
+    echo "   1) US East (Virginia) - us1"
+    echo "   2) US West AWS (Oregon) - us2"
+    echo "   3) US West GCP (Dallas) - us4"
+    echo "   4) European Union (Frankfurt) - eu1"
+    echo "   5) AP Australia (Sydney) - au1"
+    echo
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
     then
         REGION_N=${TEST_REGION}
+        echo "   Instruqt test Sysdig SaaS region will be used."
     else
         read -p "   Select Region (type number): "  REGION_N; 
     fi
@@ -177,19 +219,19 @@ function select_region () {
             exit 0
             ;;
         1)
-            REGION="GCP US West (default)"
+            REGION="US East (Virginia) - us1"
             ;;
         2)
-            REGION="AWS US East"
+            REGION="US West AWS (Oregon) - us2"
             ;;
         3)
-            REGION="AWS US West"
+            REGION="US West GCP (Dallas) - us4"
             ;;
         4)
-            REGION="EMEA"
+            REGION="European Union (Frankfurt) - eu1"
             ;;
         5)
-            REGION="Pacific"
+            REGION="AP Australia (Sydney) - au1"
             ;;
         *)
             echo "${REGION_N} is not a valid an option."
@@ -288,17 +330,23 @@ function installation_method () {
 # Deploy a Sysdig Agent.
 #
 # Usage:
-#   install_agent ${CLUSTER_NAME} ${ACCESS_KEY} ${COLLECTOR}
+#   install_agent ${CLUSTER_NAME} ${ACCESS_KEY} ${COLLECTOR} ${HELM_REGION_ID}
 ##
 function install_agent () {
 
     CLUSTER_NAME=$1
     ACCESS_KEY=$2
     COLLECTOR=$3
+    HELM_REGION_ID=$4
 
     installation_method
 
-    source $TRACK_DIR/install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
+    if [[ "$INSTALL_WITH" == "helm" ]]
+    then
+        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID
+    else
+        source $TRACK_DIR/install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
+    fi
 }
 
 ##
@@ -337,10 +385,6 @@ function intro () {
 
     if [ "$USE_NODE_ANALYZER" == true ]; then
       echo "    - Enable the Agent Node Analyzer."
-    fi
-
-    if [ "$USE_NODE_IMAGE_ANALYZER" == true ]; then
-      echo "    - Enable the Agent Image Node Analyzer."
     fi
     
     if [ "$USE_KSPM" == true ]; then
@@ -389,7 +433,7 @@ function deploy_agent () {
     echo -e "  The agent is being installed in the background.\n"
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
-    install_agent ${AGENT_DEPLOY_DATE} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR}
+    install_agent ${AGENT_DEPLOY_DATE} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID}
 }
 
 ##
@@ -413,7 +457,7 @@ function test_agent () {
         sleep 3
         case "$INSTALL_WITH" in
             helm)
-                kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}"
+                kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}"
                 ;;
             docker)
                 docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}"
@@ -436,7 +480,7 @@ function test_agent () {
     then
         case "$INSTALL_WITH" in
             helm)
-                FOUND_COLLECTOR=`kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
+                FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
                 ;;
             docker)
                 FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
@@ -450,6 +494,7 @@ function test_agent () {
         then
             echo "  Sysdig Agent successfully installed."
             touch $WORK_DIR/user_data_AGENT_OK
+            echo "  Sysdig Agent cluster.name: insq_${CLUSTER_NAME}"
         else
             echo "  FAIL"
             echo "  Agent connected to wrong region."
@@ -553,7 +598,7 @@ function deploy_cloud_connector () {
 
     echo -e "  CloudVision is being installed in the background.\n"
 
-    source $TRACK_DIR/cloud/install_with_terraform.sh $CLOUD_PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_URL $CLOUD_REGION $CLOUD_ACCOUNT_ID
+    source $TRACK_DIR/cloud/install_with_terraform.sh $CLOUD_PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_API_ENDPOINT $CLOUD_REGION $CLOUD_ACCOUNT_ID
 }
 
 ##
@@ -577,7 +622,7 @@ function test_cloud_connector () {
         curl -s --header "Content-Type: application/json"   \
         -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
         --request GET \
-        https://secure.sysdig.com/api/cloud/v2/dataSources/accounts\?limit\=50\&offset\=0 \
+        ${SECURE_API_ENDPOINT}/api/cloud/v2/dataSources/accounts\?limit\=50\&offset\=0 \
         | jq -r '[.[] | {provider: .provider, id: .id, alias: .alias, lastSeen: .cloudConnectorLastSeenAt}] | sort_by(.lastSeen) | reverse | .[] | "\(.provider) \(.id) \(.alias) \(.lastSeen)"' \
         | cut -f1 -d"." \
         | awk ' { t = $1; $1 = $(NF); $(NF) = t; print; } ' \
@@ -697,7 +742,6 @@ function help () {
     echo "  -h, --help                  Show this help."
     echo "  -m, --monitor               Set up environment for Monitor API usage."
     echo "  -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent."
-    echo "  -N, --node-image-analyzer   Enable Image Node Analyzer. Use with -a/--agent."
     echo "  -k, --kspm                  Enable KSPM. Use with -k/--kspm."
     echo "  -p, --prometheus            Enable Prometheus. Use with -a/--agent."
     echo "  -s, --secure                Set up environment for Secure API usage."
@@ -759,9 +803,6 @@ function check_flags () {
             --node-analyzer | -n)
                 export USE_NODE_ANALYZER=true
                 ;;
-            --node-image-analyzer | -N)
-                export USE_NODE_IMAGE_ANALYZER=true
-                ;;
             --kspm | -k)
                 export USE_KSPM=true
                 ;;
@@ -787,8 +828,7 @@ function check_flags () {
         shift
     done
 
-    if (([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_NODE_IMAGE_ANALYZER" = true ]) \
-       ||  [ "$USE_PROMETHEUS" = true ]) && [ "$USE_AGENT" != true ]
+    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ]) && [ "$USE_AGENT" != true ]
     then
         echo "ERROR: Options only available with -a/--agent."
         exit 1
