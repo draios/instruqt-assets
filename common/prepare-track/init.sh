@@ -597,7 +597,7 @@ function deploy_cloud_connector () {
 
     echo -e "  CloudVision is being installed in the background.\n"
 
-    source $TRACK_DIR/cloud/install_with_terraform.sh $CLOUD_PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_URL $CLOUD_REGION $CLOUD_ACCOUNT_ID
+    source $TRACK_DIR/cloud/install_with_terraform.sh $CLOUD_PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_API_ENDPOINT $CLOUD_REGION $CLOUD_ACCOUNT_ID
 }
 
 ##
@@ -618,7 +618,7 @@ function test_cloud_connector () {
         # ordered by date_last_seen (more recent first)
         # applies some filtering to use the output usable (date format, quotes, etc.)
         # and writes it to .cloudProvidersLastSeen
-        curl -s --header "Content-Type: application/json"   \
+        curl --header "Content-Type: application/json"   \
         -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
         --request GET \
         ${SECURE_API_ENDPOINT}/api/cloud/v2/dataSources/accounts\?limit\=50\&offset\=0 \
