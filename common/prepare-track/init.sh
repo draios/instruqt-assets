@@ -208,13 +208,13 @@ function select_region () {
             exit 0
             ;;
         1)
-            REGION="US West GCP (Dallas) - us4"
-            ;;
-        2)
             REGION="US East (Virginia) - us1"
             ;;
-        3)
+        2)
             REGION="US West AWS (Oregon) - us2"
+            ;;
+        3)
+            REGION="US West GCP (Dallas) - us4"
             ;;
         4)
             REGION="European Union (Frankfurt) - eu1"
