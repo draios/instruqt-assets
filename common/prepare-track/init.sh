@@ -494,6 +494,7 @@ function test_agent () {
         then
             echo "  Sysdig Agent successfully installed."
             touch $WORK_DIR/user_data_AGENT_OK
+            echo "  Sysdig Agent cluster.name: insq_${CLUSTER_NAME}"
         else
             echo "  FAIL"
             echo "  Agent connected to wrong region."
