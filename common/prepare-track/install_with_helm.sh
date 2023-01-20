@@ -3,9 +3,9 @@
 # Deploy a Sysdig Agent using Helm.
 #
 # Usage:
-#   install_with_helm.sh ${CLUSTER_NAME} ${ACCESS_KEY} ${REGION}
+#   install_with_helm.sh ${CLUSTER_NAME} ${ACCESS_KEY} ${HELM_REGION_ID}
 #
-# Valid ${REGION} values: "us1", "us2", "us3", "us4", "eu1" and "au1"
+# Valid ${HELM_REGION_ID} values: "us1", "us2", "us3", "us4", "eu1" and "au1"
 #
 ##
 
@@ -13,7 +13,7 @@ OUTPUT=/opt/sysdig/helm_install.out
 SOCKET_PATH=/run/k3s/containerd/containerd.sock
 CLUSTER_NAME=$1
 ACCESS_KEY=$2
-COLLECTOR=$3
+HELM_REGION_ID=$3
 
 helm repo add sysdig https://charts.sysdig.com >> ${OUTPUT} 2>&1
 helm repo update >> ${OUTPUT} 2>&1
@@ -52,7 +52,7 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
 helm install sysdig-agent --namespace sysdig-agent \
     --set global.clusterConfig.name="insq_${CLUSTER_NAME}" \
     --set global.sysdig.accessKey=${ACCESS_KEY} \
-    --set global.sysdig.region=${REGION} \
+    --set global.sysdig.region=${HELM_REGION_ID} \
     --set agent.resourceProfile=custom \
     --set agent.resources.requests.cpu=1 \
     --set agent.resources.requests.memory=1024Mi \
