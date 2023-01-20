@@ -54,8 +54,8 @@ TEST_REGION=2
 ##
 function panic_msg () {
     echo
-    echo "Some errors were detected configuring this lab. Please, run again this script with:"
-    echo "   /usr/bin/bash $TRACK_DIR/init.sh"
+    echo "Some errors were detected configuring this lab."
+    echo "To restart the config of the environment, reload the terminal window (top right corner of the lab)."
     echo
     echo "You can ask for help using Intercom or get in touch with us at team-training@sysdig.com"
     exit 1
