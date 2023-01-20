@@ -93,7 +93,10 @@ function config_sysdig_tab_redirect () {
 # Define URL and endpoints for the selected region.
 #
 # This is used to define the URL of the track-TABS, for API queries and define
-# agent parameters.
+# agent parameters like
+#        ${HELM_REGION_ID} values:
+#                    - "us1", "us2", "us4", "eu1" and "au1"
+#                    - not included yet "us3" (listed in helm chart but not in docs)
 # 
 # Update when a new region is created.
 ##
@@ -101,48 +104,65 @@ function set_values () {
     REGION=$1
 
     case $REGION in
-        *"AWS US East"*)
+        *"US East (Virginia) - us1"*)
+            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-east-north-virginia
             MONITOR_URL='https://app.sysdigcloud.com'
             SECURE_URL='https://secure.sysdig.com'
             AGENT_COLLECTOR='collector.sysdigcloud.com'
             NIA_ENDPOINT='https://collector-static.sysdigcloud.com/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=us1
             ;;
 
-        *"AWS US West"*)
+        *"US West AWS (Oregon) - us2"*)
+            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-west-oregon
             DOMAIN='us2.app.sysdig.com'
             MONITOR_URL='https://'$DOMAIN
             SECURE_URL=$MONITOR_URL'/secure'
             AGENT_COLLECTOR='ingest-'$DOMAIN
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            ;;
-        
-        *"EMEA"*)
-            DOMAIN='eu1.app.sysdig.com'
-            MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR='ingest-'$DOMAIN
-            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=us2
             ;;
 
-        *"Pacific"*)
-            DOMAIN='app.au1.sysdig.com'
-            MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR='ingest.au1.sysdig.com'
-            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            ;;
-        
-        *) # Default to GCP US West
+        *"US West GCP (Dallas) - us4"*)
+            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-west-gcp
             DOMAIN='app.us4.sysdig.com'
             MONITOR_URL='https://'$DOMAIN
             SECURE_URL=$MONITOR_URL'/secure'
             AGENT_COLLECTOR='ingest.us4.sysdig.com'
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=us4
+            ;;
+
+        *"European Union (Frankfurt) - eu1"*)
+            DOMAIN='eu1.app.sysdig.com'
+            MONITOR_URL='https://'$DOMAIN
+            SECURE_URL=$MONITOR_URL'/secure'
+            AGENT_COLLECTOR='ingest-'$DOMAIN
+            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=eu1
+            ;;
+
+        *"AP Australia (Sydney) - au1"*)
+            DOMAIN='app.au1.sysdig.com'
+            MONITOR_URL='https://'$DOMAIN
+            SECURE_URL=$MONITOR_URL'/secure'
+            AGENT_COLLECTOR='ingest.au1.sysdig.com'
+            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=au1
+            ;;
+        
+        *) # default to us1 values
+            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-east-north-virginia
+            MONITOR_URL='https://app.sysdigcloud.com'
+            SECURE_URL='https://secure.sysdig.com'
+            AGENT_COLLECTOR='collector.sysdigcloud.com'
+            NIA_ENDPOINT='https://collector-static.sysdigcloud.com/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=us1
             ;;
     esac
 
     MONITOR_API_ENDPOINT=$MONITOR_URL
-    SECURE_API_ENDPOINT=$MONITOR_URL
+    SECURE_API_ENDPOINT=$SECURE_URL
     PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
     
     echo "${MONITOR_API_ENDPOINT}" > $WORK_DIR/MONITOR_API_ENDPOINT
@@ -153,16 +173,27 @@ function set_values () {
 
 ##
 # Prompt user to select agent collector (region).
+# US East (Virginia) - us1
+# US West AWS (Oregon) - us2
+# US West GCP (Dallas) - us4 
+# AP Australia (Sydney) - au1
+# European Union (Frankfurt) - eu1
 ##
 function select_region () {
+    echo "Sysdig SaaS Region"
+    echo "==========================="
     echo
-    echo "Please select one of the existing SaaS Regions: "
+    echo "Check the docs if more info about regions is required to find what's yours:"
+    echo "   https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-west-gcp"
+    echo 
+    echo "Please select your Sysdig SaaS account Region: "
+    echo
     echo "   0) Abort install"
-    echo "   1) GCP US West (default)"
-    echo "   2) AWS US East"
-    echo "   3) AWS US West"
-    echo "   4) EMEA"
-    echo "   5) Pacific"
+    echo "   1) US West GCP (Dallas) - us4"
+    echo "   2) US East (Virginia) - us1"
+    echo "   3) US West AWS (Oregon) - us2"
+    echo "   4) European Union (Frankfurt) - eu1"
+    echo "   5) AP Australia (Sydney) - au1"
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
     then
@@ -177,19 +208,19 @@ function select_region () {
             exit 0
             ;;
         1)
-            REGION="GCP US West (default)"
+            REGION="US West GCP (Dallas) - us4"
             ;;
         2)
-            REGION="AWS US East"
+            REGION="US East (Virginia) - us1"
             ;;
         3)
-            REGION="AWS US West"
+            REGION="US West AWS (Oregon) - us2"
             ;;
         4)
-            REGION="EMEA"
+            REGION="European Union (Frankfurt) - eu1"
             ;;
         5)
-            REGION="Pacific"
+            REGION="AP Australia (Sydney) - au1"
             ;;
         *)
             echo "${REGION_N} is not a valid an option."
@@ -288,17 +319,23 @@ function installation_method () {
 # Deploy a Sysdig Agent.
 #
 # Usage:
-#   install_agent ${CLUSTER_NAME} ${ACCESS_KEY} ${COLLECTOR}
+#   install_agent ${CLUSTER_NAME} ${ACCESS_KEY} ${COLLECTOR} ${HELM_REGION_ID}
 ##
 function install_agent () {
 
     CLUSTER_NAME=$1
     ACCESS_KEY=$2
     COLLECTOR=$3
+    HELM_REGION_ID=$4
 
     installation_method
 
-    source $TRACK_DIR/install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
+    if [[ "$INSTALL_WITH" == "helm" ]]
+    then
+        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID
+    else
+        source $TRACK_DIR/install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
+    fi
 }
 
 ##
@@ -389,7 +426,7 @@ function deploy_agent () {
     echo -e "  The agent is being installed in the background.\n"
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
-    install_agent ${AGENT_DEPLOY_DATE} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR}
+    install_agent ${AGENT_DEPLOY_DATE} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID}
 }
 
 ##
