@@ -4,8 +4,7 @@
 #
 # Usage:
 #   install_with_helm.sh ${CLUSTER_NAME} ${ACCESS_KEY} ${HELM_REGION_ID}
-#
-# Valid ${HELM_REGION_ID} values: "us1", "us2", "us3", "us4", "eu1" and "au1"
+#   (check ./init.sh to learn more about possible HELM_REGION_ID values )
 #
 ##
 

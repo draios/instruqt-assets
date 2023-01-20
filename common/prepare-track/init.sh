@@ -172,11 +172,6 @@ function set_values () {
 
 ##
 # Prompt user to select agent collector (region).
-# US East (Virginia) - us1
-# US West AWS (Oregon) - us2
-# US West GCP (Dallas) - us4 
-# AP Australia (Sydney) - au1
-# European Union (Frankfurt) - eu1
 ##
 function select_region () {
     echo "Sysdig SaaS Region"
