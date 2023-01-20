@@ -183,7 +183,7 @@ function select_region () {
     echo "==========================="
     echo
     echo "Check the docs if more info about regions is required to find what's yours:"
-    echo "   https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-west-gcp"
+    echo "   https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges"
     echo 
     echo "Please select your Sysdig SaaS account Region: "
     echo
