@@ -441,7 +441,7 @@ function test_agent () {
         sleep 3
         case "$INSTALL_WITH" in
             helm)
-                kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}"
+                kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}"
                 ;;
             docker)
                 docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}"
@@ -464,7 +464,7 @@ function test_agent () {
     then
         case "$INSTALL_WITH" in
             helm)
-                FOUND_COLLECTOR=`kubectl logs -l app.kubernetes.io/instance=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
+                FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
                 ;;
             docker)
                 FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
