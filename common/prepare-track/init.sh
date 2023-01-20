@@ -34,7 +34,6 @@ USE_AGENT=false
 USE_MONITOR_API=false
 USE_SECURE_API=false
 USE_NODE_ANALYZER=false
-USE_NODE_IMAGE_ANALYZER=false
 USE_KSPM=false
 USE_PROMETHEUS=false
 USE_AUDIT_LOG=false
@@ -375,10 +374,6 @@ function intro () {
 
     if [ "$USE_NODE_ANALYZER" == true ]; then
       echo "    - Enable the Agent Node Analyzer."
-    fi
-
-    if [ "$USE_NODE_IMAGE_ANALYZER" == true ]; then
-      echo "    - Enable the Agent Image Node Analyzer."
     fi
     
     if [ "$USE_KSPM" == true ]; then
@@ -735,7 +730,6 @@ function help () {
     echo "  -h, --help                  Show this help."
     echo "  -m, --monitor               Set up environment for Monitor API usage."
     echo "  -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent."
-    echo "  -N, --node-image-analyzer   Enable Image Node Analyzer. Use with -a/--agent."
     echo "  -k, --kspm                  Enable KSPM. Use with -k/--kspm."
     echo "  -p, --prometheus            Enable Prometheus. Use with -a/--agent."
     echo "  -s, --secure                Set up environment for Secure API usage."
@@ -797,9 +791,6 @@ function check_flags () {
             --node-analyzer | -n)
                 export USE_NODE_ANALYZER=true
                 ;;
-            --node-image-analyzer | -N)
-                export USE_NODE_IMAGE_ANALYZER=true
-                ;;
             --kspm | -k)
                 export USE_KSPM=true
                 ;;
@@ -825,8 +816,7 @@ function check_flags () {
         shift
     done
 
-    if (([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_NODE_IMAGE_ANALYZER" = true ]) \
-       ||  [ "$USE_PROMETHEUS" = true ]) && [ "$USE_AGENT" != true ]
+    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ]) && [ "$USE_AGENT" != true ]
     then
         echo "ERROR: Options only available with -a/--agent."
         exit 1
