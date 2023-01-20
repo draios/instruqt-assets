@@ -618,7 +618,7 @@ function test_cloud_connector () {
         # ordered by date_last_seen (more recent first)
         # applies some filtering to use the output usable (date format, quotes, etc.)
         # and writes it to .cloudProvidersLastSeen
-        curl --header "Content-Type: application/json"   \
+        curl -s --header "Content-Type: application/json"   \
         -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
         --request GET \
         ${SECURE_API_ENDPOINT}/api/cloud/v2/dataSources/accounts\?limit\=50\&offset\=0 \
