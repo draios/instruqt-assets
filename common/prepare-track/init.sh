@@ -110,6 +110,9 @@ function set_values () {
             AGENT_COLLECTOR='collector.sysdigcloud.com'
             NIA_ENDPOINT='https://collector-static.sysdigcloud.com/internal/scanning/scanning-analysis-collector'
             HELM_REGION_ID=us1
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$SECURE_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
 
         *"US West AWS (Oregon) - us2"*)
@@ -120,6 +123,9 @@ function set_values () {
             AGENT_COLLECTOR='ingest-'$DOMAIN
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
             HELM_REGION_ID=us2
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$MONITOR_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
 
         *"US West GCP (Dallas) - us4"*)
@@ -130,6 +136,9 @@ function set_values () {
             AGENT_COLLECTOR='ingest.us4.sysdig.com'
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
             HELM_REGION_ID=us4
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$MONITOR_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
 
         *"European Union (Frankfurt) - eu1"*)
@@ -139,6 +148,9 @@ function set_values () {
             AGENT_COLLECTOR='ingest-'$DOMAIN
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
             HELM_REGION_ID=eu1
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$MONITOR_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
 
         *"AP Australia (Sydney) - au1"*)
@@ -148,6 +160,9 @@ function set_values () {
             AGENT_COLLECTOR='ingest.au1.sysdig.com'
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
             HELM_REGION_ID=au1
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$MONITOR_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
         
         *) # default to us1 values
@@ -157,12 +172,11 @@ function set_values () {
             AGENT_COLLECTOR='collector.sysdigcloud.com'
             NIA_ENDPOINT='https://collector-static.sysdigcloud.com/internal/scanning/scanning-analysis-collector'
             HELM_REGION_ID=us1
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$SECURE_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
     esac
-
-    MONITOR_API_ENDPOINT=$MONITOR_URL
-    SECURE_API_ENDPOINT=$SECURE_URL
-    PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
     
     echo "${MONITOR_API_ENDPOINT}" > $WORK_DIR/MONITOR_API_ENDPOINT
     echo "${SECURE_API_ENDPOINT}" > $WORK_DIR/SECURE_API_ENDPOINT
@@ -174,6 +188,7 @@ function set_values () {
 # Prompt user to select agent collector (region).
 ##
 function select_region () {
+    echo
     echo "Sysdig SaaS Region"
     echo "==========================="
     echo
@@ -188,6 +203,7 @@ function select_region () {
     echo "   3) US West GCP (Dallas) - us4"
     echo "   4) European Union (Frankfurt) - eu1"
     echo "   5) AP Australia (Sydney) - au1"
+    echo
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
     then
