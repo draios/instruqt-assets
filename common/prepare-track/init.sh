@@ -189,15 +189,16 @@ function select_region () {
     echo "Please select your Sysdig SaaS account Region: "
     echo
     echo "   0) Abort install"
-    echo "   1) US West GCP (Dallas) - us4"
-    echo "   2) US East (Virginia) - us1"
-    echo "   3) US West AWS (Oregon) - us2"
+    echo "   1) US East (Virginia) - us1"
+    echo "   2) US West AWS (Oregon) - us2"
+    echo "   3) US West GCP (Dallas) - us4"
     echo "   4) European Union (Frankfurt) - eu1"
     echo "   5) AP Australia (Sydney) - au1"
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
     then
         REGION_N=${TEST_REGION}
+        echo "   Instruqt test Sysdig SaaS region will be used."
     else
         read -p "   Select Region (type number): "  REGION_N; 
     fi
