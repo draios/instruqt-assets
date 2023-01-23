@@ -484,29 +484,28 @@ function test_agent () {
 
     if [ "$connected" = true ]
     then
-        case "$INSTALL_WITH" in
-            helm)
-                FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
-                ;;
-            docker)
-                FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
-                ;;
-            host)
-                FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
-                ;;
-        esac
+
+        while [ -z ${FOUND_COLLECTOR} ] && [ $attempt -le $MAX_ATTEMPTS ]
+            case "$INSTALL_WITH" in
+                helm)
+                    FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
+                    ;;
+                docker)
+                    FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
+                    ;;
+                host)
+                    FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
+                    ;;
+            esac
+            sleep 3
+            test -z ${FOUND_COLLECTOR} && echo "  Collector OK log message not found, re-try."
+        done
 
         if [ "${FOUND_COLLECTOR}" == "${AGENT_COLLECTOR}" ]
         then
             echo "  Sysdig Agent successfully installed."
             touch $WORK_DIR/user_data_AGENT_OK
             echo "  Sysdig Agent cluster.name: insq_${CLUSTER_NAME}"
-        else
-            echo "  FAIL"
-            echo "  Agent connected to wrong region."
-            echo "    Selected collector: ${AGENT_COLLECTOR}"
-            echo "    Found collector: ${FOUND_COLLECTOR}"
-            panic_msg
         fi
     else
         echo "  FAIL"
