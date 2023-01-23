@@ -486,6 +486,8 @@ function test_agent () {
     then
 
         while [ -z ${FOUND_COLLECTOR} ] && [ $attempt -le $MAX_ATTEMPTS ]
+        do
+        echo -n "  Checking agent collector logs..."
             case "$INSTALL_WITH" in
                 helm)
                     FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
@@ -498,12 +500,12 @@ function test_agent () {
                     ;;
             esac
             sleep 3
-            test -z ${FOUND_COLLECTOR} && echo "  Collector OK log message not found, re-try."
+            test -z ${FOUND_COLLECTOR} && echo "  not found"
         done
 
         if [ "${FOUND_COLLECTOR}" == "${AGENT_COLLECTOR}" ]
         then
-            echo "  Sysdig Agent successfully installed."
+            echo "  found. Sysdig Agent successfully installed."
             touch $WORK_DIR/user_data_AGENT_OK
             echo "  Sysdig Agent cluster.name: insq_${CLUSTER_NAME}"
         fi
