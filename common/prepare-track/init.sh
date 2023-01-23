@@ -284,26 +284,32 @@ function configure_API () {
             else #SECURE
                 API_TOKEN=$(echo -n ${TEST_SECURE_API} | base64 --decode)
             fi
+            echo "TEST_${PRODUCT}_API_TOKEN=${API_TOKEN}"
         else
             read -p "  Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN;
         fi
 
         # Test connection
-        echo -n "  Testing connection to API... "
+        echo -n "  Testing connection to API on endpoint ${PRODUCT_API_ENDPOINT}... "
         curl -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep 'HTTP/2 200' &> /dev/null
         
         if [ $? -eq 0 ]
         then
-            echo "  OK"
+            echo "  success"
             echo "${API_TOKEN}" > $WORK_DIR/user_data_${PRODUCT}_API_OK
             export SYSDIG_${PRODUCT}_API_TOKEN="${API_TOKEN}"
         else
-            echo "  FAIL"
-            echo "  Failed to connect to API Endpoint with selected Region and API Key(s)."
-            panic_msg
+            echo "  failed"
         fi
+        sleep 1
         echo
     done
+    
+    if [ ! -f $WORK_DIR/user_data_${PRODUCT}_API_OK ];
+    then
+        echo "  Failed to connect to API Endpoint with selected Region and API Key(s)."
+        panic_msg
+    fi
 }
 
 ##
