@@ -458,59 +458,33 @@ function test_agent () {
     CONNECTED_MSG="Sending scraper version"
     connected=false
 
-    while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
+    while [ -z ${FOUND_COLLECTOR} ] && [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
         sleep 3
         case "$INSTALL_WITH" in
             helm)
-                kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}"
+                kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}" && connected=true
+                FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
                 ;;
             docker)
-                docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}"
+                docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}" && connected=true
+                FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
                 ;;
             host)
-                grep -q "${CONNECTED_MSG}" /opt/draios/logs/draios.log
+                grep -q "${CONNECTED_MSG}" /opt/draios/logs/draios.log && connected=true
+                FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
                 ;;
         esac
-
-        if [ $? -eq 0 ]
-        then
-            connected=true
-            break
-        fi
         
         attempt=$(( $attempt + 1 ))
     done
 
-    if [ "$connected" = true ]
+    if [ "$connected" = true ] && [ "${FOUND_COLLECTOR}" == "${AGENT_COLLECTOR}" ]
     then
 
-        while [ -z ${FOUND_COLLECTOR} ] && [ $attempt -le $MAX_ATTEMPTS ]
-        do
-        echo -n "  Checking agent collector logs..."
-            case "$INSTALL_WITH" in
-                helm)
-                    FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
-                    ;;
-                docker)
-                    FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
-                    ;;
-                host)
-                    FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
-                    ;;
-            esac
-
-            test -z ${FOUND_COLLECTOR} && echo "  not found"
-            sleep 3
-            attempt=$(( $attempt + 1 ))
-        done
-
-        if [ "${FOUND_COLLECTOR}" == "${AGENT_COLLECTOR}" ]
-        then
-            echo "  found. Sysdig Agent successfully installed."
-            touch $WORK_DIR/user_data_AGENT_OK
-            echo "  Sysdig Agent cluster.name: insq_${CLUSTER_NAME}"
-        fi
+        echo "  OK. Sysdig Agent successfully installed."
+        touch $WORK_DIR/user_data_AGENT_OK
+        echo "  Sysdig Agent cluster.name: insq_${CLUSTER_NAME}"
     else
         echo "  FAIL"
         echo "  Agent failed to connect to back-end. Check your Agent Key."
