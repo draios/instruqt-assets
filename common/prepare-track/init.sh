@@ -499,8 +499,10 @@ function test_agent () {
                     FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
                     ;;
             esac
-            sleep 3
+
             test -z ${FOUND_COLLECTOR} && echo "  not found"
+            sleep 3
+            attempt=$(( $attempt + 1 ))
         done
 
         if [ "${FOUND_COLLECTOR}" == "${AGENT_COLLECTOR}" ]
