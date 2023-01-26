@@ -284,26 +284,32 @@ function configure_API () {
             else #SECURE
                 API_TOKEN=$(echo -n ${TEST_SECURE_API} | base64 --decode)
             fi
+            echo "TEST_${PRODUCT}_API_TOKEN=${API_TOKEN}"
         else
             read -p "  Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN;
         fi
 
         # Test connection
-        echo -n "  Testing connection to API... "
+        echo -n "  Testing connection to API on endpoint ${PRODUCT_API_ENDPOINT}... "
         curl -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep 'HTTP/2 200' &> /dev/null
         
         if [ $? -eq 0 ]
         then
-            echo "  OK"
+            echo "  success"
             echo "${API_TOKEN}" > $WORK_DIR/user_data_${PRODUCT}_API_OK
             export SYSDIG_${PRODUCT}_API_TOKEN="${API_TOKEN}"
         else
-            echo "  FAIL"
-            echo "  Failed to connect to API Endpoint with selected Region and API Key(s)."
-            panic_msg
+            echo "  failed"
         fi
+        sleep 1
         echo
     done
+    
+    if [ ! -f $WORK_DIR/user_data_${PRODUCT}_API_OK ];
+    then
+        echo "  Failed to connect to API Endpoint with selected Region and API Key(s)."
+        panic_msg
+    fi
 }
 
 ##
@@ -452,56 +458,33 @@ function test_agent () {
     CONNECTED_MSG="Sending scraper version"
     connected=false
 
-    while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
+    while [ -z ${FOUND_COLLECTOR} ] && [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
         sleep 3
         case "$INSTALL_WITH" in
             helm)
-                kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}"
+                kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}" && connected=true
+                FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
                 ;;
             docker)
-                docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}"
+                docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}" && connected=true
+                FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
                 ;;
             host)
-                grep -q "${CONNECTED_MSG}" /opt/draios/logs/draios.log
+                grep -q "${CONNECTED_MSG}" /opt/draios/logs/draios.log && connected=true
+                FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
                 ;;
         esac
-
-        if [ $? -eq 0 ]
-        then
-            connected=true
-            break
-        fi
         
         attempt=$(( $attempt + 1 ))
     done
 
-    if [ "$connected" = true ]
+    if [ "$connected" = true ] && [ "${FOUND_COLLECTOR}" == "${AGENT_COLLECTOR}" ]
     then
-        case "$INSTALL_WITH" in
-            helm)
-                FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
-                ;;
-            docker)
-                FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
-                ;;
-            host)
-                FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
-                ;;
-        esac
 
-        if [ "${FOUND_COLLECTOR}" == "${AGENT_COLLECTOR}" ]
-        then
-            echo "  Sysdig Agent successfully installed."
-            touch $WORK_DIR/user_data_AGENT_OK
-            echo "  Sysdig Agent cluster.name: insq_${CLUSTER_NAME}"
-        else
-            echo "  FAIL"
-            echo "  Agent connected to wrong region."
-            echo "    Selected collector: ${AGENT_COLLECTOR}"
-            echo "    Found collector: ${FOUND_COLLECTOR}"
-            panic_msg
-        fi
+        echo "  OK. Sysdig Agent successfully installed."
+        touch $WORK_DIR/user_data_AGENT_OK
+        echo "  Sysdig Agent cluster.name: insq_${CLUSTER_NAME}"
     else
         echo "  FAIL"
         echo "  Agent failed to connect to back-end. Check your Agent Key."
