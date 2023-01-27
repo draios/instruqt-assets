@@ -458,7 +458,7 @@ function test_agent () {
     CONNECTED_MSG="Sending scraper version"
     connected=false
 
-    while [ -z ${FOUND_COLLECTOR} ] && [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
+    while [ "$connected" != true ] && [ "${FOUND_COLLECTOR}" != "${AGENT_COLLECTOR}" ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
         sleep 3
         case "$INSTALL_WITH" in
@@ -475,6 +475,8 @@ function test_agent () {
                 FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
                 ;;
         esac
+        
+        echo "attempt=${attempt} ::: FOUND_COLLECTOR=\"${FOUND_COLLECTOR}\", AGENT_COLLECTOR=\"${AGENT_COLLECTOR}\" and connected=\"${connected}\""
         
         attempt=$(( $attempt + 1 ))
     done
