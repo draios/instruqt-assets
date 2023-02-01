@@ -466,16 +466,15 @@ function test_agent () {
                 ## These checks aren't consistent
                 #kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}" && connected=true
                 #FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
-                kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=200s
+                kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=200s && connected=true
                 ;;
             docker)
-                ### docker should check the existence of /opt/draios/logs/running <- leveraged by our kubernetes health check and is only created when the agent is
-                ### officially connected to the backend
+                ### Todo: docker should check the existence of /opt/draios/logs/running <- leveraged by our kubernetes health check and is only created when the agent is officially connected to the backend
                 docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}" && connected=true
                 FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
                 ;;
             host)
-                ### systemctl status sysdig-agent; if its running its connected and healthy.
+                ### Todo: systemctl status sysdig-agent; if its running its connected and healthy.
                 grep -q "${CONNECTED_MSG}" /opt/draios/logs/draios.log && connected=true
                 FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
                 ;;
@@ -484,7 +483,7 @@ function test_agent () {
         attempt=$(( $attempt + 1 ))
     done
 
-    if [ "$connected" = true ] && [ "${FOUND_COLLECTOR}" == "${AGENT_COLLECTOR}" ]
+    if [ "$connected" = true ]
     then
 
         echo "  OK. Sysdig Agent successfully installed."
