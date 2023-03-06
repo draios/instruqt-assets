@@ -20,7 +20,8 @@ helm repo update >> ${OUTPUT} 2>&1
 if [ "$USE_NODE_ANALYZER" = true ]
 then
     HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=true \
-    --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true  $HELM_OPTS"
+    --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
+    --set nodeAnalyzer.imageAnalyzer.containerdSocketPath=$SOCKET_PATH $HELM_OPTS"
 else
     HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=false $HELM_OPTS"
 fi
