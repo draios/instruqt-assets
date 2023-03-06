@@ -19,19 +19,18 @@ helm repo update >> ${OUTPUT} 2>&1
 
 if [ "$USE_NODE_ANALYZER" = true ]
 then
-    HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=true $HELM_OPTS"
+    HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=true \
+    --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true  $HELM_OPTS"
 else
     HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=false $HELM_OPTS"
 fi
 
 if [ "$USE_KSPM" = true ]
 then
-    HELM_OPTS="--set global.kspm.deploy=true \
-               $HELM_OPTS"
+    HELM_OPTS="--set global.kspm.deploy=true $HELM_OPTS"
 else
     HELM_OPTS="--set global.kspm.deploy=false $HELM_OPTS"
 fi
-
 
 if [ "$USE_PROMETHEUS" = true ]
 then
@@ -44,6 +43,12 @@ then
     HELM_OPTS="--set agent.auditLog.enabled=true $HELM_OPTS"
     HELM_OPTS="--set agent.auditLog.auditServerUrl=0.0.0.0 $HELM_OPTS"
     HELM_OPTS="--set agent.auditLog.auditServerPort=7765 $HELM_OPTS"
+fi
+
+if [ "$USE_RAPID_RESPONSE" = true ]
+then
+    HELM_OPTS="--set rapidResponse.enabled=true \
+    --set rapidResponse.rapidResponse.passphrase=training_secret_passphrase $HELM_OPTS"
 fi
 
 # echo "Deploying Sysdig Agent with Helm"
