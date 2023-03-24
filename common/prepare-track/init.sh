@@ -471,7 +471,7 @@ function test_agent () {
                 ## These checks aren't consistent
                 #kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}" && connected=true
                 #FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
-                kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=200s && connected=true
+                kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=300s && connected=true
                 ;;
             docker)
                 ### Todo: docker should check the existence of /opt/draios/logs/running <- leveraged by our kubernetes health check and is only created when the agent is officially connected to the backend
