@@ -430,7 +430,8 @@ function intro () {
 function deploy_agent () {
     AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
     echo ${AGENT_DEPLOY_DATE} > $WORK_DIR/agent_deploy_date
-    
+    agent variable set SYSDIG_CLUSTER_ID "insq_$INSTRUQT_PARTICIPANT_ID"
+
     echo "Configuring Sysdig Agent"
     echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
 
@@ -444,7 +445,7 @@ function deploy_agent () {
     echo -e "  The agent is being installed in the background.\n"
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
-    install_agent ${AGENT_DEPLOY_DATE} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID}
+    install_agent ${INSTRUQT_PARTICIPANT_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID}
 }
 
 ##
