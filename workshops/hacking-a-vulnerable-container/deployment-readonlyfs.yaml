@@ -37,10 +37,10 @@ spec:
         resources:
           limits:
             cpu: 2000m
-            memory: 4000Mi
+            memory: 3000Mi
           requests:
             cpu: 2000m
-            memory: 4000Mi
+            memory: 3000Mi
         securityContext:
           allowPrivilegeEscalation: false
           privileged: false
