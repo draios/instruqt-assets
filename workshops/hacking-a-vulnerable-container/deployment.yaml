@@ -35,7 +35,7 @@ spec:
             memory: 3000Mi
           requests:
             cpu: 2000m
-            memory: 3000Mi
+            memory: 2500Mi
 
 ---
 apiVersion: v1
