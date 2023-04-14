@@ -87,6 +87,8 @@ function config_sysdig_tab_redirect () {
         pkill -f nginx
         nginx
     fi
+    
+    touch $WORK_DIR/region_setup_OK
 }
 
 ##
