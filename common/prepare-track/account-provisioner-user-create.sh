@@ -15,6 +15,7 @@ function user_provisioner () {
     ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=9f1c06cf-f7ee-45b8-943f-73740472e978
     ACCOUNT_PROVISIONER_SECURE_API_URL=https://us2.app.sysdig.com
     echo "${ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY}" > $WORK_DIR/ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY
+    echo "2" > $WORK_DIR/ACCOUNT_PROVISIONER_REGION # check region ids in init.sh
 
     # new user creds
     SPA_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')

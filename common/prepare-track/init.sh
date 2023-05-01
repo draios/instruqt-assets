@@ -848,7 +848,7 @@ function overwrite_test_creds () {
     TEST_AGENT_ACCESS_KEY=$(cat $WORK_DIR/ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY | base64)
     TEST_MONITOR_API=$(cat /opt/sysdig/account.json | jq --raw-output .token.key | base64)
     TEST_SECURE_API=$(cat /opt/sysdig/account.json | jq --raw-output .token.key | base64)
-    TEST_REGION=1
+    TEST_REGION=$(cat $WORK_DIR/ACCOUNT_PROVISIONER_REGION)
 
     SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER)
     SPA_PASS=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_PASS)
