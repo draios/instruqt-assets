@@ -13,7 +13,7 @@ function user_provisioner () {
     # parent account data
     ACCOUNT_PROVISIONER_SECURE_API_TOKEN=[REDACTED]
     ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=[REDACTED]
-    ACCOUNT_PROVISIONER_SECURE_API_URL=https://secure.sysdig.com
+    ACCOUNT_PROVISIONER_SECURE_API_URL=https://https://us2.app.sysdig.com
     echo "${ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY}" > $WORK_DIR/ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY
 
     # new user creds
@@ -47,7 +47,7 @@ function user_provisioner () {
     "password": "'${SPA_PASS}'",
     "firstName": "Training", 
     "lastName": "Student", 
-    "systemRole": "ROLE_USER" 
+    "systemRole": "WORKSHOP_USER" 
     }' \
     ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/user/provisioning/ \
     | jq > $WORK_DIR/account.json
