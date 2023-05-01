@@ -2,15 +2,14 @@
 
 set -xe
 
+WORK_DIR=/opt/sysdig
+mkdir -p $WORK_DIR
+
 ##
 # User provisioner, creates a user in a general training Sysdig account
 # so the user does not have to use its own.
 ##
-WORK_DIR=/opt/sysdig
-
 function user_provisioner () {
-    mkdir -p $WORK_DIR
-    touch $WORK_DIR/account.json
     # parent account data
     ACCOUNT_PROVISIONER_SECURE_API_TOKEN=17f43073-96e4-4221-9117-65ac17eaa84d
     ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=d5ef4566-d0c2-4174-92eb-0727fc0991f3

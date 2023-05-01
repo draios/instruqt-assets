@@ -2,6 +2,9 @@
 
 set -xe
 
+WORK_DIR=/opt/sysdig
+mkdir -p $WORK_DIR
+
 ##
 # User deprovisioner
 ##
