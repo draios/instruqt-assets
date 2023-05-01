@@ -46,9 +46,9 @@ function user_provisioner () {
     --data-binary '{
     "username": "'${SPA_USER}'",
     "password": "'${SPA_PASS}'",
-    "firstName": "Training", 
-    "lastName": "Student", 
-    "systemRole": "WORKSHOP_USER" 
+    "firstName": "Training",
+    "lastName": "Student",
+    "systemRole": "ROLE_USER"
     }' \
     ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/user/provisioning/ \
     | jq > $WORK_DIR/account.json
