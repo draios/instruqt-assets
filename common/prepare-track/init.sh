@@ -8,7 +8,7 @@
 #   Current SaaS regions: https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges/
 ###
 
-trap '' 2 # Signal capture quit with Ctrl+C
+# trap '' 2 # Signal capture quit with Ctrl+C
 
 
 ###########################    GLOBAL CONSTANTS    ############################
@@ -849,6 +849,20 @@ function overwrite_test_creds () {
     TEST_MONITOR_API=$(cat /opt/sysdig/account.json | jq --raw-output .token.key | base64)
     TEST_SECURE_API=$(cat /opt/sysdig/account.json | jq --raw-output .token.key | base64)
     TEST_REGION=1
+
+    SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_PASS)
+    SPA_PASS=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_PASS)
+
+    echo "----------------------------------------------------------"
+    echo "- A Sysdig SaaS account has been provisioned with this lab"
+    echo "----------------------------------------------------------"
+    echo
+    echo "  These are your credentials (also available in the instructions in the right):"
+    echo "  User: $SPA_USER"
+    echo "  Password: $SPA_PASS"
+    echo
+    echo
+
 }
 
 ##
