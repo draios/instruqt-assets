@@ -6,6 +6,8 @@ set -xe
 # User provisioner, creates a user in a general training Sysdig account
 # so the user does not have to use its own.
 ##
+WORK_DIR=/opt/sysdig
+
 function user_provisioner () {
     # parent account data
     ACCOUNT_PROVISIONER_SECURE_API_TOKEN=17f43073-96e4-4221-9117-65ac17eaa84d
@@ -25,15 +27,16 @@ function user_provisioner () {
     echo "${SPA_USER}" > $WORK_DIR/ACCOUNT_PROVISIONED_USER
     agent variable set SPA_USER ${SPA_USER}
 
-    touch /opt/sysdig/account.json
-    
+    mkdir -p $WORK_DIR
+    touch $WORK_DIR/account.json
+
     # always disable onboarding, just in case someone enables it
     curl -k -X POST \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}" \
     --data-binary '{ "onboardingEnabled": false }' \
     ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/feature/status \
-    | jq > /opt/sysdig/account.json
+    | jq > $WORK_DIR/account.json
 
     # create user in parent account
     curl -s -k -X POST \
