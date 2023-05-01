@@ -13,7 +13,7 @@ function user_provisioner () {
     # parent account data
     ACCOUNT_PROVISIONER_SECURE_API_TOKEN=b77e2bde-d265-459f-ab9a-b209989f5373
     ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=9f1c06cf-f7ee-45b8-943f-73740472e978
-    ACCOUNT_PROVISIONER_SECURE_API_URL=https://https://us2.app.sysdig.com
+    ACCOUNT_PROVISIONER_SECURE_API_URL=https://us2.app.sysdig.com
     echo "${ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY}" > $WORK_DIR/ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY
 
     # new user creds
