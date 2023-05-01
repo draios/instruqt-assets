@@ -9,6 +9,8 @@ set -xe
 WORK_DIR=/opt/sysdig
 
 function user_provisioner () {
+    mkdir -p $WORK_DIR
+    touch $WORK_DIR/account.json
     # parent account data
     ACCOUNT_PROVISIONER_SECURE_API_TOKEN=[REDACTED]
     ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=[REDACTED]
@@ -27,8 +29,7 @@ function user_provisioner () {
     echo "${SPA_USER}" > $WORK_DIR/ACCOUNT_PROVISIONED_USER
     agent variable set SPA_USER ${SPA_USER}
 
-    mkdir -p $WORK_DIR
-    touch $WORK_DIR/account.json
+
 
     # always disable onboarding, just in case someone enables it
     curl -k -X POST \
