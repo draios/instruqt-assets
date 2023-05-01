@@ -209,7 +209,7 @@ function select_region () {
     echo "   5) AP Australia (Sydney) - au1"
     echo
 
-    if [ ${INSTRUQT_USER_ID} == "testuser-"* ] || [ "${USE_USER_PROVISIONER}" == true ];
+    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
     then
         REGION_N=${TEST_REGION}
         echo "   Instruqt test or provided Sysdig SaaS region will be used."
@@ -280,7 +280,7 @@ function configure_API () {
     do
         attempt=$(( $attempt + 1 ))
 
-        if [ ${INSTRUQT_USER_ID} == "testuser-"* ] || [ "${USE_USER_PROVISIONER}" == true ];
+        if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
         then
             if [[ ${PRODUCT} == "MONITOR" ]];
             then
@@ -443,7 +443,7 @@ function deploy_agent () {
     echo "Configuring Sysdig Agent"
     echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
 
-    if [ ${INSTRUQT_USER_ID} == "testuser-"* ] || [ "${USE_USER_PROVISIONER}" == true ];
+    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
     then
         AGENT_ACCESS_KEY=$(echo -n ${TEST_AGENT_ACCESS_KEY} | base64 --decode)
     else
