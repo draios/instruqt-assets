@@ -25,6 +25,8 @@ function user_provisioner () {
     echo "${SPA_USER}" > $WORK_DIR/ACCOUNT_PROVISIONED_USER
     agent variable set SPA_USER ${SPA_USER}
 
+    touch /opt/sysdig/account.json
+    
     # always disable onboarding, just in case someone enables it
     curl -k -X POST \
     -H "Content-Type: application/json" \
