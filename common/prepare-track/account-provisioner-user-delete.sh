@@ -11,8 +11,8 @@ mkdir -p $WORK_DIR
 function user_deprovisioner () {
 
     # parent account data
-    ACCOUNT_PROVISIONER_SECURE_API_TOKEN=[REDACTED]
-    ACCOUNT_PROVISIONER_SECURE_API_URL=https://secure.sysdig.com
+    ACCOUNT_PROVISIONER_SECURE_API_TOKEN=$(cat $WORK_DIR/ACCOUNT_PROVISIONER_SECURE_API_TOKEN)
+    ACCOUNT_PROVISIONER_SECURE_API_URL=$(cat $WORK_DIR/ACCOUNT_PROVISIONER_SECURE_API_URL)
     SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER)
 
     # delete user in parent account
@@ -20,7 +20,7 @@ function user_deprovisioner () {
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}" \
     ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/users/${SPA_USER} \
-    | jq > $WORK_DIR/delete-user.json
+    | jq
 
 }
 

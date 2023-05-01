@@ -853,6 +853,7 @@ function overwrite_test_creds () {
     SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER)
     SPA_PASS=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_PASS)
 
+    echo
     echo "----------------------------------------------------------"
     echo "- A Sysdig SaaS account has been provisioned with this lab"
     echo "----------------------------------------------------------"
@@ -860,6 +861,7 @@ function overwrite_test_creds () {
     echo "  These are your credentials (also available in the instructions in the right):"
     echo "  User: $SPA_USER"
     echo "  Password: $SPA_PASS"
+    echo "  Region: use the tab in this lab to access your Sysdig's UI"
     echo
     echo
 
