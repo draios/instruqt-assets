@@ -8,7 +8,7 @@
 #   Current SaaS regions: https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges/
 ###
 
-# trap '' 2 # Signal capture quit with Ctrl+C
+trap '' 2 # Signal capture quit with Ctrl+C
 
 
 ###########################    GLOBAL CONSTANTS    ############################
@@ -850,7 +850,7 @@ function overwrite_test_creds () {
     TEST_SECURE_API=$(cat /opt/sysdig/account.json | jq --raw-output .token.key | base64)
     TEST_REGION=1
 
-    SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_PASS)
+    SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER)
     SPA_PASS=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_PASS)
 
     echo "----------------------------------------------------------"
