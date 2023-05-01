@@ -845,7 +845,7 @@ function check_flags () {
 }
 
 function overwrite_test_creds () {
-    TEST_AGENT_ACCESS_KEY=$(cat ${ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY})
+    TEST_AGENT_ACCESS_KEY=$(cat $WORK_DIR/ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY)
     TEST_MONITOR_API=$(cat /opt/sysdig/account.json | jq --raw-output .token.key | base64)
     TEST_SECURE_API=$(cat /opt/sysdig/account.json | jq --raw-output .token.key | base64)
     TEST_REGION=2
