@@ -30,6 +30,7 @@ AGENT_COLLECTOR=''
 NIA_ENDPOINT=''
 SKIP_CLEANUP=false
 
+USE_USER_PROVISIONER=false
 USE_AGENT=false
 USE_MONITOR_API=false
 USE_SECURE_API=false
@@ -208,10 +209,10 @@ function select_region () {
     echo "   5) AP Australia (Sydney) - au1"
     echo
 
-    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
+    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
     then
         REGION_N=${TEST_REGION}
-        echo "   Instruqt test Sysdig SaaS region will be used."
+        echo "   Instruqt test or provided Sysdig SaaS region will be used."
     else
         read -p "   Select Region (type number): "  REGION_N; 
     fi
@@ -279,7 +280,7 @@ function configure_API () {
     do
         attempt=$(( $attempt + 1 ))
 
-        if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
+        if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
         then
             if [[ ${PRODUCT} == "MONITOR" ]];
             then
@@ -379,6 +380,10 @@ function intro () {
 
     echo "    - Set up your Sysdig region."
 
+    if [ "$USE_USER_PROVISIONER" == true ]; then
+      echo "    - Provisions a user in Sysdig Saas account for this lab."
+    fi
+
     if [ "$USE_MONITOR_API" == true ]; then
       echo "    - Set up the environment for Monitor API usage."
     fi
@@ -438,7 +443,7 @@ function deploy_agent () {
     echo "Configuring Sysdig Agent"
     echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
 
-    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]]; 
+    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
     then
         AGENT_ACCESS_KEY=$(echo -n ${TEST_AGENT_ACCESS_KEY} | base64 --decode)
     else
@@ -733,6 +738,7 @@ function help () {
     echo
 
     echo "  --skip-cleanup              Skip script setup clean-up actions."
+    echo "  --provision-user            Creates user in Sysdig Saas Training account for use in this lab."
     echo "  -a, --agent                 Deploy a Sysdig Agent."
     echo "  -c, --cloud                 Set up environment for Sysdig Secure for Cloud."
     echo "  -h, --help                  Show this help."
@@ -775,7 +781,10 @@ function check_flags () {
         case "$1" in
             --skip-cleanup)
                 SKIP_CLEANUP=true
-                ;;        
+                ;;
+            --provision-user)
+                USE_USER_PROVISIONER=true
+                ;;
             --agent | -a)
                 USE_AGENT=true
                 USE_AGENT_REGION=true
@@ -835,6 +844,29 @@ function check_flags () {
     fi
 }
 
+function overwrite_test_creds () {
+    TEST_AGENT_ACCESS_KEY=$(cat $WORK_DIR/ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY | base64)
+    TEST_MONITOR_API=$(cat /opt/sysdig/account.json | jq --raw-output .token.key | base64)
+    TEST_SECURE_API=$(cat /opt/sysdig/account.json | jq --raw-output .token.key | base64)
+    TEST_REGION=$(cat $WORK_DIR/ACCOUNT_PROVISIONER_REGION)
+
+    SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER)
+    SPA_PASS=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_PASS)
+
+    echo
+    echo "----------------------------------------------------------"
+    echo "- A Sysdig SaaS account has been provisioned with this lab"
+    echo "----------------------------------------------------------"
+    echo
+    echo "  These are your credentials (also available in the instructions in the right):"
+    echo "  User: $SPA_USER"
+    echo "  Password: $SPA_PASS"
+    echo "  Region: use the tab in this lab to access your Sysdig's UI"
+    echo
+    echo
+
+}
+
 ##
 # Execute setup.
 ##
@@ -844,6 +876,11 @@ function setup () {
     check_flags $@
 
     intro
+
+    if [ "${USE_USER_PROVISIONER}" = true ]
+    then
+        overwrite_test_creds
+    fi
 
     if [ "$USE_AGENT_REGION" = true ] || [ "$USE_CLOUD_REGION" = true ]
     then
