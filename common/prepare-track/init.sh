@@ -37,6 +37,8 @@ USE_NODE_ANALYZER=false
 USE_KSPM=false
 USE_PROMETHEUS=false
 USE_AUDIT_LOG=false
+USE_RAPID_RESPONSE=false
+USE_K8S=false
 USE_CLOUD=false
 USE_CLOUD_SCAN_ENGINE=false
 USE_REGION_CLOUD=false
@@ -397,6 +399,10 @@ function intro () {
       echo "    - Enable KSPM."
     fi
 
+    if [ "$USE_RAPID_RESPONSE" == true ]; then
+      echo "    - Enable Rapid Response."
+    fi
+
     if [ "$USE_PROMETHEUS" == true ]; then
       echo "    - Enable the Agent Prometheus collector."
     fi
@@ -412,6 +418,10 @@ function intro () {
 
     if [ "$USE_CLOUD_SCAN_ENGINE" == true ]; then
       echo "    - Deploys the Image Scanner for Cloud Registries."
+    fi
+
+    if [ "$USE_K8S" == true ]; then
+      echo "    - Customize Helm installer for kubeadm K8s cluster."
     fi
 
     echo "  Follow the instructions below."
@@ -466,7 +476,7 @@ function test_agent () {
                 ## These checks aren't consistent
                 #kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}" && connected=true
                 #FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
-                kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=200s && connected=true
+                kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=300s && connected=true
                 ;;
             docker)
                 ### Todo: docker should check the existence of /opt/draios/logs/running <- leveraged by our kubernetes health check and is only created when the agent is officially connected to the backend
@@ -731,10 +741,12 @@ function help () {
     echo "  -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent."
     echo "  -k, --kspm                  Enable KSPM. Use with -k/--kspm."
     echo "  -p, --prometheus            Enable Prometheus. Use with -a/--agent."
+    echo "  -b, --rapid-response        Enable Rapid Response"
     echo "  -s, --secure                Set up environment for Secure API usage."
     echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
     echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account."
     echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
+    echo "  -8, --kube-adm              Customize installer for kubeadm k8s cluster"
     echo
     echo
     echo "ENVIRONMENT VARIABLES:"
@@ -796,11 +808,17 @@ function check_flags () {
             --prometheus | -p)
                 export USE_PROMETHEUS=true
                 ;;
+            --rapid-response | -b)
+                export USE_RAPID_RESPONSE=true
+                ;;
             --log | -l)
                 export USE_AUDIT_LOG=true
                 ;;  
             --vuln-management | -v)
                 export USE_CLOUD_SCAN_ENGINE=true
+                ;;
+            --kube-adm | -8)
+                export USE_K8S=true
                 ;;
             --help | -h)
                 help
@@ -815,7 +833,7 @@ function check_flags () {
         shift
     done
 
-    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ]) && [ "$USE_AGENT" != true ]
+    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ]  || [ "$USE_RAPID_RESPONSE" = true ]  || [ "$USE_K8S" = true ]) && [ "$USE_AGENT" != true ]
     then
         echo "ERROR: Options only available with -a/--agent."
         exit 1
