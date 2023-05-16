@@ -1,0 +1,48 @@
+version: "3.1"
+    
+services:
+  db:
+    container_name: db
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: toor
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    
+  wordpress:
+    depends_on:
+      - db
+    container_name: wordpress
+    image: wordpress:php8.1-apache
+    volumes:
+      - wordpress_data:/var/www/html
+    ports:
+      - "8000:80"
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+      VIRTUAL_HOST: wordpress
+
+  proxy:
+    container_name: proxy
+    depends_on:
+      - wordpress
+    image: jwilder/nginx-proxy:alpine
+    ports: 
+      - "80:80"
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    environment:
+      DEFAULT_HOST: wordpress
+
+volumes:
+  db_data: {}
+  wordpress_data: {}
