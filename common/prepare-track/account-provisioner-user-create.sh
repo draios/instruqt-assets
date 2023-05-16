@@ -13,19 +13,21 @@
 
 set -euxo pipefail
 
-if [ $# -ne 3 ]
+if [ $# -ne 4 ]
   then
-    echo "$0: Provide 3 arguments: Secure API token, Secure API URL and Agent Key."
+    echo "$0: Provide 3 arguments: Secure API token, Secure API URL, Agent Key, region number (see init.sh)"
     echo "$0: Defaulting to training account."
     
     # parent account data, by default we falback to service account: INSTRUQT_account_provisioner
     ACCOUNT_PROVISIONER_SECURE_API_TOKEN=d1df6216-d750-41bd-a12d-e331262091e9-c2EK
     ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=9f1c06cf-f7ee-45b8-943f-73740472e978
     ACCOUNT_PROVISIONER_SECURE_API_URL=https://us2.app.sysdig.com
+    ACCOUNT_PROVISIONER_REGION_NUMBER=2
 else
     ACCOUNT_PROVISIONER_SECURE_API_TOKEN=$1
     ACCOUNT_PROVISIONER_SECURE_API_URL=$2
     ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=$3
+    ACCOUNT_PROVISIONER_REGION_NUMBER=$4
 fi
 
 WORK_DIR=/opt/sysdig
@@ -35,7 +37,7 @@ mkdir -p $WORK_DIR
 echo "${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}" > $WORK_DIR/ACCOUNT_PROVISIONER_SECURE_API_TOKEN
 echo "${ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY}" > $WORK_DIR/ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY
 echo "${ACCOUNT_PROVISIONER_SECURE_API_URL}" > $WORK_DIR/ACCOUNT_PROVISIONER_SECURE_API_URL
-echo "2" > $WORK_DIR/ACCOUNT_PROVISIONER_REGION # check region ids in init.sh
+echo "${ACCOUNT_PROVISIONER_REGION_NUMBER}" > $WORK_DIR/ACCOUNT_PROVISIONER_REGION # check region ids in init.sh
 
 # define new user creds, and feed it to instruqt lab as an agent var
 SPA_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
