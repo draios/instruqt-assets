@@ -39,6 +39,7 @@ USE_KSPM=false
 USE_PROMETHEUS=false
 USE_AUDIT_LOG=false
 USE_RAPID_RESPONSE=false
+USE_K8S=false
 USE_CLOUD=false
 USE_CLOUD_SCAN_ENGINE=false
 USE_REGION_CLOUD=false
@@ -404,7 +405,7 @@ function intro () {
     if [ "$USE_KSPM" == true ]; then
       echo "    - Enable KSPM."
     fi
-    
+
     if [ "$USE_RAPID_RESPONSE" == true ]; then
       echo "    - Enable Rapid Response."
     fi
@@ -424,6 +425,10 @@ function intro () {
 
     if [ "$USE_CLOUD_SCAN_ENGINE" == true ]; then
       echo "    - Deploys the Image Scanner for Cloud Registries."
+    fi
+
+    if [ "$USE_K8S" == true ]; then
+      echo "    - Customize Helm installer for kubeadm K8s cluster."
     fi
 
     echo "  Follow the instructions below."
@@ -751,6 +756,7 @@ function help () {
     echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
     echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account."
     echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
+    echo "  -8, --kube-adm              Customize installer for kubeadm k8s cluster"
     echo
     echo
     echo "ENVIRONMENT VARIABLES:"
@@ -824,6 +830,9 @@ function check_flags () {
             --vuln-management | -v)
                 export USE_CLOUD_SCAN_ENGINE=true
                 ;;
+            --kube-adm | -8)
+                export USE_K8S=true
+                ;;
             --help | -h)
                 help
                 exit 0
@@ -837,7 +846,7 @@ function check_flags () {
         shift
     done
 
-    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ] || [ "$USE_RAPID_RESPONSE" = true ]) && [ "$USE_AGENT" != true ]
+    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ]  || [ "$USE_RAPID_RESPONSE" = true ]  || [ "$USE_K8S" = true ]) && [ "$USE_AGENT" != true ]
     then
         echo "ERROR: Options only available with -a/--agent."
         exit 1
