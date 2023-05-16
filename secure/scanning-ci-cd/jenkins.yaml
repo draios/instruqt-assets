@@ -10,7 +10,7 @@ metadata:
     app: jenkins
     role: jenkins
   name: jenkins
-  namespace: devops-tools
+  namespace: jenkins
 spec:
   replicas: 1
   selector:
@@ -58,7 +58,7 @@ metadata:
   labels:
     app: jenkins
   name: jenkins-service
-  namespace: devops-tools
+  namespace: jenkins
 spec:
   type: NodePort
   ports:
