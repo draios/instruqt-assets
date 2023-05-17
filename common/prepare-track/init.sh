@@ -652,7 +652,7 @@ function test_cloud_connector () {
                 echo "    Found cloud account: $line"
                 connected=true
                 break
-                fi
+                #fi
             fi
         done < .cloudProvidersLastSeen
         
