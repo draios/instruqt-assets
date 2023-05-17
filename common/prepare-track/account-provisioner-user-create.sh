@@ -18,8 +18,8 @@ if [ $# -ne 4 ]
     echo "$0: Provide 3 arguments: Secure API token, Secure API URL, Agent Key, region number (see init.sh)"
     echo "$0: Defaulting to training account."
     
-    # parent account data, by default we falback to service account: INSTRUQT_account_provisioner
-    ACCOUNT_PROVISIONER_SECURE_API_TOKEN=403d7142-577f-4390-b6ec-d3c64109ad1b-c2EK
+    # parent account data, we create with pabloopez token
+    ACCOUNT_PROVISIONER_SECURE_API_TOKEN=b77e2bde-d265-459f-ab9a-b209989f5373
     ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=9f1c06cf-f7ee-45b8-943f-73740472e978
     ACCOUNT_PROVISIONER_SECURE_API_URL=https://us2.app.sysdig.com
     ACCOUNT_PROVISIONER_REGION_NUMBER=2
