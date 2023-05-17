@@ -69,9 +69,9 @@ ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/user/provisioning/ \
 touch $WORK_DIR/user_provisioned_COMPLETED
 
 # disable onboarding, just in case someone enables it
-curl -k -X POST \
+curl -s -k -X POST \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}" \
 --data-binary '{ "onboardingEnabled": false }' \
 ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/feature/status \
-| jq > $WORK_DIR/account.json
+| jq > /dev/null
