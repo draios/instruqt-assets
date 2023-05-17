@@ -483,7 +483,7 @@ function test_agent () {
         case "$INSTALL_WITH" in
             helm)
                 ## These checks aren't consistent
-                kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "cm_collector" | grep -q "Processing messages" && connected=true
+                kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 | grep "cm_collector" | grep -q "Processing messages" && connected=true
                 FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
                 #kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=300s && connected=true
                 ;;
