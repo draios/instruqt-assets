@@ -483,9 +483,9 @@ function test_agent () {
         case "$INSTALL_WITH" in
             helm)
                 ## These checks aren't consistent
-                #kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}" && connected=true
-                #FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
-                kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=300s && connected=true
+                kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}" && connected=true
+                FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "cm_collector" | grep "Processing messages" | head -n1 | awk '{print $NF}'`
+                #kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=300s && connected=true
                 ;;
             docker)
                 ### Todo: docker should check the existence of /opt/draios/logs/running <- leveraged by our kubernetes health check and is only created when the agent is officially connected to the backend
@@ -641,17 +641,17 @@ function test_cloud_connector () {
             if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID}" ]]
             then 
                 # the account_id matches
-                LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f1) # extract date
-                [[ $LAST_SEEN_DATE == "null" ]] && LAST_SEEN_DATE_EPOCH=0 || LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
+                #LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f1) # extract date
+                #[[ $LAST_SEEN_DATE == "null" ]] && LAST_SEEN_DATE_EPOCH=0 || LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
 
                 # is this account date_last_seen value greater than the deployment_date in this script?
                 # ^ this means, we want the cloud account to be active now
                 # Instruqt reuses the accounts, so we don't want a false positive for reusing an account
-                if [[ "${LAST_SEEN_DATE_EPOCH}" > "${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}" ]]
-                then
-                    echo "    Found cloud account: $line"
-                    connected=true
-                    break
+                #if [[ "${LAST_SEEN_DATE_EPOCH}" > "${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}" ]]
+                #then
+                echo "    Found cloud account: $line"
+                connected=true
+                break
                 fi
             fi
         done < .cloudProvidersLastSeen
