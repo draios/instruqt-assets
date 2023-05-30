@@ -57,7 +57,6 @@ then
     terraform init && terraform apply -auto-approve \
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_API_ENDPOINT" \
-        -var="training_azure_subscription=$CLOUD_ACCOUNT_ID" \
-        -var="deploy_scanner=$USE_CLOUD_SCAN_ENGINE" #\
+        -var="training_azure_subscription=$CLOUD_ACCOUNT_ID" #\
         #-y >> ${OUTPUT} 2>&1
 fi
