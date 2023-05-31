@@ -33,4 +33,5 @@ provider "azurerm" {
 
 module "secure_for_cloud_single_subscription" {
   source                  = "sysdiglabs/secure-for-cloud/azurerm//examples/single-subscription"
+  deploy_active_directory = false
 }
