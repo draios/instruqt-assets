@@ -31,7 +31,14 @@ provider "azurerm" {
   subscription_id = var.training_azure_subscription
 }
 
+resource "random_string" "random_suffix" {
+  length  = 3
+  special = false
+  upper   = false
+}
+
 module "secure_for_cloud_single_subscription" {
   source                  = "sysdiglabs/secure-for-cloud/azurerm//examples/single-subscription"
   deploy_active_directory = false
+  name = "sfc-training-${random_string.random_suffix.result}"
 }
