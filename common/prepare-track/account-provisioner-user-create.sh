@@ -15,39 +15,54 @@ set -euxo pipefail
 
 if [ $# -ne 4 ]
   then
-    echo "$0: Provide 3 arguments: Secure API token, Secure API URL, Agent Key, region number (see init.sh)"
+    echo "$0: Provide 6 arguments: Monitor API token, Monitor API URL, Secure API token, Secure API URL, Agent Key, region number (see init.sh)"
     echo "$0: Defaulting to training account."
     
-    # parent account data, we create with pabloopez token
+    # parent account data, we create with pablo.lopezzaldivar+training@sysdig.com token
+    ACCOUNT_PROVISIONER_MONITOR_API_TOKEN=[REDACTED]
+    ACCOUNT_PROVISIONER_MONITOR_API_URL=https://us2.app.sysdig.com
     ACCOUNT_PROVISIONER_SECURE_API_TOKEN=[REDACTED]
-    ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=[REDACTED]
     ACCOUNT_PROVISIONER_SECURE_API_URL=https://us2.app.sysdig.com
+    ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=[REDACTED]
     ACCOUNT_PROVISIONER_REGION_NUMBER=2
 else
-    ACCOUNT_PROVISIONER_SECURE_API_TOKEN=$1
-    ACCOUNT_PROVISIONER_SECURE_API_URL=$2
-    ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=$3
-    ACCOUNT_PROVISIONER_REGION_NUMBER=$4
+    ACCOUNT_PROVISIONER_MONITOR_API_TOKEN=$1
+    ACCOUNT_PROVISIONER_MONITOR_API_URL=$2
+    ACCOUNT_PROVISIONER_SECURE_API_TOKEN=$3
+    ACCOUNT_PROVISIONER_SECURE_API_URL=$4
+    ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=$5
+    ACCOUNT_PROVISIONER_REGION_NUMBER=$6
 fi
 
 WORK_DIR=/opt/sysdig
 mkdir -p $WORK_DIR
 
 # persist values
+echo "${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" > $WORK_DIR/ACCOUNT_PROVISIONER_MONITOR_API_TOKEN
+echo "${ACCOUNT_PROVISIONER_MONITOR_API_URL}" > $WORK_DIR/ACCOUNT_PROVISIONER_MONITOR_API_URL
 echo "${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}" > $WORK_DIR/ACCOUNT_PROVISIONER_SECURE_API_TOKEN
-echo "${ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY}" > $WORK_DIR/ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY
 echo "${ACCOUNT_PROVISIONER_SECURE_API_URL}" > $WORK_DIR/ACCOUNT_PROVISIONER_SECURE_API_URL
+echo "${ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY}" > $WORK_DIR/ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY
 echo "${ACCOUNT_PROVISIONER_REGION_NUMBER}" > $WORK_DIR/ACCOUNT_PROVISIONER_REGION # check region ids in init.sh
+
+# this will be moved into init.sh
+apt install -y wamerican
+WORK_DIR=/opt/sysdig
+cp /usr/share/dict/words /tmp/dict
+awk '!/\x27/' /tmp/dict > temp && mv temp /tmp/dict
+awk '!/[A-Z]/'   /tmp/dict > temp && mv temp /tmp/dict
+awk '/[a-z]/'   /tmp/dict > temp && mv temp /tmp/dict
+sed -i 'y/āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜĀÁǍÀĒÉĚÈĪÍǏÌŌÓǑÒŪÚǓÙǕǗǙǛ/aaaaeeeeiiiioooouuuuuuuuAAAAEEEEIIIIOOOOUUUUUUUU/' /tmp/dict
+shuf -n2 /tmp/dict | cut -d$'\t' -f1 | tr -s "\n" "_" | echo $(</dev/stdin)"student@sysdigtraining.com" > $WORK_DIR/ACCOUNT_PROVISIONED_USER
 
 # define new user creds, and feed it to instruqt lab as an agent var
 SPA_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
 echo ${SPA_PASS}
 echo "${SPA_PASS}" > $WORK_DIR/ACCOUNT_PROVISIONED_PASS
 agent variable set SPA_PASS ${SPA_PASS}
-SPA_USER=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 3 ; echo '')
-SPA_USER=sysdig_pa_$(date +%Y%m%d)_${SPA_USER}@sysdig.com
+# we use the same two random dictionary words to set user_name and cluster_name 
+SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER)
 echo ${SPA_USER}
-echo "${SPA_USER}" > $WORK_DIR/ACCOUNT_PROVISIONED_USER
 agent variable set SPA_USER ${SPA_USER}
 
 # create user in parent account
@@ -74,4 +89,60 @@ curl -s -k -X POST \
 -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}" \
 --data-binary '{ "onboardingEnabled": false }' \
 ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/feature/status \
+| jq > /dev/null
+
+# TODO: get id of monitor operations team
+MONITOR_OPS_TEAM_ID=10018845
+
+# get user id
+SPA_USER_ID=$(cat  $WORK_DIR/account.json | jq .user.id)
+
+# add user to Monitor Operations team
+curl -k -X PUT \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
+--data-binary '{
+    "userRoles": [
+        {
+            "teamId": '${MONITOR_OPS_TEAM_ID}',
+            "teamName": "Monitor Operations",
+            "teamTheme": "#7BB0B2",
+            "userId": '${SPA_USER_ID}',
+            "userName": "'${SPA_USER}'",
+            "role": "ROLE_TEAM_STANDARD",
+            "admin": false,
+            "removalWarning": "REVOKE_PRODUCT_ACCESS"
+        }
+    ],
+    "id": '${MONITOR_OPS_TEAM_ID}',
+    "name": "Monitor Operations",
+    "theme": "#7BB0B2",
+    "defaultTeamRole": "ROLE_TEAM_STANDARD",
+    "description": "Immutable Monitor team with full visibility",
+    "show": "host",
+    "searchFilter": null,
+    "default": true,
+    "immutable": true,
+    "filter": null,
+    "namespaceFilters": {
+        "ibmPlatformMetrics": null,
+        "prometheusRemoteWrite": null
+    },
+    "canUseRapidResponse": false,
+    "canUseSysdigCapture": true,
+    "canUseAgentCli": true,
+    "canUseCustomEvents": true,
+    "canUseAwsMetrics": true,
+    "canUseBeaconMetrics": true,
+    "products": [
+        "SDC"
+    ],
+    "origin": "SYSDIG",
+    "entryPoint": {
+        "module": "Explore"
+    },
+    "zoneIds": [],
+    "allZones": false
+}' \
+${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
 | jq > /dev/null
