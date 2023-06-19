@@ -91,58 +91,43 @@ curl -s -k -X POST \
 ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/feature/status \
 | jq > /dev/null
 
-# TODO: get id of monitor operations team
-MONITOR_OPS_TEAM_ID=10018845
-
 # get user id
 SPA_USER_ID=$(cat  $WORK_DIR/account.json | jq .user.id)
 
-# add user to Monitor Operations team
-curl -k -X PUT \
+
+# TODO: get id of monitor operations team
+MONITOR_OPS_TEAM_ID=10018845
+
+# get monitor operations team
+curl -s -k -X GET \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
---data-binary '{
-    "userRoles": [
-        {
-            "teamId": '${MONITOR_OPS_TEAM_ID}',
-            "teamName": "Monitor Operations",
-            "teamTheme": "#7BB0B2",
-            "userId": '${SPA_USER_ID}',
-            "userName": "'${SPA_USER}'",
-            "role": "ROLE_TEAM_STANDARD",
-            "admin": false,
-            "removalWarning": "REVOKE_PRODUCT_ACCESS"
-        }
-    ],
-    "id": '${MONITOR_OPS_TEAM_ID}',
-    "name": "Monitor Operations",
-    "theme": "#7BB0B2",
-    "defaultTeamRole": "ROLE_TEAM_STANDARD",
-    "description": "Immutable Monitor team with full visibility",
-    "show": "host",
-    "searchFilter": null,
-    "default": true,
-    "immutable": true,
-    "filter": null,
-    "namespaceFilters": {
-        "ibmPlatformMetrics": null,
-        "prometheusRemoteWrite": null
-    },
-    "canUseRapidResponse": false,
-    "canUseSysdigCapture": true,
-    "canUseAgentCli": true,
-    "canUseCustomEvents": true,
-    "canUseAwsMetrics": true,
-    "canUseBeaconMetrics": true,
-    "products": [
-        "SDC"
-    ],
-    "origin": "SYSDIG",
-    "entryPoint": {
-        "module": "Explore"
-    },
-    "zoneIds": [],
-    "allZones": false
-}' \
+${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
+| jq > $WORK_DIR/monitor-operations-team.json
+
+# edits
+#   update version
+jq '.team.version += 1' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+# add new user to group
+jq '.team.userRoles += [{
+        "teamId": '${MONITOR_OPS_TEAM_ID}',
+        "teamName": "Monitor Operations",
+        "teamTheme": "#7BB0B2",
+        "userId": '${SPA_USER_ID}',
+        "userName": "'${SPA_USER}'",
+        "role": "ROLE_TEAM_STANDARD",
+        "admin": false,
+        "removalWarning": "REVOKE_PRODUCT_ACCESS"
+    }]' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+        
+
+# new status for Monitor Operations team
+curl -s -k -X PUT \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
+-d @$WORK_DIR/monitor-operations-team.json \
 ${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
 | jq > /dev/null
