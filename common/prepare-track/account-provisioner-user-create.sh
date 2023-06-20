@@ -46,14 +46,13 @@ echo "${ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY}" > $WORK_DIR/ACCOUNT_PROVISIONER_A
 echo "${ACCOUNT_PROVISIONER_REGION_NUMBER}" > $WORK_DIR/ACCOUNT_PROVISIONER_REGION # check region ids in init.sh
 
 # this will be moved into init.sh
-apt install -y wamerican
-WORK_DIR=/opt/sysdig
+apt install -y wamerican </dev/null
 cp /usr/share/dict/words /tmp/dict
 awk '!/\x27/' /tmp/dict > temp && mv temp /tmp/dict
 awk '!/[A-Z]/'   /tmp/dict > temp && mv temp /tmp/dict
 awk '/[a-z]/'   /tmp/dict > temp && mv temp /tmp/dict
 sed -i 'y/āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜĀÁǍÀĒÉĚÈĪÍǏÌŌÓǑÒŪÚǓÙǕǗǙǛ/aaaaeeeeiiiioooouuuuuuuuAAAAEEEEIIIIOOOOUUUUUUUU/' /tmp/dict
-shuf -n2 /tmp/dict | cut -d$'\t' -f1 | tr -s "\n" "_" | echo $(</dev/stdin)"student@sysdigtraining.com" > $WORK_DIR/ACCOUNT_PROVISIONED_USER
+shuf -n2 /tmp/dict | cut -d$'\t' -f1 | tr -s "\n" "_" | echo $(</dev/stdin)"student@sysdigtraining.com" > /opt/sysdig/ACCOUNT_PROVISIONED_USER
 
 # define new user creds, and feed it to instruqt lab as an agent var
 SPA_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
@@ -95,10 +94,10 @@ ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/feature/status \
 SPA_USER_ID=$(cat  $WORK_DIR/account.json | jq .user.id)
 
 
-# TODO: get id of monitor operations team
+# TODO: get monitor operations team ID
 MONITOR_OPS_TEAM_ID=10018845
 
-# get monitor operations team
+# get monitor operations team info
 curl -s -k -X GET \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
@@ -106,12 +105,56 @@ ${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
 | jq > $WORK_DIR/monitor-operations-team.json
 
 # edits
-#   update version
-jq '.team.version += 1' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+#   remove team, get all other info
+jq '.team' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
 rm "$WORK_DIR/monitor-operations-team.json.tmp"
+
+#   update version
+jq '.version += 1' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+
+# remove all users that are role ROLE_TEAM_MANAGER
+jq '.userRoles[] |= del(. | select(.role == "ROLE_TEAM_MANAGER"))' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+
+# clean nulls in .userRoles[]
+# del(.[][] | nulls)
+jq '.userRoles |= del(.[] | nulls)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+
+# remove fields         "properties" "customerId" "dateCreated" "lastUpdated" "userCount"
+jq '. |= del(properties)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+jq '. |= del(customerId)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+jq '. |= del(dateCreated)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+jq '. |= del(lastUpdated)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+jq '. |= del(userCount)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+
+# add fields   "searchFilter" "filter"
+jq --argjson var null '. + {searchFilter: $var}' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+jq --argjson var null '. + {filter: $var}' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+
 # add new user to group
-jq '.team.userRoles += [{
+# this is not working, we should remove existing users (account managers) and push only the new ones. 
+# the get is returning account_managers
+jq '.userRoles |= .[{
         "teamId": '${MONITOR_OPS_TEAM_ID}',
         "teamName": "Monitor Operations",
         "teamTheme": "#7BB0B2",
@@ -122,7 +165,8 @@ jq '.team.userRoles += [{
         "removalWarning": "REVOKE_PRODUCT_ACCESS"
     }]' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-        
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+
 
 # new status for Monitor Operations team
 curl -s -k -X PUT \
