@@ -34,8 +34,10 @@ else
     ACCOUNT_PROVISIONER_REGION_NUMBER=$6
 fi
 
+TRACK_DIR=/root/prepare-track
 WORK_DIR=/opt/sysdig
 mkdir -p $WORK_DIR
+mkdir -p $TRACK_DIR
 
 # persist values
 echo "${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" > $WORK_DIR/ACCOUNT_PROVISIONER_MONITOR_API_TOKEN
@@ -45,7 +47,7 @@ echo "${ACCOUNT_PROVISIONER_SECURE_API_URL}" > $WORK_DIR/ACCOUNT_PROVISIONER_SEC
 echo "${ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY}" > $WORK_DIR/ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY
 echo "${ACCOUNT_PROVISIONER_REGION_NUMBER}" > $WORK_DIR/ACCOUNT_PROVISIONER_REGION # check region ids in init.sh
 
-source $TRACK_DIR/lab_random_string_id.sh
+source $WORK_DIR/lab_random_string_id.sh
 
 # define new user creds, and feed it to instruqt lab as an agent var
 WORK_DIR=/opt/sysdig
