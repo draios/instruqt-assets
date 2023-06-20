@@ -888,8 +888,8 @@ function setup () {
     check_flags $@
 
     intro
-    
-    source ./lab_random_string_id.sh
+
+    source $TRACK_DIR/lab_random_string_id.sh
 
     if [ "${USE_USER_PROVISIONER}" = true ]
     then
