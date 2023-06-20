@@ -55,6 +55,7 @@ sed -i 'y/āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜĀÁǍÀĒÉĚÈĪÍǏ
 shuf -n2 /tmp/dict | cut -d$'\t' -f1 | tr -s "\n" "_" | echo $(</dev/stdin)"student@sysdigtraining.com" > /opt/sysdig/ACCOUNT_PROVISIONED_USER
 
 # define new user creds, and feed it to instruqt lab as an agent var
+WORK_DIR=/opt/sysdig
 SPA_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
 echo ${SPA_PASS}
 echo "${SPA_PASS}" > $WORK_DIR/ACCOUNT_PROVISIONED_PASS
@@ -83,16 +84,51 @@ ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/user/provisioning/ \
 touch $WORK_DIR/user_provisioned_COMPLETED
 
 # disable onboarding, just in case someone enables it
+# this is not working today, always return "onboardingEnabled":true (reported)
+# curl -s -k -X POST \
+# -H "Content-Type: application/json" \
+# -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}" \
+# --data-binary '{
+#     "onboardingEnabled":false,
+#     "newOnboardingWizard":false,
+#     "falcoCloudEnabled":false,
+#     "falcoCloudBetaFlows":false,
+#     "onboardingSkipped":false,
+#     "oktaEnabled":false}' \
+# ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/feature/status \
+# | jq > /dev/null
+
+# get user id and API token
+SPA_USER_ID=$(cat  $WORK_DIR/account.json | jq .user.id)
+SPA_USER_API_TOKEN=$(cat  $WORK_DIR/account.json | jq -r  .token.key)
+
+# disable onboarding for this particular user
 curl -s -k -X POST \
 -H "Content-Type: application/json" \
--H "Authorization: Bearer ${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}" \
---data-binary '{ "onboardingEnabled": false }' \
-${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/feature/status \
+-H "Authorization: Bearer ${SPA_USER_API_TOKEN}" \
+--data-binary '[
+  {
+    "id": "additionalEnvironments",
+    "displayQuestion": "What are all the environments your company has?",
+    "choices": []
+  },
+  {
+    "id": "iacManifests",
+    "displayQuestion": "Where do you store your Infrastructure as Code manifests?",
+    "choices": []
+  },
+  {
+    "id": "cicdTool",
+    "displayQuestion": "What are your CI/CD tools?",
+    "choices": []
+  },
+  {
+    "id": "notificationChannels",
+    "displayQuestion": "How do you want to be notified outside of Sysdig?",
+    "choices": []
+  }
+]' ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/userProfile/questionnaire \
 | jq > /dev/null
-
-# get user id
-SPA_USER_ID=$(cat  $WORK_DIR/account.json | jq .user.id)
-
 
 # TODO: get monitor operations team ID
 MONITOR_OPS_TEAM_ID=10018845
@@ -111,9 +147,9 @@ cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-te
 rm "$WORK_DIR/monitor-operations-team.json.tmp"
 
 #   update version
-jq '.version += 1' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
+# jq '.version += 1' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+# cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+# rm "$WORK_DIR/monitor-operations-team.json.tmp"
 
 # remove all users that are role ROLE_TEAM_MANAGER
 jq '.userRoles[] |= del(. | select(.role == "ROLE_TEAM_MANAGER"))' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
@@ -127,19 +163,19 @@ cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-te
 rm "$WORK_DIR/monitor-operations-team.json.tmp"
 
 # remove fields         "properties" "customerId" "dateCreated" "lastUpdated" "userCount"
-jq '. |= del(properties)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+jq '. |= del(.properties)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
 rm "$WORK_DIR/monitor-operations-team.json.tmp"
-jq '. |= del(customerId)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+jq '. |= del(.customerId)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
 rm "$WORK_DIR/monitor-operations-team.json.tmp"
-jq '. |= del(dateCreated)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+jq '. |= del(.dateCreated)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
 rm "$WORK_DIR/monitor-operations-team.json.tmp"
-jq '. |= del(lastUpdated)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+jq '. |= del(.lastUpdated)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
 rm "$WORK_DIR/monitor-operations-team.json.tmp"
-jq '. |= del(userCount)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+jq '. |= del(.userCount)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
 rm "$WORK_DIR/monitor-operations-team.json.tmp"
 
@@ -154,21 +190,19 @@ rm "$WORK_DIR/monitor-operations-team.json.tmp"
 # add new user to group
 # this is not working, we should remove existing users (account managers) and push only the new ones. 
 # the get is returning account_managers
-jq '.userRoles |= .[{
+jq '.userRoles[.userRoles| length] |= . + {
         "teamId": '${MONITOR_OPS_TEAM_ID}',
         "teamName": "Monitor Operations",
         "teamTheme": "#7BB0B2",
         "userId": '${SPA_USER_ID}',
         "userName": "'${SPA_USER}'",
-        "role": "ROLE_TEAM_STANDARD",
-        "admin": false,
-        "removalWarning": "REVOKE_PRODUCT_ACCESS"
-    }]' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+        "role": "ROLE_TEAM_STANDARD"
+    }' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
 rm "$WORK_DIR/monitor-operations-team.json.tmp"
 
 
-# new status for Monitor Operations team
+# update Monitor Operations team with new user assigned
 curl -s -k -X PUT \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
