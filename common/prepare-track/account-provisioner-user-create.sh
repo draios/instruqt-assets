@@ -45,15 +45,6 @@ echo "${ACCOUNT_PROVISIONER_SECURE_API_URL}" > $WORK_DIR/ACCOUNT_PROVISIONER_SEC
 echo "${ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY}" > $WORK_DIR/ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY
 echo "${ACCOUNT_PROVISIONER_REGION_NUMBER}" > $WORK_DIR/ACCOUNT_PROVISIONER_REGION # check region ids in init.sh
 
-# this will be moved into init.sh
-apt install -y wamerican </dev/null
-cp /usr/share/dict/words /tmp/dict
-awk '!/\x27/' /tmp/dict > temp && mv temp /tmp/dict
-awk '!/[A-Z]/'   /tmp/dict > temp && mv temp /tmp/dict
-awk '/[a-z]/'   /tmp/dict > temp && mv temp /tmp/dict
-sed -i 'y/āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜĀÁǍÀĒÉĚÈĪÍǏÌŌÓǑÒŪÚǓÙǕǗǙǛ/aaaaeeeeiiiioooouuuuuuuuAAAAEEEEIIIIOOOOUUUUUUUU/' /tmp/dict
-shuf -n2 /tmp/dict | cut -d$'\t' -f1 | tr -s "\n" "_" | echo $(</dev/stdin)"student@sysdigtraining.com" > /opt/sysdig/ACCOUNT_PROVISIONED_USER
-
 # define new user creds, and feed it to instruqt lab as an agent var
 WORK_DIR=/opt/sysdig
 SPA_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
