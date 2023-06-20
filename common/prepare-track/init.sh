@@ -436,24 +436,12 @@ function intro () {
     echo "----------------------------------------------------------"
 }
 
-# this is used as a common string for user and cluster name in the lab session
-function generate_random_id () {
-    apt install -y wamerican </dev/null
-    cp /usr/share/dict/words /tmp/dict
-    awk '!/\x27/' /tmp/dict > temp && mv temp /tmp/dict
-    awk '!/[A-Z]/'   /tmp/dict > temp && mv temp /tmp/dict
-    awk '/[a-z]/'   /tmp/dict > temp && mv temp /tmp/dict
-    sed -i 'y/āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜĀÁǍÀĒÉĚÈĪÍǏÌŌÓǑÒŪÚǓÙǕǗǙǛ/aaaaeeeeiiiioooouuuuuuuuAAAAEEEEIIIIOOOOUUUUUUUU/' /tmp/dict
-    shuf -n2 /tmp/dict | cut -d$'\t' -f1 | tr -s "\n" "_" | echo $(</dev/stdin)"student@sysdigtraining.com" > /opt/sysdig/ACCOUNT_PROVISIONED_USER
-
-    echo "Generating random user string from dictionary: "$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER | sed -r 's/@sysdigtraining.com//')
-
-}
 
 ##
 # Ask for Agent Key and deploy a Sysdig Agent.
 ##
 function deploy_agent () {
+
     AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
     RANDOM_CLUSTER_ID=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER | sed -r 's/@sysdigtraining.com//' | echo $(</dev/stdin)"_cluster")
     echo ${AGENT_DEPLOY_DATE} > $WORK_DIR/agent_deploy_date
@@ -900,6 +888,8 @@ function setup () {
     check_flags $@
 
     intro
+    
+    source ./lab_random_string_id.sh
 
     if [ "${USE_USER_PROVISIONER}" = true ]
     then
