@@ -3,8 +3,6 @@
 # this is used as a common string for user and cluster name in the lab session
 ##
 
-set -euxo pipefail
-
 function generate_random_id () {
 
     if [ ! -f $WORK_DIR/random_string_OK ] # random_id not set
