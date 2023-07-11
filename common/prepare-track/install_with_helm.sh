@@ -21,12 +21,16 @@ if [ "$USE_NODE_ANALYZER" = true ]
 then
     HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=true \
     --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
-    --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.containerdSocketPath="unix:///run/k3s/containerd/containerd.sock" \
-    --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].name=socketpath \
-    --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].hostPath.path=/run/k3s/containerd/containerd.sock \
-    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].name=socketpath \
-    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].mountPath=/var/run/containerd/containerd.sock \
     --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.deploy=true $HELM_OPTS"
+
+    if [ "$USE_K8S" = false ]
+    then
+        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.containerdSocketPath="unix:///run/k3s/containerd/containerd.sock" \
+        --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].name=socketpath \
+        --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].hostPath.path=/run/k3s/containerd/containerd.sock \
+        --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].name=socketpath \
+        --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].mountPath=/var/run/containerd/containerd.sock $HELM_OPTS"
+    fi
 else
     HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=false $HELM_OPTS"
 fi
@@ -57,6 +61,11 @@ then
     --set rapidResponse.rapidResponse.passphrase=training_secret_passphrase $HELM_OPTS"
 fi
 
+if [ "$USE_K8S" = false ]
+then
+    HELM_OPTS="--set agent.sysdig.settings.cri.socket_path=$SOCKET_PATH $HELM_OPTS"
+fi
+
 # echo "Deploying Sysdig Agent with Helm"
 kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
 helm install sysdig-agent --namespace sysdig-agent \
@@ -68,7 +77,6 @@ helm install sysdig-agent --namespace sysdig-agent \
     --set agent.resources.requests.memory=1024Mi \
     --set agent.resources.limits.cpu=2 \
     --set agent.resources.limits.memory=2048Mi \
-    --set agent.sysdig.settings.cri.socket_path=$SOCKET_PATH \
     --set agent.sysdig.settings.drift_killer.enabled=true \
     -f ${AGENT_CONF_DIR}/values.yaml \
     ${HELM_OPTS} \

@@ -39,6 +39,7 @@ USE_KSPM=false
 USE_PROMETHEUS=false
 USE_AUDIT_LOG=false
 USE_RAPID_RESPONSE=false
+USE_K8S=false
 USE_CLOUD=false
 USE_CLOUD_SCAN_ENGINE=false
 USE_REGION_CLOUD=false
@@ -404,7 +405,7 @@ function intro () {
     if [ "$USE_KSPM" == true ]; then
       echo "    - Enable KSPM."
     fi
-    
+
     if [ "$USE_RAPID_RESPONSE" == true ]; then
       echo "    - Enable Rapid Response."
     fi
@@ -426,17 +427,23 @@ function intro () {
       echo "    - Deploys the Image Scanner for Cloud Registries."
     fi
 
+    if [ "$USE_K8S" == true ]; then
+      echo "    - Customize Helm installer for kubeadm K8s cluster."
+    fi
+
     echo "  Follow the instructions below."
     echo
     echo "----------------------------------------------------------"
 }
 
+
 ##
 # Ask for Agent Key and deploy a Sysdig Agent.
 ##
 function deploy_agent () {
+
     AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
-    RANDOM_CLUSTER_ID=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 5 ; echo '')
+    RANDOM_CLUSTER_ID=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER | sed -r 's/@sysdigtraining.com//' | echo $(</dev/stdin)"_cluster")
     echo ${AGENT_DEPLOY_DATE} > $WORK_DIR/agent_deploy_date
     echo ${RANDOM_CLUSTER_ID} > $WORK_DIR/agent_cluster_id
     
@@ -478,9 +485,10 @@ function test_agent () {
         case "$INSTALL_WITH" in
             helm)
                 ## These checks aren't consistent
-                #kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep -q "${CONNECTED_MSG}" && connected=true
-                #FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
+                #kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 | grep "cm_collector" | grep -q "Processing messages" && connected=true
                 kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=300s && connected=true
+                FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
+                
                 ;;
             docker)
                 ### Todo: docker should check the existence of /opt/draios/logs/running <- leveraged by our kubernetes health check and is only created when the agent is officially connected to the backend
@@ -636,18 +644,18 @@ function test_cloud_connector () {
             if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID}" ]]
             then 
                 # the account_id matches
-                LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f1) # extract date
-                [[ $LAST_SEEN_DATE == "null" ]] && LAST_SEEN_DATE_EPOCH=0 || LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
+                #LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f1) # extract date
+                #[[ $LAST_SEEN_DATE == "null" ]] && LAST_SEEN_DATE_EPOCH=0 || LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
 
                 # is this account date_last_seen value greater than the deployment_date in this script?
                 # ^ this means, we want the cloud account to be active now
                 # Instruqt reuses the accounts, so we don't want a false positive for reusing an account
-                if [[ "${LAST_SEEN_DATE_EPOCH}" > "${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}" ]]
-                then
-                    echo "    Found cloud account: $line"
-                    connected=true
-                    break
-                fi
+                #if [[ "${LAST_SEEN_DATE_EPOCH}" > "${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}" ]]
+                #then
+                echo "    Found cloud account: $line"
+                connected=true
+                break
+                #fi
             fi
         done < .cloudProvidersLastSeen
         
@@ -751,6 +759,7 @@ function help () {
     echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
     echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account."
     echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
+    echo "  -8, --kube-adm              Customize installer for kubeadm k8s cluster"
     echo
     echo
     echo "ENVIRONMENT VARIABLES:"
@@ -824,6 +833,9 @@ function check_flags () {
             --vuln-management | -v)
                 export USE_CLOUD_SCAN_ENGINE=true
                 ;;
+            --kube-adm | -8)
+                export USE_K8S=true
+                ;;
             --help | -h)
                 help
                 exit 0
@@ -837,7 +849,7 @@ function check_flags () {
         shift
     done
 
-    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ] || [ "$USE_RAPID_RESPONSE" = true ]) && [ "$USE_AGENT" != true ]
+    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ]  || [ "$USE_RAPID_RESPONSE" = true ]  || [ "$USE_K8S" = true ]) && [ "$USE_AGENT" != true ]
     then
         echo "ERROR: Options only available with -a/--agent."
         exit 1
@@ -876,6 +888,8 @@ function setup () {
     check_flags $@
 
     intro
+
+    source $TRACK_DIR/lab_random_string_id.sh
 
     if [ "${USE_USER_PROVISIONER}" = true ]
     then
