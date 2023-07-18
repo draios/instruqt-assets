@@ -631,7 +631,7 @@ function test_cloud_connector () {
         curl -s --header "Content-Type: application/json"   \
         -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
         --request GET \
-        ${SECURE_API_ENDPOINT}/api/cloud/v2/dataSources/accounts\?limit\=50\&offset\=0 \
+        ${SECURE_API_ENDPOINT}/api/cloud/v2/dataSources/accounts\?limit\=5000\&offset\=0 \
         | jq -r '[.[] | {provider: .provider, id: .id, alias: .alias, lastSeen: .cloudConnectorLastSeenAt}] | sort_by(.lastSeen) | reverse | .[] | "\(.provider) \(.id) \(.alias) \(.lastSeen)"' \
         | cut -f1 -d"." \
         | awk ' { t = $1; $1 = $(NF); $(NF) = t; print; } ' \
