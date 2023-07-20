@@ -35,7 +35,7 @@ else
 fi
 
 WORK_DIR=/opt/sysdig
-TRACK_DIR=/tmp/prepare-track
+TRACK_DIR=/tmp/instruqt-assets/common/prepare-track
 mkdir -p $WORK_DIR
 mkdir -p $TRACK_DIR
 
