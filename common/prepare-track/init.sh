@@ -18,7 +18,7 @@ F_CYAN='\e[36m'
 F_CLEAR='\e[0m'
 
 WORK_DIR=/opt/sysdig
-TRACK_DIR=/root/prepare-track
+TRACK_DIR=/tmp/instruqt-assets/common/prepare-track
 AGENT_CONF_DIR=/root/sysdig-agent
 
 
