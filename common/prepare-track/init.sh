@@ -108,78 +108,94 @@ function set_values () {
     REGION=$1
 
     case $REGION in
-        *"US East (Virginia) - us1"*)
-            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-east-north-virginia
-            MONITOR_URL='https://app.sysdigcloud.com'
-            SECURE_URL='https://secure.sysdig.com'
-            AGENT_COLLECTOR='collector.sysdigcloud.com'
-            NIA_ENDPOINT='https://collector-static.sysdigcloud.com/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=us1
-            MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$SECURE_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+        *"US-South"*)
+            MONITOR_URL='https://us-south.monitoring.cloud.ibm.com'
+            SECURE_URL='https://us-south.security-compliance-secure.cloud.ibm.com'
+            AGENT_COLLECTOR='ingest.us-south.monitoring.cloud.ibm.com'
+            NIA_ENDPOINT='us-south.monitoring.cloud.ibm.com'
+            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
+            SECURE_API_ENDPOINT=$SECURE_URL'/api'
             ;;
 
-        *"US West AWS (Oregon) - us2"*)
-            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-west-oregon
-            DOMAIN='us2.app.sysdig.com'
-            MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR='ingest-'$DOMAIN
-            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=us2
-            MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$MONITOR_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+        *"EU-DE"*)
+            MONITOR_URL='https://eu-de.monitoring.cloud.ibm.com'
+            SECURE_URL='https://eu-de.security-compliance-secure.cloud.ibm.com'
+            AGENT_COLLECTOR='ingest.eu-de.monitoring.cloud.ibm.com'
+            NIA_ENDPOINT='eu-de.monitoring.cloud.ibm.com'
+            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
+            SECURE_API_ENDPOINT=$SECURE_URL'/api'
             ;;
 
-        *"US West GCP (Dallas) - us4"*)
-            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-west-gcp
-            DOMAIN='app.us4.sysdig.com'
-            MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR='ingest.us4.sysdig.com'
-            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=us4
-            MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$MONITOR_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+        *"EU-GB"*)
+            MONITOR_URL='https://eu-gb.monitoring.cloud.ibm.com'
+            SECURE_URL='https://eu-gb.security-compliance-secure.cloud.ibm.com'
+            AGENT_COLLECTOR='ingest.eu-gb.monitoring.cloud.ibm.com'
+            NIA_ENDPOINT='eu-gb.monitoring.cloud.ibm.com'
+            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
+            SECURE_API_ENDPOINT=$SECURE_URL'/api'
             ;;
 
-        *"European Union (Frankfurt) - eu1"*)
-            DOMAIN='eu1.app.sysdig.com'
-            MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR='ingest-'$DOMAIN
-            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=eu1
-            MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$MONITOR_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+        *"JP-OSA"*)
+            MONITOR_URL='https://jp-osa.monitoring.cloud.ibm.com'
+            SECURE_URL='https://jp-osa.security-compliance-secure.cloud.ibm.com'
+            AGENT_COLLECTOR='ingest.jp-osa.monitoring.cloud.ibm.com'
+            NIA_ENDPOINT='jp-osa.monitoring.cloud.ibm.com'
+            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
+            SECURE_API_ENDPOINT=$SECURE_URL'/api'
             ;;
 
-        *"AP Australia (Sydney) - au1"*)
-            DOMAIN='app.au1.sysdig.com'
-            MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR='ingest.au1.sysdig.com'
-            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=au1
-            MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$MONITOR_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+        *"JP-TOK"*)
+            MONITOR_URL='https://jp-tok.monitoring.cloud.ibm.com'
+            SECURE_URL='https://jp-tok.security-compliance-secure.cloud.ibm.com'
+            AGENT_COLLECTOR='ingest.jp-tok.monitoring.cloud.ibm.com'
+            NIA_ENDPOINT='jp-tok.monitoring.cloud.ibm.com'
+            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
+            SECURE_API_ENDPOINT=$SECURE_URL'/api'
             ;;
-        
-        *) # default to us1 values
-            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-east-north-virginia
-            MONITOR_URL='https://app.sysdigcloud.com'
-            SECURE_URL='https://secure.sysdig.com'
-            AGENT_COLLECTOR='collector.sysdigcloud.com'
-            NIA_ENDPOINT='https://collector-static.sysdigcloud.com/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=us1
-            MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$SECURE_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+
+        *"US-East"*)
+            MONITOR_URL='https://us-east.monitoring.cloud.ibm.com'
+            SECURE_URL='https://us-east.security-compliance-secure.cloud.ibm.com'
+            AGENT_COLLECTOR='ingest.us-east.monitoring.cloud.ibm.com'
+            NIA_ENDPOINT='us-east.monitoring.cloud.ibm.com'
+            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
+            SECURE_API_ENDPOINT=$SECURE_URL'/api'
+            ;;
+
+        *"AU-SYD"*)
+            MONITOR_URL='https://au-syd.monitoring.cloud.ibm.com'
+            SECURE_URL='https://au-syd.security-compliance-secure.cloud.ibm.com'
+            AGENT_COLLECTOR='ingest.au-syd.monitoring.cloud.ibm.com'
+            NIA_ENDPOINT='au-syd.monitoring.cloud.ibm.com'
+            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
+            SECURE_API_ENDPOINT=$SECURE_URL'/api'
+            ;;
+
+        *"CA-TOR"*)
+            MONITOR_URL='https://ca-tor.monitoring.cloud.ibm.com'
+            SECURE_URL='https://ca-tor.security-compliance-secure.cloud.ibm.com'
+            AGENT_COLLECTOR='ingest.ca-tor.monitoring.cloud.ibm.com'
+            NIA_ENDPOINT='ca-tor.monitoring.cloud.ibm.com'
+            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
+            SECURE_API_ENDPOINT=$SECURE_URL'/api'
+            ;;
+
+        *"BR-SAO"*)
+            MONITOR_URL='https://br-sao.monitoring.cloud.ibm.com'
+            SECURE_URL='https://br-sao.security-compliance-secure.cloud.ibm.com'
+            AGENT_COLLECTOR='ingest.br-sao.monitoring.cloud.ibm.com'
+            NIA_ENDPOINT='br-sao.monitoring.cloud.ibm.com'
+            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
+            SECURE_API_ENDPOINT=$SECURE_URL'/api'
+            ;;
+
+        *) # default to US South
+            MONITOR_URL='https://us-south.monitoring.cloud.ibm.com'
+            SECURE_URL='https://us-south.security-compliance-secure.cloud.ibm.com'
+            AGENT_COLLECTOR='ingest.us-south.monitoring.cloud.ibm.com'
+            NIA_ENDPOINT='us-south.monitoring.cloud.ibm.com'
+            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
+            SECURE_API_ENDPOINT=$SECURE_URL'/api'
             ;;
     esac
     
@@ -203,11 +219,15 @@ function select_region () {
     echo "Please select your Sysdig SaaS account Region: "
     echo
     echo "   0) Abort install"
-    echo "   1) US East (Virginia) - us1"
-    echo "   2) US West AWS (Oregon) - us2"
-    echo "   3) US West GCP (Dallas) - us4"
-    echo "   4) European Union (Frankfurt) - eu1"
-    echo "   5) AP Australia (Sydney) - au1"
+    echo "   1) US-South"
+    echo "   2) EU-DE"
+    echo "   3) EU-GB"
+    echo "   4) JP-OSA"
+    echo "   5) JP-TOK"
+    echo "   6) US-East"
+    echo "   7) AU-SYD"
+    echo "   8) CA-TOR"
+    echo "   9) BR-SAO"
     echo
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
@@ -224,19 +244,31 @@ function select_region () {
             exit 0
             ;;
         1)
-            REGION="US East (Virginia) - us1"
+            REGION="US-South"
             ;;
         2)
-            REGION="US West AWS (Oregon) - us2"
+            REGION="EU-DE"
             ;;
         3)
-            REGION="US West GCP (Dallas) - us4"
+            REGION="EU-GB"
             ;;
         4)
-            REGION="European Union (Frankfurt) - eu1"
+            REGION="JP-OSA"
             ;;
         5)
-            REGION="AP Australia (Sydney) - au1"
+            REGION="JP-TOK"
+            ;;
+        6)
+            REGION="US-East"
+            ;;
+        7)
+            REGION="AU-SYD"
+            ;;
+        8)
+            REGION="CA-TOR"
+            ;;
+        9)
+            REGION="BR-SAO"
             ;;
         *)
             echo "${REGION_N} is not a valid an option."
@@ -341,22 +373,22 @@ function installation_method () {
 # Deploy a Sysdig Agent.
 #
 # Usage:
-#   install_agent ${CLUSTER_NAME} ${ACCESS_KEY} ${COLLECTOR} ${HELM_REGION_ID}
+#   install_agent ${CLUSTER_NAME} ${ACCESS_KEY} ${AGENT_COLLECTOR} ${NIA_ENDPOINT}
 ##
 function install_agent () {
 
     CLUSTER_NAME=$1
     ACCESS_KEY=$2
-    COLLECTOR=$3
-    HELM_REGION_ID=$4
+    AGENT_COLLECTOR=$3
+    NIA_ENDPOINT=$4
 
     installation_method
 
     if [[ "$INSTALL_WITH" == "helm" ]]
     then
-        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID
+        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $AGENT_COLLECTOR $NIA_ENDPOINT
     else
-        source $TRACK_DIR/install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
+        source $TRACK_DIR/install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $AGENT_COLLECTOR
     fi
 }
 
@@ -379,22 +411,21 @@ function intro () {
     echo "  Welcome! This script configures the lab environment."
     echo "  It will:"
 
-    echo "    - Set up your Sysdig region."
+    echo "    - Set up your IBM region."
 
-    if [ "$USE_USER_PROVISIONER" == true ]; then
-      echo "    - Provisions a user in Sysdig Saas account for this lab."
-    fi
+    # if [ "$USE_USER_PROVISIONER" == true ]; then
+    #   echo "    - Provisions a user in Sysdig Saas account for this lab."
+    # fi
 
     if [ "$USE_MONITOR_API" == true ]; then
-      echo "    - Set up the environment for Monitor API usage."
+      echo "    - Set up the environment for Monitoring API usage."
     fi
 
     if [ "$USE_SECURE_API" == true ]; then
-      echo "    - Set up the environment for Secure API usage."
+      echo "    - Set up the environment for Workload Protection API usage."
     fi
 
     if [ "$USE_AGENT" == true ]; then
-      echo "    - Set up Instruqt tab with access to the Sysdig Dashboard."
       echo "    - Deploy a Sysdig Agent."
     fi
 
@@ -410,16 +441,15 @@ function intro () {
       echo "    - Enable Rapid Response."
     fi
 
-    if [ "$USE_PROMETHEUS" == true ]; then
-      echo "    - Enable the Agent Prometheus collector."
-    fi
+    # if [ "$USE_PROMETHEUS" == true ]; then
+    #   echo "    - Enable the Agent Prometheus collector."
+    # fi
 
     if [ "$USE_AUDIT_LOG" == true ]; then
-      echo "    - Enable K8s audit log support for Sysdig Secure."
+      echo "    - Enable K8s audit log support for Workload Protection."
     fi
 
     if [ "$USE_CLOUD" == true ]; then
-      echo "    - Set up Instruqt tab with access to the Sysdig Dashboard."
       echo "    - Enable CloudVision."
     fi
 
@@ -448,19 +478,19 @@ function deploy_agent () {
     echo ${RANDOM_CLUSTER_ID} > $WORK_DIR/agent_cluster_id
     
     echo "Configuring Sysdig Agent"
-    echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
+    #echo -e "  Visit ${F_BOLD}${F_CYAN}$SECURE_URL/secure/#/data-sources/agents${F_CLEAR} to retrieve your Sysdig Agent Key."
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
     then
         AGENT_ACCESS_KEY=$(echo -n ${TEST_AGENT_ACCESS_KEY} | base64 --decode)
     else
-        read -p "  Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
+        read -p "  Insert your Agent Key: " AGENT_ACCESS_KEY;
     fi
 
     echo -e "  The agent is being installed in the background.\n"
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
-    install_agent ${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID}
+    install_agent ${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${NIA_ENDPOINT}
 }
 
 ##
@@ -750,12 +780,12 @@ function help () {
     echo "  -a, --agent                 Deploy a Sysdig Agent."
     echo "  -c, --cloud                 Set up environment for Sysdig Secure for Cloud."
     echo "  -h, --help                  Show this help."
-    echo "  -m, --monitor               Set up environment for Monitor API usage."
+    echo "  -m, --monitor               Set up environment for Monitoring API usage."
     echo "  -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent."
     echo "  -k, --kspm                  Enable KSPM. Use with -k/--kspm."
-    echo "  -p, --prometheus            Enable Prometheus. Use with -a/--agent."
+    #echo "  -p, --prometheus            Enable Prometheus. Use with -a/--agent."
     echo "  -b, --rapid-response        Enable Rapid Response"
-    echo "  -s, --secure                Set up environment for Secure API usage."
+    echo "  -s, --secure                Set up environment for Workload Protection API usage."
     echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
     echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account."
     echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
