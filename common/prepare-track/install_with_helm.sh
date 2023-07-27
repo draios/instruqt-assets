@@ -12,7 +12,8 @@ OUTPUT=/opt/sysdig/helm_install.out
 SOCKET_PATH=/run/k3s/containerd/containerd.sock
 CLUSTER_NAME=$1
 ACCESS_KEY=$2
-HELM_REGION_ID=$3
+COLLECTOR=$3
+NIA_ENDPOINT=$4
 
 helm repo add sysdig https://charts.sysdig.com >> ${OUTPUT} 2>&1
 helm repo update >> ${OUTPUT} 2>&1
@@ -20,6 +21,7 @@ helm repo update >> ${OUTPUT} 2>&1
 if [ "$USE_NODE_ANALYZER" = true ]
 then
     HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=true \
+    --set nodeAnalyzer.nodeAnalyzer.apiEndpoint=${NIA_ENDPOINT} \
     --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
     --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.deploy=true $HELM_OPTS"
 
@@ -71,7 +73,8 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
 helm install sysdig-agent --namespace sysdig-agent \
     --set global.clusterConfig.name="insq_${CLUSTER_NAME}" \
     --set global.sysdig.accessKey=${ACCESS_KEY} \
-    --set global.sysdig.region=${HELM_REGION_ID} \
+    --set agent.collectorSettings.collectorHost=${COLLECTOR} \
+    --set kspmCollector.apiEndpoint=${NIA_ENDPOINT} \
     --set agent.resourceProfile=custom \
     --set agent.resources.requests.cpu=1 \
     --set agent.resources.requests.memory=1024Mi \
