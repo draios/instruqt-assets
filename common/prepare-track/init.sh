@@ -446,6 +446,8 @@ function deploy_agent () {
     RANDOM_CLUSTER_ID=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER | sed -r 's/@sysdigtraining.com//' | echo $(</dev/stdin)"_cluster")
     echo ${AGENT_DEPLOY_DATE} > $WORK_DIR/agent_deploy_date
     echo ${RANDOM_CLUSTER_ID} > $WORK_DIR/agent_cluster_id
+    # Expose Cluster ID as Instruqt var
+    agent variable set SPA_CLUSTER ${RANDOM_CLUSTER_ID}
     
     echo "Configuring Sysdig Agent"
     echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
@@ -864,8 +866,6 @@ function overwrite_test_creds () {
 
     SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER)
     SPA_PASS=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_PASS)
-    SPA_CLUSTER=$(cat $WORK_DIR/agent_deploy_date)_$(cat $WORK_DIR/agent_cluster_id)
-    agent variable set SPA_CLUSTER ${SPA_CLUSTER}
 
     echo
     echo "----------------------------------------------------------"
