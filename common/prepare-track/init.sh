@@ -864,6 +864,7 @@ function overwrite_test_creds () {
 
     SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER)
     SPA_PASS=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_PASS)
+    SPA_CLUSTER=$(cat $WORK_DIR/agent_deploy_date)_$(cat $WORK_DIR/agent_cluster_id)
 
     echo
     echo "----------------------------------------------------------"
