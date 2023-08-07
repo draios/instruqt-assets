@@ -447,7 +447,7 @@ function deploy_agent () {
     echo ${AGENT_DEPLOY_DATE} > $WORK_DIR/agent_deploy_date
     echo ${RANDOM_CLUSTER_ID} > $WORK_DIR/agent_cluster_id
     # Expose Cluster ID as Instruqt var
-    agent variable set SPA_CLUSTER ${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID}
+    agent variable set SPA_CLUSTER insq_${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID}
     
     echo "Configuring Sysdig Agent"
     echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
