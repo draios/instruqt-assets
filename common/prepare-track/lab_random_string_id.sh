@@ -17,7 +17,7 @@ function generate_random_id () {
         adjective="$(echo -e "${adjectives[$adjectiveIndex]}" | tr -d '[:space:]')"
         noun="$(echo -e "${nouns[$nounIndex]}" | tr -d '[:space:]')"
 
-        echo $adjective-$noun | echo $(</dev/stdin)"_student@sysdigtraining.com" > /opt/sysdig/ACCOUNT_PROVISIONED_USER
+        echo "$adjective"_"$noun" | echo $(</dev/stdin)"_student@sysdigtraining.com" > $WORK_DIR/ACCOUNT_PROVISIONED_USER
         #create flag
         touch $WORK_DIR/random_string_OK
     fi
