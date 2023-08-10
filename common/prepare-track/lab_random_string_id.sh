@@ -2,6 +2,7 @@
 ##
 # this is used as a common string for user and cluster name in the lab session
 ##
+WORK_DIR=/opt/sysdig
 
 function generate_random_id () {
 
@@ -11,7 +12,6 @@ function generate_random_id () {
         mapfile adjectives < ./lab_random_string_id_adjectives
 
         nounIndex=$RANDOM%$((${#nouns[@]}-1))
-
         adjectiveIndex=$RANDOM%$((${#adjectives[@]}-1))
 
         adjective="$(echo -e "${adjectives[$adjectiveIndex]}" | tr -d '[:space:]')"
