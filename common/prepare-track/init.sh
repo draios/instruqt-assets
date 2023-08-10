@@ -436,12 +436,14 @@ function intro () {
     echo "----------------------------------------------------------"
 }
 
+
 ##
 # Ask for Agent Key and deploy a Sysdig Agent.
 ##
 function deploy_agent () {
+
     AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
-    RANDOM_CLUSTER_ID=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 5 ; echo '')
+    RANDOM_CLUSTER_ID=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER | sed -r 's/@sysdigtraining.com//' | echo $(</dev/stdin)"_cluster")
     echo ${AGENT_DEPLOY_DATE} > $WORK_DIR/agent_deploy_date
     echo ${RANDOM_CLUSTER_ID} > $WORK_DIR/agent_cluster_id
     
@@ -629,7 +631,7 @@ function test_cloud_connector () {
         curl -s --header "Content-Type: application/json"   \
         -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
         --request GET \
-        ${SECURE_API_ENDPOINT}/api/cloud/v2/dataSources/accounts\?limit\=50\&offset\=0 \
+        ${SECURE_API_ENDPOINT}/api/cloud/v2/dataSources/accounts\?limit\=5000\&offset\=0 \
         | jq -r '[.[] | {provider: .provider, id: .id, alias: .alias, lastSeen: .cloudConnectorLastSeenAt}] | sort_by(.lastSeen) | reverse | .[] | "\(.provider) \(.id) \(.alias) \(.lastSeen)"' \
         | cut -f1 -d"." \
         | awk ' { t = $1; $1 = $(NF); $(NF) = t; print; } ' \
@@ -886,6 +888,8 @@ function setup () {
     check_flags $@
 
     intro
+
+    source $TRACK_DIR/lab_random_string_id.sh
 
     if [ "${USE_USER_PROVISIONER}" = true ]
     then
