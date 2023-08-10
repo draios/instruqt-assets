@@ -7,8 +7,8 @@ function generate_random_id () {
 
     if [ ! -f $WORK_DIR/random_string_OK ] # random_id not set
     then
-        mapfile nouns < ./nouns.txt
-        mapfile adjectives < ./adjectives.txt
+        mapfile nouns < ./lab_random_string_id_nouns
+        mapfile adjectives < ./lab_random_string_id_adjectives
 
         nounIndex=$RANDOM%$((${#nouns[@]}-1))
 
