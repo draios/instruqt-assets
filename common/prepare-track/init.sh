@@ -113,8 +113,8 @@ function set_values () {
             SECURE_URL='https://us-south.security-compliance-secure.cloud.ibm.com'
             AGENT_COLLECTOR='ingest.us-south.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='us-south.monitoring.cloud.ibm.com'
-            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
-            SECURE_API_ENDPOINT=$SECURE_URL'/api'
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$SECURE_URL
             ;;
 
         *"EU-DE"*)
@@ -122,8 +122,8 @@ function set_values () {
             SECURE_URL='https://eu-de.security-compliance-secure.cloud.ibm.com'
             AGENT_COLLECTOR='ingest.eu-de.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='eu-de.monitoring.cloud.ibm.com'
-            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
-            SECURE_API_ENDPOINT=$SECURE_URL'/api'
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$SECURE_URL
             ;;
 
         *"EU-GB"*)
@@ -131,8 +131,8 @@ function set_values () {
             SECURE_URL='https://eu-gb.security-compliance-secure.cloud.ibm.com'
             AGENT_COLLECTOR='ingest.eu-gb.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='eu-gb.monitoring.cloud.ibm.com'
-            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
-            SECURE_API_ENDPOINT=$SECURE_URL'/api'
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$SECURE_URL
             ;;
 
         *"JP-OSA"*)
@@ -140,8 +140,8 @@ function set_values () {
             SECURE_URL='https://jp-osa.security-compliance-secure.cloud.ibm.com'
             AGENT_COLLECTOR='ingest.jp-osa.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='jp-osa.monitoring.cloud.ibm.com'
-            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
-            SECURE_API_ENDPOINT=$SECURE_URL'/api'
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$SECURE_URL
             ;;
 
         *"JP-TOK"*)
@@ -149,8 +149,8 @@ function set_values () {
             SECURE_URL='https://jp-tok.security-compliance-secure.cloud.ibm.com'
             AGENT_COLLECTOR='ingest.jp-tok.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='jp-tok.monitoring.cloud.ibm.com'
-            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
-            SECURE_API_ENDPOINT=$SECURE_URL'/api'
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$SECURE_URL
             ;;
 
         *"US-East"*)
@@ -158,8 +158,8 @@ function set_values () {
             SECURE_URL='https://us-east.security-compliance-secure.cloud.ibm.com'
             AGENT_COLLECTOR='ingest.us-east.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='us-east.monitoring.cloud.ibm.com'
-            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
-            SECURE_API_ENDPOINT=$SECURE_URL'/api'
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$SECURE_URL
             ;;
 
         *"AU-SYD"*)
@@ -167,8 +167,8 @@ function set_values () {
             SECURE_URL='https://au-syd.security-compliance-secure.cloud.ibm.com'
             AGENT_COLLECTOR='ingest.au-syd.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='au-syd.monitoring.cloud.ibm.com'
-            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
-            SECURE_API_ENDPOINT=$SECURE_URL'/api'
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$SECURE_URL
             ;;
 
         *"CA-TOR"*)
@@ -176,8 +176,8 @@ function set_values () {
             SECURE_URL='https://ca-tor.security-compliance-secure.cloud.ibm.com'
             AGENT_COLLECTOR='ingest.ca-tor.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='ca-tor.monitoring.cloud.ibm.com'
-            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
-            SECURE_API_ENDPOINT=$SECURE_URL'/api'
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$SECURE_URL
             ;;
 
         *"BR-SAO"*)
@@ -185,8 +185,8 @@ function set_values () {
             SECURE_URL='https://br-sao.security-compliance-secure.cloud.ibm.com'
             AGENT_COLLECTOR='ingest.br-sao.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='br-sao.monitoring.cloud.ibm.com'
-            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
-            SECURE_API_ENDPOINT=$SECURE_URL'/api'
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$SECURE_URL
             ;;
 
         *) # default to US South
@@ -194,8 +194,8 @@ function set_values () {
             SECURE_URL='https://us-south.security-compliance-secure.cloud.ibm.com'
             AGENT_COLLECTOR='ingest.us-south.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='us-south.monitoring.cloud.ibm.com'
-            MONITOR_API_ENDPOINT=$MONITOR_URL'/api'
-            SECURE_API_ENDPOINT=$SECURE_URL'/api'
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$SECURE_URL
             ;;
     esac
     
@@ -210,13 +210,13 @@ function set_values () {
 ##
 function select_region () {
     echo
-    echo "Sysdig SaaS Region"
+    echo "IBM Endpoint"
     echo "==========================="
     echo
     echo "Check the docs if more info about regions is required to find what's yours:"
-    echo "   https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges"
+    echo "   https://cloud.ibm.com/docs/workload-protection?topic=workload-protection-endpoints#endpoints_ingestion"
     echo 
-    echo "Please select your Sysdig SaaS account Region: "
+    echo "Please select your IBM account Endpoint: "
     echo
     echo "   0) Abort install"
     echo "   1) US-South"
@@ -295,11 +295,16 @@ function configure_API () {
     PRODUCT_URL=$2
     PRODUCT_API_ENDPOINT=$3
 
-    echo "Configuring Sysdig $PRODUCT API"
+    if [[ ${PRODUCT} == "MONITOR" ]];
+    then
+        echo "Configuring Monitoring API"
+    else
+        echo "Configuring Workload Protection API"
+    fi
 
     if [ -f $WORK_DIR/user_data_${PRODUCT}_API_OK ]
     then
-      echo -e "  Sysdig ${PRODUCT} API already configured.\n"
+      echo -e "  ${PRODUCT} API already configured.\n"
       return
     fi
 
