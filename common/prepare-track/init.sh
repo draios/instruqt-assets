@@ -459,7 +459,7 @@ function deploy_agent () {
         read -p "  Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
     fi
 
-    if [[ "$INSTALL_WITH" == "helm" ]]; # in helm, we deploy by default the AC for k8s audit loging, we need the api
+    if [[ -z "$INSTALL_WITH" ]] && [ `which helm` ]; # in helm, we deploy by default the AC for k8s audit loging, we need the api
     then
         configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
     fi
