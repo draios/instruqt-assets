@@ -21,7 +21,6 @@ WORK_DIR=/opt/sysdig
 TRACK_DIR=/root/prepare-track
 AGENT_CONF_DIR=/root/sysdig-agent
 
-
 ##############################    GLOBAL VARS    ##############################
 INSTALL_WITH=''
 MONITOR_URL=''
@@ -37,12 +36,11 @@ USE_SECURE_API=false
 USE_NODE_ANALYZER=false
 USE_KSPM=false
 USE_PROMETHEUS=false
-USE_AUDIT_LOG=false
 USE_RAPID_RESPONSE=false
 USE_K8S=false
 USE_CLOUD=false
 USE_CLOUD_SCAN_ENGINE=false
-USE_REGION_CLOUD=false
+USE_CLOUD_REGION=false
 USE_AGENT_REGION=false
 
 ##############################    GLOBAL VARS    ##############################
@@ -341,7 +339,7 @@ function installation_method () {
 # Deploy a Sysdig Agent.
 #
 # Usage:
-#   install_agent ${CLUSTER_NAME} ${ACCESS_KEY} ${COLLECTOR} ${HELM_REGION_ID}
+#   install_agent ${CLUSTER_NAME} ${ACCESS_KEY} ${COLLECTOR} ${HELM_REGION_ID} ${SECURE_API_TOKEN}
 ##
 function install_agent () {
 
@@ -349,12 +347,13 @@ function install_agent () {
     ACCESS_KEY=$2
     COLLECTOR=$3
     HELM_REGION_ID=$4
+    SECURE_API_TOKEN=$5
 
     installation_method
 
     if [[ "$INSTALL_WITH" == "helm" ]]
     then
-        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID
+        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID $SECURE_API_TOKEN
     else
         source $TRACK_DIR/install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
     fi
@@ -414,10 +413,6 @@ function intro () {
       echo "    - Enable the Agent Prometheus collector."
     fi
 
-    if [ "$USE_AUDIT_LOG" == true ]; then
-      echo "    - Enable K8s audit log support for Sysdig Secure."
-    fi
-
     if [ "$USE_CLOUD" == true ]; then
       echo "    - Set up Instruqt tab with access to the Sysdig Dashboard."
       echo "    - Enable CloudVision."
@@ -457,10 +452,15 @@ function deploy_agent () {
         read -p "  Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
     fi
 
+    if [[ -z "$INSTALL_WITH" ]] && [ `which helm` ]; # in helm, we deploy by default the AC for k8s audit loging, we need the api
+    then
+        configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
+    fi
+
     echo -e "  The agent is being installed in the background.\n"
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
-    install_agent ${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID}
+    install_agent ${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID} ${SYSDIG_SECURE_API_TOKEN}
 }
 
 ##
@@ -475,8 +475,9 @@ function test_agent () {
     fi
 
     attempt=0
-    MAX_ATTEMPTS=60 # 3 minutes
+    MAX_ATTEMPTS=10 # 0.5 minutes
     CONNECTED_MSG="Sending scraper version"
+    FOUND_COLLECTOR=""
     connected=false
 
     while [ -z ${FOUND_COLLECTOR} ] && [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
@@ -827,9 +828,6 @@ function check_flags () {
             --rapid-response | -b)
                 export USE_RAPID_RESPONSE=true
                 ;;
-            --log | -l)
-                export USE_AUDIT_LOG=true
-                ;;  
             --vuln-management | -v)
                 export USE_CLOUD_SCAN_ENGINE=true
                 ;;

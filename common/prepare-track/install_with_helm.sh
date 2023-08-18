@@ -3,7 +3,7 @@
 # Deploy a Sysdig Agent using Helm.
 #
 # Usage:
-#   install_with_helm.sh ${CLUSTER_NAME} ${ACCESS_KEY} ${HELM_REGION_ID}
+#   install_with_helm.sh ${CLUSTER_NAME} ${ACCESS_KEY} ${HELM_REGION_ID} ${SECURE_API_TOKEN}
 #   (check ./init.sh to learn more about possible HELM_REGION_ID values )
 #
 ##
@@ -13,9 +13,17 @@ SOCKET_PATH=/run/k3s/containerd/containerd.sock
 CLUSTER_NAME=$1
 ACCESS_KEY=$2
 HELM_REGION_ID=$3
+SECURE_API_TOKEN=$4
+HELM_OPTS=""
 
 helm repo add sysdig https://charts.sysdig.com >> ${OUTPUT} 2>&1
 helm repo update >> ${OUTPUT} 2>&1
+
+# ingest k8sAuditDetections via admission controller by default (with AC scanning disabled)
+HELM_OPTS="--set admissionController.enabled=true \
+	--set admissionController.features.k8sAuditDetections=true \
+	--set admissionController.scanner.enabled=false \
+	--set admissionController.sysdig.secureAPIToken=${SECURE_API_TOKEN} ${HELM_OPTS}"
 
 if [ "$USE_NODE_ANALYZER" = true ]
 then
@@ -46,13 +54,6 @@ if [ "$USE_PROMETHEUS" = true ]
 then
     HELM_OPTS="--set agent.prometheus.file=true $HELM_OPTS"
     HELM_OPTS="-f $AGENT_CONF_DIR/prometheus.yaml $HELM_OPTS"
-fi
-
-if [ "$USE_AUDIT_LOG" = true ]
-then
-    HELM_OPTS="--set agent.auditLog.enabled=true $HELM_OPTS"
-    HELM_OPTS="--set agent.auditLog.auditServerUrl=0.0.0.0 $HELM_OPTS"
-    HELM_OPTS="--set agent.auditLog.auditServerPort=7765 $HELM_OPTS"
 fi
 
 if [ "$USE_RAPID_RESPONSE" = true ]
