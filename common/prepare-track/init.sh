@@ -484,6 +484,7 @@ function test_agent () {
     attempt=0
     MAX_ATTEMPTS=10 # 0.5 minutes
     CONNECTED_MSG="Sending scraper version"
+    FOUND_COLLECTOR=""
     connected=false
 
     while [ -z ${FOUND_COLLECTOR} ] && [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
