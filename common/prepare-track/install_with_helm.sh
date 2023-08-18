@@ -14,6 +14,7 @@ CLUSTER_NAME=$1
 ACCESS_KEY=$2
 HELM_REGION_ID=$3
 SECURE_API_TOKEN=$4
+HELM_OPTS=""
 
 helm repo add sysdig https://charts.sysdig.com >> ${OUTPUT} 2>&1
 helm repo update >> ${OUTPUT} 2>&1
@@ -22,7 +23,7 @@ helm repo update >> ${OUTPUT} 2>&1
 HELM_OPTS="--set admissionController.enabled=true \
 	--set admissionController.features.k8sAuditDetections=true \
 	--set admissionController.scanner.enabled=false \
-	--set admissionController.sysdig.secureAPIToken=${SECURE_API_TOKEN}"
+	--set admissionController.sysdig.secureAPIToken=${SECURE_API_TOKEN} ${HELM_OPTS}"
 
 if [ "$USE_NODE_ANALYZER" = true ]
 then
