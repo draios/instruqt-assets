@@ -36,7 +36,6 @@ USE_SECURE_API=false
 USE_NODE_ANALYZER=false
 USE_KSPM=false
 USE_PROMETHEUS=false
-USE_AUDIT_LOG=false
 USE_RAPID_RESPONSE=false
 USE_K8S=false
 USE_CLOUD=false
@@ -412,10 +411,6 @@ function intro () {
 
     if [ "$USE_PROMETHEUS" == true ]; then
       echo "    - Enable the Agent Prometheus collector."
-    fi
-
-    if [ "$USE_AUDIT_LOG" == true ]; then
-      echo "    - Enable K8s audit log support for Sysdig Secure."
     fi
 
     if [ "$USE_CLOUD" == true ]; then
@@ -833,9 +828,6 @@ function check_flags () {
             --rapid-response | -b)
                 export USE_RAPID_RESPONSE=true
                 ;;
-            --log | -l)
-                export USE_AUDIT_LOG=true
-                ;;  
             --vuln-management | -v)
                 export USE_CLOUD_SCAN_ENGINE=true
                 ;;

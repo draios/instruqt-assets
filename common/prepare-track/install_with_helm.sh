@@ -56,13 +56,6 @@ then
     HELM_OPTS="-f $AGENT_CONF_DIR/prometheus.yaml $HELM_OPTS"
 fi
 
-if [ "$USE_AUDIT_LOG" = true ]
-then
-    HELM_OPTS="--set agent.auditLog.enabled=true $HELM_OPTS"
-    HELM_OPTS="--set agent.auditLog.auditServerUrl=0.0.0.0 $HELM_OPTS"
-    HELM_OPTS="--set agent.auditLog.auditServerPort=7765 $HELM_OPTS"
-fi
-
 if [ "$USE_RAPID_RESPONSE" = true ]
 then
     HELM_OPTS="--set rapidResponse.enabled=true \
