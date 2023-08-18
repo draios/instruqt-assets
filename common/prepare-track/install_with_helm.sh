@@ -8,6 +8,8 @@
 #
 ##
 
+set -euxo pipefail
+
 OUTPUT=/opt/sysdig/helm_install.out
 SOCKET_PATH=/run/k3s/containerd/containerd.sock
 CLUSTER_NAME=$1
