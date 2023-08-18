@@ -481,7 +481,7 @@ function test_agent () {
     fi
 
     attempt=0
-    MAX_ATTEMPTS=60 # 3 minutes
+    MAX_ATTEMPTS=10 # 0.5 minutes
     CONNECTED_MSG="Sending scraper version"
     connected=false
 
