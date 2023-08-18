@@ -43,7 +43,7 @@ USE_RAPID_RESPONSE=false
 USE_K8S=false
 USE_CLOUD=false
 USE_CLOUD_SCAN_ENGINE=false
-USE_REGION_CLOUD=false
+USE_CLOUD_REGION=false
 USE_AGENT_REGION=false
 
 ##############################    GLOBAL VARS    ##############################
