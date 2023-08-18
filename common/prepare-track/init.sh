@@ -10,6 +10,7 @@
 
 trap '' 2 # Signal capture quit with Ctrl+C
 
+set -euxo pipefail
 
 ###########################    GLOBAL CONSTANTS    ############################
 F_BOLD='\e[1m'
