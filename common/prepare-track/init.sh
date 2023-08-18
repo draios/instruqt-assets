@@ -21,7 +21,7 @@ F_CLEAR='\e[0m'
 WORK_DIR=/opt/sysdig
 TRACK_DIR=/root/prepare-track
 AGENT_CONF_DIR=/root/sysdig-agent
-
+INSTRUQT_USER_ID=${INSTRUQT_USER_ID}
 
 ##############################    GLOBAL VARS    ##############################
 INSTALL_WITH=''
