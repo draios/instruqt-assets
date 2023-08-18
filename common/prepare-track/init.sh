@@ -341,7 +341,7 @@ function installation_method () {
 # Deploy a Sysdig Agent.
 #
 # Usage:
-#   install_agent ${CLUSTER_NAME} ${ACCESS_KEY} ${COLLECTOR} ${HELM_REGION_ID}
+#   install_agent ${CLUSTER_NAME} ${ACCESS_KEY} ${COLLECTOR} ${HELM_REGION_ID} ${SECURE_API_TOKEN}
 ##
 function install_agent () {
 
@@ -349,12 +349,13 @@ function install_agent () {
     ACCESS_KEY=$2
     COLLECTOR=$3
     HELM_REGION_ID=$4
+    SECURE_API_TOKEN=$5
 
     installation_method
 
     if [[ "$INSTALL_WITH" == "helm" ]]
     then
-        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID
+        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID $SECURE_API_TOKEN
     else
         source $TRACK_DIR/install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
     fi
@@ -457,10 +458,15 @@ function deploy_agent () {
         read -p "  Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
     fi
 
+    if [[ "$INSTALL_WITH" == "helm" ]]; # in helm, we deploy by default the AC for k8s audit loging, we need the api
+    then
+        configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
+    fi
+
     echo -e "  The agent is being installed in the background.\n"
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
-    install_agent ${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID}
+    install_agent ${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID} ${SYSDIG_SECURE_API_TOKEN}
 }
 
 ##

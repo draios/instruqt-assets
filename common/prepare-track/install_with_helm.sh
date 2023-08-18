@@ -3,7 +3,7 @@
 # Deploy a Sysdig Agent using Helm.
 #
 # Usage:
-#   install_with_helm.sh ${CLUSTER_NAME} ${ACCESS_KEY} ${HELM_REGION_ID}
+#   install_with_helm.sh ${CLUSTER_NAME} ${ACCESS_KEY} ${HELM_REGION_ID} ${SECURE_API_TOKEN}
 #   (check ./init.sh to learn more about possible HELM_REGION_ID values )
 #
 ##
@@ -13,9 +13,16 @@ SOCKET_PATH=/run/k3s/containerd/containerd.sock
 CLUSTER_NAME=$1
 ACCESS_KEY=$2
 HELM_REGION_ID=$3
+SECURE_API_TOKEN=$4
 
 helm repo add sysdig https://charts.sysdig.com >> ${OUTPUT} 2>&1
 helm repo update >> ${OUTPUT} 2>&1
+
+# ingest k8sAuditDetections via admission controller by default (with AC scanning disabled)
+HELM_OPTS="--set admissionController.enabled=true \
+	--set admissionController.features.k8sAuditDetections=true \
+	--set admissionController.scanner.enabled=false \
+	--set admissionController.sysdig.secureAPIToken=${SECURE_API_TOKEN}"
 
 if [ "$USE_NODE_ANALYZER" = true ]
 then
