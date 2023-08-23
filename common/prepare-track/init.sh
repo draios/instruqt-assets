@@ -805,9 +805,14 @@ function help () {
 # Check and consume script flags.
 ##
 function check_flags () {
-    while [ ! $# -eq 0 ]
+    while getopts x: flag
     do
-        case "$1" in
+        case "${flag}" in
+            x) # on-prem backend
+                ON_PREM_ENDPOINT=${OPTARG}
+                echo "On Premise backend endpoint: $ON_PREM_ENDPOINT";
+                echo "${ON_PREM_ENDPOINT}" > $WORK_DIR/ON_PREM_ENDPOINT
+                ;;
             --skip-cleanup)
                 SKIP_CLEANUP=true
                 ;;
@@ -853,16 +858,6 @@ function check_flags () {
             --kube-adm | -8)
                 export USE_K8S=true
                 ;;
-            -x) # on-prem backend
-                while getopts x: flag
-                    do
-                    case "${flag}" in
-                        x) ON_PREM_ENDPOINT=${OPTARG};;
-                    esac
-                done
-                echo "On Premise backend endpoint: $ON_PREM_ENDPOINT";
-                echo "${ON_PREM_ENDPOINT}" > $WORK_DIR/ON_PREM_ENDPOINT
-                ;;
             --help | -h)
                 help
                 exit 0
@@ -873,7 +868,6 @@ function check_flags () {
                 exit 1
                 ;;
         esac
-        shift
     done
 
     if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ]  || [ "$USE_RAPID_RESPONSE" = true ]  || [ "$USE_K8S" = true ]) && [ "$USE_AGENT" != true ]
