@@ -21,6 +21,7 @@ helm repo update >> ${OUTPUT} 2>&1
 
 # ingest k8sAuditDetections via admission controller by default (with AC scanning disabled)
 HELM_OPTS="--set admissionController.enabled=true \
+    --set admissionController.verifySSL=false \
 	--set admissionController.features.k8sAuditDetections=true \
 	--set admissionController.scanner.enabled=false \
 	--set admissionController.sysdig.secureAPIToken=${SECURE_API_TOKEN} ${HELM_OPTS}"
@@ -79,6 +80,7 @@ helm install sysdig-agent --namespace sysdig-agent \
     --set agent.resources.limits.cpu=2 \
     --set agent.resources.limits.memory=2048Mi \
     --set agent.sysdig.settings.drift_killer.enabled=true \
+    --set agent.collectorSettings.sslVerifyCertificate=false \
     -f ${AGENT_CONF_DIR}/values.yaml \
     ${HELM_OPTS} \
 sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &
