@@ -808,7 +808,7 @@ function check_flags () {
     while getopts x: flag
     do
         case "${flag}" in
-            x) # on-prem backend
+            -x) # on-prem backend
                 ON_PREM_ENDPOINT=${OPTARG}
                 echo "On Premise backend endpoint: $ON_PREM_ENDPOINT";
                 echo "${ON_PREM_ENDPOINT}" > $WORK_DIR/ON_PREM_ENDPOINT
