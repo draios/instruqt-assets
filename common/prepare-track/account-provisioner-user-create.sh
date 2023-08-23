@@ -13,9 +13,9 @@
 
 set -euxo pipefail
 
-if [ $# -ne 4 ]
+if [ $# -ne 6 ]
   then
-    echo "$0: Provide 6 arguments: Monitor API token, Monitor API URL, Secure API token, Secure API URL, Agent Key, region number (see init.sh)"
+    echo "$0: Provide 6 arguments: "
     echo "$0: Defaulting to training account."
     
     # parent account data, we create with pablo.lopezzaldivar+training@sysdig.com token
