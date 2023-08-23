@@ -3,7 +3,7 @@
 # Deploy a Sysdig Agent using Helm.
 #
 # Usage:
-#   install_with_helm.sh ${CLUSTER_NAME} ${ACCESS_KEY} ${HELM_REGION_ID} ${SECURE_API_TOKEN}
+#   install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID $SECURE_API_TOKEN $COLLECTOR
 #   (check ./init.sh to learn more about possible HELM_REGION_ID values )
 #
 ##
@@ -14,6 +14,7 @@ CLUSTER_NAME=$1
 ACCESS_KEY=$2
 HELM_REGION_ID=$3
 SECURE_API_TOKEN=$4
+COLLECTOR=$5
 HELM_OPTS=""
 
 helm repo add sysdig https://charts.sysdig.com >> ${OUTPUT} 2>&1
@@ -60,6 +61,7 @@ fi
 if [ "$USE_RAPID_RESPONSE" = true ]
 then
     HELM_OPTS="--set rapidResponse.enabled=true \
+    --set rapidResponse.apiEndpoint=${COLLECTOR} \
     --set rapidResponse.rapidResponse.sslVerifyCertificate=flase \
     --set rapidResponse.rapidResponse.passphrase=training_secret_passphrase $HELM_OPTS"
 fi
@@ -82,6 +84,7 @@ helm install sysdig-agent --namespace sysdig-agent \
     --set agent.resources.limits.memory=2048Mi \
     --set agent.sysdig.settings.drift_killer.enabled=true \
     --set agent.collectorSettings.sslVerifyCertificate=false \
+    --set agent.collectorSettings.collectorHost=${COLLECTOR} \
     -f ${AGENT_CONF_DIR}/values.yaml \
     ${HELM_OPTS} \
 sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &
