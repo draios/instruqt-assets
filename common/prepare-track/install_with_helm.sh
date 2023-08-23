@@ -25,6 +25,7 @@ HELM_OPTS="--set admissionController.enabled=true \
     --set admissionController.verifySSL=false \
 	--set admissionController.features.k8sAuditDetections=true \
 	--set admissionController.scanner.enabled=false \
+    --set admissionController.sysdig.apiEndpoint=${COLLECTOR} \
 	--set admissionController.sysdig.secureAPIToken=${SECURE_API_TOKEN} ${HELM_OPTS}"
 
 if [ "$USE_NODE_ANALYZER" = true ]
