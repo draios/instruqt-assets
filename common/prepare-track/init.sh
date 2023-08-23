@@ -173,7 +173,7 @@ function set_values () {
             DOMAIN='mateo-burillo-aramco-osc-4044.dev.draios.com'
             MONITOR_URL='https://'$DOMAIN
             SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR='ingest.au1.sysdig.com'
+            AGENT_COLLECTOR=$DOMAIN
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
             HELM_REGION_ID=au1
             MONITOR_API_ENDPOINT=$MONITOR_URL
