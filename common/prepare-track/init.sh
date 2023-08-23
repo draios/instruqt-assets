@@ -167,7 +167,20 @@ function set_values () {
             SECURE_API_ENDPOINT=$MONITOR_URL
             PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
-        
+
+        *"On Premises - onprem"*)
+            # hardcoded to our first onprem test env, this envvar (DOMAIN) should be customizable
+            DOMAIN='mateo-burillo-aramco-osc-4044.dev.draios.com'
+            MONITOR_URL='https://'$DOMAIN
+            SECURE_URL=$MONITOR_URL'/secure'
+            AGENT_COLLECTOR='ingest.au1.sysdig.com'
+            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=au1
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$MONITOR_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+            ;;
+
         *) # default to us1 values
             # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-east-north-virginia
             MONITOR_URL='https://app.sysdigcloud.com'
@@ -206,6 +219,7 @@ function select_region () {
     echo "   3) US West GCP (Dallas) - us4"
     echo "   4) European Union (Frankfurt) - eu1"
     echo "   5) AP Australia (Sydney) - au1"
+    echo "   6) On Premises - onprem"
     echo
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
@@ -235,6 +249,9 @@ function select_region () {
             ;;
         5)
             REGION="AP Australia (Sydney) - au1"
+            ;;
+        6)
+            REGION="On Premises - onprem"
             ;;
         *)
             echo "${REGION_N} is not a valid an option."
