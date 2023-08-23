@@ -805,11 +805,12 @@ function help () {
 # Check and consume script flags.
 ##
 function check_flags () {
-    while getopts x: flag
+    while [ ! $# -eq 0 ]
     do
-        case "${flag}" in
+        case "$1" in
             -x) # on-prem backend
-                ON_PREM_ENDPOINT=${OPTARG}
+                shift
+                ON_PREM_ENDPOINT=$1
                 echo "On Premise backend endpoint: $ON_PREM_ENDPOINT";
                 echo "${ON_PREM_ENDPOINT}" > $WORK_DIR/ON_PREM_ENDPOINT
                 ;;
@@ -868,6 +869,7 @@ function check_flags () {
                 exit 1
                 ;;
         esac
+        shift
     done
 
     if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ]  || [ "$USE_RAPID_RESPONSE" = true ]  || [ "$USE_K8S" = true ]) && [ "$USE_AGENT" != true ]
