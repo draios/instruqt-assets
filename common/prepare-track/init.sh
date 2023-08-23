@@ -170,7 +170,8 @@ function set_values () {
 
         *"On Premises - onprem"*)
             # hardcoded to our first onprem test env, this envvar (DOMAIN) should be customizable
-            DOMAIN='mateo-burillo-aramco-osc-4044.dev.draios.com'
+            DOMAIN=$(cat $WORK_DIR/ON_PREM_ENDPOINT)
+            # DOMAIN='mateo-burillo-aramco-osc-4044.dev.draios.com'
             MONITOR_URL='https://'$DOMAIN
             SECURE_URL=$MONITOR_URL'/secure'
             AGENT_COLLECTOR=$DOMAIN
@@ -778,6 +779,7 @@ function help () {
     echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account."
     echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
     echo "  -8, --kube-adm              Customize installer for kubeadm k8s cluster"
+    echo "  -x <on_prem_endpoint>       In case an on-prem backend is used, set here the endpoint value."                     
     echo
     echo
     echo "ENVIRONMENT VARIABLES:"
@@ -850,6 +852,16 @@ function check_flags () {
                 ;;
             --kube-adm | -8)
                 export USE_K8S=true
+                ;;
+            -x) # on-prem backend
+                while getopts x: flag
+                    do
+                    case "${flag}" in
+                        x) ON_PREM_ENDPOINT=${OPTARG};;
+                    esac
+                done
+                echo "On Premise backend endpoint: $ON_PREM_ENDPOINT";
+                echo "${ON_PREM_ENDPOINT}" > $WORK_DIR/ON_PREM_ENDPOINT
                 ;;
             --help | -h)
                 help
