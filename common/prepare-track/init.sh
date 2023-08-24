@@ -18,7 +18,7 @@ F_CYAN='\e[36m'
 F_CLEAR='\e[0m'
 
 WORK_DIR=/opt/sysdig
-TRACK_DIR=/root/prepare-track
+TRACK_DIR=/tmp/instruqt-assets/common/prepare-track
 AGENT_CONF_DIR=/root/sysdig-agent
 
 ##############################    GLOBAL VARS    ##############################
@@ -441,6 +441,8 @@ function deploy_agent () {
     RANDOM_CLUSTER_ID=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER | sed -r 's/@sysdigtraining.com//' | echo $(</dev/stdin)"_cluster")
     echo ${AGENT_DEPLOY_DATE} > $WORK_DIR/agent_deploy_date
     echo ${RANDOM_CLUSTER_ID} > $WORK_DIR/agent_cluster_id
+    # Expose Cluster ID as Instruqt var
+    agent variable set SPA_CLUSTER insq_${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID}
     
     echo "Configuring Sysdig Agent"
     echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
