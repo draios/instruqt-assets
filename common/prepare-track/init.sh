@@ -176,7 +176,7 @@ function set_values () {
             SECURE_URL=$MONITOR_URL'/secure'
             AGENT_COLLECTOR=$DOMAIN
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=au1
+            HELM_REGION_ID=custom
             MONITOR_API_ENDPOINT=$MONITOR_URL
             SECURE_API_ENDPOINT=$MONITOR_URL
             PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
