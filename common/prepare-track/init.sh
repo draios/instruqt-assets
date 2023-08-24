@@ -255,7 +255,13 @@ function select_region () {
             REGION="AP Australia (Sydney) - au1"
             ;;
         6)
-            REGION="On Premises - onprem"
+            if [[ -n "$(cat $WORK_DIR/ON_PREM_ENDPOINT)" ]]
+            then
+                REGION="On Premises - onprem"
+            else
+                echo "${REGION_N} is not a valid an option."
+                select_region
+            fi
             ;;
         *)
             echo "${REGION_N} is not a valid an option."
