@@ -220,7 +220,10 @@ function select_region () {
     echo "   3) US West GCP (Dallas) - us4"
     echo "   4) European Union (Frankfurt) - eu1"
     echo "   5) AP Australia (Sydney) - au1"
-    echo "   6) On Premises - onprem"
+    if [[ -n "$(cat $WORK_DIR/ON_PREM_ENDPOINT)" ]]
+    then
+        echo "   6) On Premises - onprem"
+    fi
     echo
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
