@@ -293,8 +293,9 @@ function configure_API () {
     then
         echo -e "  Visit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
     else
+        dialog --clear
         dialog --title "$TITLE" \
-               --msgbox "  Visit $MONITOR_URL/#/settings/user to retrieve your Sysdig ${PRODUCT} API Token."
+               --msgbox "Visit $MONITOR_URL/#/settings/user to retrieve your Sysdig ${PRODUCT} API Token."
     fi
     varname=${PRODUCT}_API_KEY
 
@@ -483,8 +484,9 @@ function deploy_agent () {
     then
         echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
     else
+        dialog --clear
         dialog --title "$TITLE" \
-               --msgbox "  Visit $MONITOR_URL/#/settings/agentInstallation to retrieve your Sysdig Agent Key."
+               --msgbox "Visit $MONITOR_URL/#/settings/agentInstallation to retrieve your Sysdig Agent Key."
     fi
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
@@ -991,7 +993,8 @@ function setup () {
     # Show ending screen of completion for curses
     if [ "$USE_CURSES" = true ]
     then
-        dialog --infobox "You may now proceed with the lab!" 10 30
+        dialog --clear
+        dialog --msgbox "You may now proceed with the lab!" 10 30
     fi
 }
 
