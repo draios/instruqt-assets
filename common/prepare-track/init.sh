@@ -21,6 +21,8 @@ WORK_DIR=/opt/sysdig
 TRACK_DIR=/tmp/instruqt-assets/common/prepare-track
 AGENT_CONF_DIR=/root/sysdig-agent
 
+TITLE="Sysdig Agent installation"
+
 ##############################    GLOBAL VARS    ##############################
 INSTALL_WITH=''
 MONITOR_URL=''
@@ -42,6 +44,7 @@ USE_CLOUD=false
 USE_CLOUD_SCAN_ENGINE=false
 USE_CLOUD_REGION=false
 USE_AGENT_REGION=false
+USE_CURSES=false
 
 ##############################    GLOBAL VARS    ##############################
 TEST_AGENT_ACCESS_KEY=[REDACTED]
@@ -191,29 +194,46 @@ function set_values () {
 # Prompt user to select agent collector (region).
 ##
 function select_region () {
-    echo
-    echo "Sysdig SaaS Region"
-    echo "==========================="
-    echo
-    echo "Check the docs if more info about regions is required to find what's yours:"
-    echo "   https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges"
-    echo 
-    echo "Please select your Sysdig SaaS account Region: "
-    echo
-    echo "   0) Abort install"
-    echo "   1) US East (Virginia) - us1"
-    echo "   2) US West AWS (Oregon) - us2"
-    echo "   3) US West GCP (Dallas) - us4"
-    echo "   4) European Union (Frankfurt) - eu1"
-    echo "   5) AP Australia (Sydney) - au1"
-    echo
-
-    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
+    if [ "${USE_CURSES}" = false ]
     then
-        REGION_N=${TEST_REGION}
-        echo "   Instruqt test or provided Sysdig SaaS region will be used."
+        echo
+        echo "Sysdig SaaS Region"
+        echo "==========================="
+        echo
+        echo "Check the docs if more info about regions is required to find what's yours:"
+        echo "   https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges"
+        echo 
+        echo "Please select your Sysdig SaaS account Region: "
+        echo
+        echo "   0) Abort install"
+        echo "   1) US East (Virginia) - us1"
+        echo "   2) US West AWS (Oregon) - us2"
+        echo "   3) US West GCP (Dallas) - us4"
+        echo "   4) European Union (Frankfurt) - eu1"
+        echo "   5) AP Australia (Sydney) - au1"
+        echo
+
+        if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
+        then
+            REGION_N=${TEST_REGION}
+            echo "   Instruqt test or provided Sysdig SaaS region will be used."
+        else
+            read -p "   Select Region (type number): "  REGION_N; 
+        fi
     else
-        read -p "   Select Region (type number): "  REGION_N; 
+        REGION_N=$(dialog --title "$TITLE" \
+                          --menu "Select your Sysdig Agent region:" 13 42 5 \
+                          1 'US East (Virginia) - us1' \
+                          2 'US West AWS (Oregon) - us2' \
+                          3 'US West GCP (Dallas) - us4' \
+                          4 'European Union (Frankfurt) - eu1' \
+                          5 'AP Australia (Sydney) - au1' \
+                          3>&1 1>&2 2>&3 3>&-
+                  )
+        if [ $? -ne 0 ]
+        then
+            REGION_N=0
+        fi
     fi
 
     case $REGION_N in
@@ -269,7 +289,13 @@ function configure_API () {
       return
     fi
 
-    echo -e "  Visit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
+    if [ "$USE_CURSES" = false ]
+    then
+        echo -e "  Visit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
+    else
+        dialog --title "$TITLE" \
+               --msgbox "  Visit $MONITOR_URL/#/settings/user to retrieve your Sysdig ${PRODUCT} API Token."
+    fi
     varname=${PRODUCT}_API_KEY
 
     attempt=0
@@ -288,8 +314,14 @@ function configure_API () {
                 API_TOKEN=$(echo -n ${TEST_SECURE_API} | base64 --decode)
             fi
             echo "TEST_${PRODUCT}_API_TOKEN=${API_TOKEN}"
-        else
+        elif [ "$USE_CURSES" = false ]
+        then
             read -p "  Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN;
+        else
+            API_TOKEN=$(dialog --title "$TITLE" \
+                               --inputbox "Insert your Sysdig $PRODUCT API Token:" 10 45 \
+                               3>&1 1>&2 2>&3 3>&-
+                       )
         fi
 
         # Test connection
@@ -445,13 +477,27 @@ function deploy_agent () {
     agent variable set SPA_CLUSTER insq_${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID}
     
     echo "Configuring Sysdig Agent"
-    echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
+
+
+    if [ "$USE_CURSES" = false ]
+    then
+        echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
+    else
+        dialog --title "$TITLE" \
+               --msgbox "  Visit $MONITOR_URL/#/settings/agentInstallation to retrieve your Sysdig Agent Key."
+    fi
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
     then
         AGENT_ACCESS_KEY=$(echo -n ${TEST_AGENT_ACCESS_KEY} | base64 --decode)
-    else
+    elif [ "$USE_CURSES" = false ]
+    then
         read -p "  Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
+    else
+        AGENT_ACCESS_KEY=$(dialog --title "$TITLE" \
+                                  --inputbox "Insert your Sysdig Agent key:" 10 45 \
+                                  3>&1 1>&2 2>&3 3>&-
+                          )
     fi
 
     if [[ -z "$INSTALL_WITH" ]] && [ `which helm` ]; # in helm, we deploy by default the AC for k8s audit loging, we need the api
@@ -762,6 +808,7 @@ function help () {
     echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
     echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account."
     echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
+    echo "  -x, --use-curses            Use ncurses dialog menus instead of CLI."
     echo "  -8, --kube-adm              Customize installer for kubeadm k8s cluster"
     echo
     echo
@@ -833,6 +880,9 @@ function check_flags () {
             --vuln-management | -v)
                 export USE_CLOUD_SCAN_ENGINE=true
                 ;;
+            --use-curses | -x)
+                export USE_CURSES=true
+                ;;
             --kube-adm | -8)
                 export USE_K8S=true
                 ;;
@@ -887,7 +937,10 @@ function setup () {
 
     check_flags $@
 
-    intro
+    if [ "${USE_CURSES}" = false ]
+    then
+        intro
+    fi
 
     source $TRACK_DIR/lab_random_string_id.sh
 
@@ -934,9 +987,13 @@ function setup () {
     then
         clean_setup
     fi
-    
-}
 
+    # Show ending screen of completion for curses
+    if [ "$USE_CURSES" = true ]
+    then
+        dialog --infobox "You may now proceed with the lab!" 10 30
+    fi
+}
 
 ################################    SCRIPT    #################################
 setup $@
