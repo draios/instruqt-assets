@@ -350,6 +350,7 @@ function configure_API () {
                 API_TOKEN=$(echo -n ${TEST_SECURE_API} | base64 --decode)
             fi
             echo "TEST_${PRODUCT}_API_TOKEN=${API_TOKEN}"
+        elif [ "$USE_CURSES" = false ]
         then
             read -p "  Insert here your $PRODUCT API Token: "  API_TOKEN;
         else
