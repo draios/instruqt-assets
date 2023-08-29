@@ -292,10 +292,6 @@ function configure_API () {
     if [ "$USE_CURSES" = false ]
     then
         echo -e "  Visit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
-    else
-        dialog --clear
-        dialog --title "$TITLE" \
-               --msgbox "Visit $MONITOR_URL/#/settings/user to retrieve your Sysdig ${PRODUCT} API Token."
     fi
     varname=${PRODUCT}_API_KEY
 
@@ -320,7 +316,7 @@ function configure_API () {
             read -p "  Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN;
         else
             API_TOKEN=$(dialog --title "$TITLE" \
-                               --inputbox "Insert your Sysdig $PRODUCT API Token:" 10 45 \
+                               --inputbox "Visit $MONITOR_URL/#/settings/user to retrieve your Sysdig ${PRODUCT} API Token.\n\nInsert your Sysdig $PRODUCT API Token:" 10 60 \
                                3>&1 1>&2 2>&3 3>&-
                        )
         fi
@@ -483,10 +479,6 @@ function deploy_agent () {
     if [ "$USE_CURSES" = false ]
     then
         echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
-    else
-        dialog --clear
-        dialog --title "$TITLE" \
-               --msgbox "Visit $MONITOR_URL/#/settings/agentInstallation to retrieve your Sysdig Agent Key."
     fi
 
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
@@ -497,7 +489,7 @@ function deploy_agent () {
         read -p "  Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
     else
         AGENT_ACCESS_KEY=$(dialog --title "$TITLE" \
-                                  --inputbox "Insert your Sysdig Agent key:" 10 45 \
+                                  --inputbox "Visit $MONITOR_URL/#/settings/agentInstallation to retrieve your Sysdig Agent Key.\n\nInsert your Sysdig Agent key:" 10 60 \
                                   3>&1 1>&2 2>&3 3>&-
                           )
     fi
