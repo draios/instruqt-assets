@@ -112,92 +112,92 @@ function set_values () {
     case $REGION in
         *"US-South"*)
             MONITOR_URL='https://us-south.monitoring.cloud.ibm.com'
-            SECURE_URL='https://us-south.security-compliance-secure.cloud.ibm.com'
+            SECURE_URL='https://us-south.security-compliance-secure.cloud.ibm.com/secure'
             AGENT_COLLECTOR='ingest.us-south.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='us-south.monitoring.cloud.ibm.com'
             MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$SECURE_URL
+            SECURE_API_ENDPOINT='https://us-south.security-compliance-secure.cloud.ibm.com'
             ;;
 
         *"EU-DE"*)
             MONITOR_URL='https://eu-de.monitoring.cloud.ibm.com'
-            SECURE_URL='https://eu-de.security-compliance-secure.cloud.ibm.com'
+            SECURE_URL='https://eu-de.security-compliance-secure.cloud.ibm.com/secure'
             AGENT_COLLECTOR='ingest.eu-de.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='eu-de.monitoring.cloud.ibm.com'
             MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$SECURE_URL
+            SECURE_API_ENDPOINT='https://eu-de.security-compliance-secure.cloud.ibm.com'
             ;;
 
         *"EU-GB"*)
             MONITOR_URL='https://eu-gb.monitoring.cloud.ibm.com'
-            SECURE_URL='https://eu-gb.security-compliance-secure.cloud.ibm.com'
+            SECURE_URL='https://eu-gb.security-compliance-secure.cloud.ibm.com/secure'
             AGENT_COLLECTOR='ingest.eu-gb.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='eu-gb.monitoring.cloud.ibm.com'
             MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$SECURE_URL
+            SECURE_API_ENDPOINT='https://eu-gb.security-compliance-secure.cloud.ibm.com'
             ;;
 
         *"JP-OSA"*)
             MONITOR_URL='https://jp-osa.monitoring.cloud.ibm.com'
-            SECURE_URL='https://jp-osa.security-compliance-secure.cloud.ibm.com'
+            SECURE_URL='https://jp-osa.security-compliance-secure.cloud.ibm.com/secure'
             AGENT_COLLECTOR='ingest.jp-osa.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='jp-osa.monitoring.cloud.ibm.com'
             MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$SECURE_URL
+            SECURE_API_ENDPOINT='https://jp-osa.security-compliance-secure.cloud.ibm.com'
             ;;
 
         *"JP-TOK"*)
             MONITOR_URL='https://jp-tok.monitoring.cloud.ibm.com'
-            SECURE_URL='https://jp-tok.security-compliance-secure.cloud.ibm.com'
+            SECURE_URL='https://jp-tok.security-compliance-secure.cloud.ibm.com/secure'
             AGENT_COLLECTOR='ingest.jp-tok.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='jp-tok.monitoring.cloud.ibm.com'
             MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$SECURE_URL
+            SECURE_API_ENDPOINT='https://jp-tok.security-compliance-secure.cloud.ibm.com'
             ;;
 
         *"US-East"*)
             MONITOR_URL='https://us-east.monitoring.cloud.ibm.com'
-            SECURE_URL='https://us-east.security-compliance-secure.cloud.ibm.com'
+            SECURE_URL='https://us-east.security-compliance-secure.cloud.ibm.com/secure'
             AGENT_COLLECTOR='ingest.us-east.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='us-east.monitoring.cloud.ibm.com'
             MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$SECURE_URL
+            SECURE_API_ENDPOINT='https://us-east.security-compliance-secure.cloud.ibm.com'
             ;;
 
         *"AU-SYD"*)
             MONITOR_URL='https://au-syd.monitoring.cloud.ibm.com'
-            SECURE_URL='https://au-syd.security-compliance-secure.cloud.ibm.com'
+            SECURE_URL='https://au-syd.security-compliance-secure.cloud.ibm.com/secure'
             AGENT_COLLECTOR='ingest.au-syd.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='au-syd.monitoring.cloud.ibm.com'
             MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$SECURE_URL
+            SECURE_API_ENDPOINT='https://au-syd.security-compliance-secure.cloud.ibm.com'
             ;;
 
         *"CA-TOR"*)
             MONITOR_URL='https://ca-tor.monitoring.cloud.ibm.com'
-            SECURE_URL='https://ca-tor.security-compliance-secure.cloud.ibm.com'
+            SECURE_URL='https://ca-tor.security-compliance-secure.cloud.ibm.com/secure'
             AGENT_COLLECTOR='ingest.ca-tor.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='ca-tor.monitoring.cloud.ibm.com'
             MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$SECURE_URL
+            SECURE_API_ENDPOINT='https://ca-tor.security-compliance-secure.cloud.ibm.com'
             ;;
 
         *"BR-SAO"*)
             MONITOR_URL='https://br-sao.monitoring.cloud.ibm.com'
-            SECURE_URL='https://br-sao.security-compliance-secure.cloud.ibm.com'
+            SECURE_URL='https://br-sao.security-compliance-secure.cloud.ibm.com/secure'
             AGENT_COLLECTOR='ingest.br-sao.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='br-sao.monitoring.cloud.ibm.com'
             MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$SECURE_URL
+            SECURE_API_ENDPOINT='https://br-sao.security-compliance-secure.cloud.ibm.com'
             ;;
 
         *) # default to US South
             MONITOR_URL='https://us-south.monitoring.cloud.ibm.com'
-            SECURE_URL='https://us-south.security-compliance-secure.cloud.ibm.com'
+            SECURE_URL='https://us-south.security-compliance-secure.cloud.ibm.com/secure'
             AGENT_COLLECTOR='ingest.us-south.monitoring.cloud.ibm.com'
             NIA_ENDPOINT='us-south.monitoring.cloud.ibm.com'
             MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$SECURE_URL
+            SECURE_API_ENDPOINT='https://us-south.security-compliance-secure.cloud.ibm.com'
             ;;
     esac
     
