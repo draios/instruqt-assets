@@ -316,7 +316,7 @@ function configure_API () {
             read -p "  Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN;
         else
             API_TOKEN=$(dialog --title "$TITLE" \
-                               --inputbox "Visit $MONITOR_URL/#/settings/user to retrieve your Sysdig ${PRODUCT} API Token.\n\nInsert your Sysdig $PRODUCT API Token:" 10 60 \
+                               --inputbox "Visit $MONITOR_URL/#/settings/user to retrieve your Sysdig ${PRODUCT} API Token.\n\n(You can use copy/paste with right click menu)\n\nInsert your Sysdig $PRODUCT API Token:" 10 60 \
                                3>&1 1>&2 2>&3 3>&-
                        )
         fi
@@ -489,7 +489,7 @@ function deploy_agent () {
         read -p "  Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
     else
         AGENT_ACCESS_KEY=$(dialog --title "$TITLE" \
-                                  --inputbox "Visit $MONITOR_URL/#/settings/agentInstallation to retrieve your Sysdig Agent Key.\n\nInsert your Sysdig Agent key:" 10 60 \
+                                  --inputbox "Visit $MONITOR_URL/#/settings/agentInstallation to retrieve your Sysdig Agent Key.\n\n(You can use copy/paste with right click menu)\n\nInsert your Sysdig Agent key:" 10 60 \
                                   3>&1 1>&2 2>&3 3>&-
                           )
     fi
