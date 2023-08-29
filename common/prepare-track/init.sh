@@ -21,6 +21,7 @@ WORK_DIR=/opt/sysdig
 TRACK_DIR=/root/prepare-track
 AGENT_CONF_DIR=/root/sysdig-agent
 
+TITLE="Agent installation"
 
 ##############################    GLOBAL VARS    ##############################
 INSTALL_WITH=''
@@ -44,6 +45,7 @@ USE_CLOUD=false
 USE_CLOUD_SCAN_ENGINE=false
 USE_REGION_CLOUD=false
 USE_AGENT_REGION=false
+USE_CURSES=false
 
 ##############################    GLOBAL VARS    ##############################
 TEST_AGENT_ACCESS_KEY=[REDACTED]
@@ -209,33 +211,54 @@ function set_values () {
 # Prompt user to select agent collector (region).
 ##
 function select_region () {
-    echo
-    echo "IBM Endpoint"
-    echo "==========================="
-    echo
-    echo "Check the docs if more info about regions is required to find what's yours:"
-    echo "   https://cloud.ibm.com/docs/workload-protection?topic=workload-protection-endpoints#endpoints_ingestion"
-    echo 
-    echo "Please select your IBM account Endpoint: "
-    echo
-    echo "   0) Abort install"
-    echo "   1) US-South"
-    echo "   2) EU-DE"
-    echo "   3) EU-GB"
-    echo "   4) JP-OSA"
-    echo "   5) JP-TOK"
-    echo "   6) US-East"
-    echo "   7) AU-SYD"
-    echo "   8) CA-TOR"
-    echo "   9) BR-SAO"
-    echo
-
-    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
+    if [ "${USE_CURSES}" = false ]
     then
-        REGION_N=${TEST_REGION}
-        echo "   Instruqt test or provided Sysdig SaaS region will be used."
+        echo
+        echo "IBM Endpoint"
+        echo "==========================="
+        echo
+        echo "Check the docs if more info about regions is required to find what's yours:"
+        echo "   https://cloud.ibm.com/docs/workload-protection?topic=workload-protection-endpoints#endpoints_ingestion"
+        echo 
+        echo "Please select your IBM account Endpoint: "
+        echo
+        echo "   0) Abort install"
+        echo "   1) US-South"
+        echo "   2) EU-DE"
+        echo "   3) EU-GB"
+        echo "   4) JP-OSA"
+        echo "   5) JP-TOK"
+        echo "   6) US-East"
+        echo "   7) AU-SYD"
+        echo "   8) CA-TOR"
+        echo "   9) BR-SAO"
+        echo
+
+        if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
+        then
+            REGION_N=${TEST_REGION}
+            echo "   Instruqt test or provided Sysdig SaaS region will be used."
+        else
+            read -p "   Select Region (type number): "  REGION_N; 
+        fi
     else
-        read -p "   Select Region (type number): "  REGION_N; 
+        REGION_N=$(dialog --title "$TITLE" \
+                          --menu "Select your Sysdig Agent region:" 13 42 5 \
+                          1 "US-South" \
+                          2 "EU-DE" \
+                          3 "EU-GB" \
+                          4 "JP-OSA" \
+                          5 "JP-TOK" \
+                          6 "US-East" \
+                          7 "AU-SYD" \
+                          8 "CA-TOR" \
+                          9 "BR-SAO" \
+                          3>&1 1>&2 2>&3 3>&-
+                  )
+        if [ $? -ne 0 ]
+        then
+            REGION_N=0
+        fi
     fi
 
     case $REGION_N in
@@ -308,7 +331,7 @@ function configure_API () {
       return
     fi
 
-    echo -e "  Visit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
+    #echo -e "  Visit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
     varname=${PRODUCT}_API_KEY
 
     attempt=0
@@ -327,8 +350,13 @@ function configure_API () {
                 API_TOKEN=$(echo -n ${TEST_SECURE_API} | base64 --decode)
             fi
             echo "TEST_${PRODUCT}_API_TOKEN=${API_TOKEN}"
+        then
+            read -p "  Insert here your $PRODUCT API Token: "  API_TOKEN;
         else
-            read -p "  Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN;
+            API_TOKEN=$(dialog --title "$TITLE" \
+                               --inputbox "Insert your $PRODUCT API Token:" 10 60 \
+                               3>&1 1>&2 2>&3 3>&-
+                       )
         fi
 
         # Test connection
@@ -488,8 +516,14 @@ function deploy_agent () {
     if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
     then
         AGENT_ACCESS_KEY=$(echo -n ${TEST_AGENT_ACCESS_KEY} | base64 --decode)
-    else
+    elif [ "$USE_CURSES" = false ]
+    then
         read -p "  Insert your Agent Key: " AGENT_ACCESS_KEY;
+    else
+        AGENT_ACCESS_KEY=$(dialog --title "$TITLE" \
+                                  --inputbox "Insert your Agent key:" 10 60 \
+                                  3>&1 1>&2 2>&3 3>&-
+                          )
     fi
 
     echo -e "  The agent is being installed in the background.\n"
@@ -794,6 +828,7 @@ function help () {
     echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
     echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account."
     echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
+    echo "  -x, --use-curses            Use ncurses dialog menus instead of CLI."
     echo "  -8, --kube-adm              Customize installer for kubeadm k8s cluster"
     echo
     echo
@@ -868,6 +903,8 @@ function check_flags () {
             --vuln-management | -v)
                 export USE_CLOUD_SCAN_ENGINE=true
                 ;;
+            --use-curses | -x)
+                export USE_CURSES=true
             --kube-adm | -8)
                 export USE_K8S=true
                 ;;
@@ -922,7 +959,10 @@ function setup () {
 
     check_flags $@
 
-    intro
+    if [ "${USE_CURSES}" = false ]
+    then
+        intro
+    fi
 
     source $TRACK_DIR/lab_random_string_id.sh
 
@@ -970,6 +1010,12 @@ function setup () {
         clean_setup
     fi
     
+    # Show ending screen of completion for curses
+    if [ "$USE_CURSES" = true ]
+    then
+        dialog --clear
+        dialog --msgbox "You may now proceed with the lab!" 10 30
+    fi
 }
 
 
