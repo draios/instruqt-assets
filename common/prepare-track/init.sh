@@ -239,11 +239,11 @@ function select_region () {
             REGION_N=${TEST_REGION}
             echo "   Instruqt test or provided Sysdig SaaS region will be used."
         else
-            read -p "   Select Region (type number): "  REGION_N; 
+            read -p "   Select IBM Region (type number): "  REGION_N; 
         fi
     else
         REGION_N=$(dialog --title "$TITLE" \
-                          --menu "Select your Sysdig Agent region:" 13 42 5 \
+                          --menu "Select your IBM region:" 16 42 9 \
                           1 "US-South" \
                           2 "EU-DE" \
                           3 "EU-GB" \
@@ -906,6 +906,7 @@ function check_flags () {
                 ;;
             --use-curses | -x)
                 export USE_CURSES=true
+                ;;
             --kube-adm | -8)
                 export USE_K8S=true
                 ;;
