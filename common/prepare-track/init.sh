@@ -355,7 +355,7 @@ function configure_API () {
             read -p "  Insert here your $PRODUCT API Token: "  API_TOKEN;
         else
             API_TOKEN=$(dialog --title "$TITLE" \
-                               --inputbox "Insert your $PRODUCT API Token:" 10 60 \
+                               --inputbox "(You can use copy/paste with right click menu)\n\nInsert your $PRODUCT API Token:" 10 60 \
                                3>&1 1>&2 2>&3 3>&-
                        )
         fi
@@ -522,7 +522,7 @@ function deploy_agent () {
         read -p "  Insert your Agent Key: " AGENT_ACCESS_KEY;
     else
         AGENT_ACCESS_KEY=$(dialog --title "$TITLE" \
-                                  --inputbox "Insert your Agent key:" 10 60 \
+                                  --inputbox "(You can use copy/paste with right click menu)\n\nInsert your Agent key:" 10 60 \
                                   3>&1 1>&2 2>&3 3>&-
                           )
     fi
