@@ -1011,13 +1011,6 @@ function setup () {
     then
         clean_setup
     fi
-    
-    # Show ending screen of completion for curses
-    if [ "$USE_CURSES" = true ]
-    then
-        dialog --clear
-        dialog --msgbox "You may now proceed with the lab!" 10 30
-    fi
 }
 
 
