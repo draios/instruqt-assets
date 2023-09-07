@@ -18,7 +18,7 @@ F_CYAN='\e[36m'
 F_CLEAR='\e[0m'
 
 WORK_DIR=/opt/sysdig
-TRACK_DIR=/tmp/instruqt-assets/common/prepare-track
+TRACK_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd -P )
 AGENT_CONF_DIR=/root/sysdig-agent
 
 TITLE="Sysdig Agent installation"
