@@ -42,6 +42,7 @@ USE_CLOUD=false
 USE_CLOUD_SCAN_ENGINE=false
 USE_CLOUD_REGION=false
 USE_AGENT_REGION=false
+USE_RUNTIME_VM=false
 
 ##############################    GLOBAL VARS    ##############################
 TEST_AGENT_ACCESS_KEY=ZTRlNDFiMGUtYTg5Yi00YWU4LWJlZjYtMzA4Y2FmZDIwMjAx
@@ -426,6 +427,10 @@ function intro () {
       echo "    - Customize Helm installer for kubeadm K8s cluster."
     fi
 
+    if [ "$USE_RUNTIME_VM" == true ]; then
+      echo "    - Deploy Runtime Scanner. Requires --node-analyzer."
+    fi
+
     echo "  Follow the instructions below."
     echo
     echo "----------------------------------------------------------"
@@ -749,18 +754,19 @@ function help () {
     echo "  --skip-cleanup              Skip script setup clean-up actions."
     echo "  --provision-user            Creates user in Sysdig Saas Training account for use in this lab."
     echo "  -a, --agent                 Deploy a Sysdig Agent."
+    echo "  -b, --rapid-response        Enable Rapid Response"
     echo "  -c, --cloud                 Set up environment for Sysdig Secure for Cloud."
     echo "  -h, --help                  Show this help."
+    echo "  -k, --kspm                  Enable KSPM. Use with -k/--kspm."
     echo "  -m, --monitor               Set up environment for Monitor API usage."
     echo "  -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent."
-    echo "  -k, --kspm                  Enable KSPM. Use with -k/--kspm."
     echo "  -p, --prometheus            Enable Prometheus. Use with -a/--agent."
-    echo "  -b, --rapid-response        Enable Rapid Response"
-    echo "  -s, --secure                Set up environment for Secure API usage."
-    echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
     echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account."
+    echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
+    echo "  -s, --secure                Set up environment for Secure API usage."
     echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
     echo "  -8, --kube-adm              Customize installer for kubeadm k8s cluster"
+    echo "      --runtime-vm            Enable VM Runtime Scanner. Use with --node-analyzer."
     echo
     echo
     echo "ENVIRONMENT VARIABLES:"
@@ -834,6 +840,9 @@ function check_flags () {
             --kube-adm | -8)
                 export USE_K8S=true
                 ;;
+            --runtime-vm)
+                export USE_RUNTIME_VM=true
+                ;;
             --help | -h)
                 help
                 exit 0
@@ -847,11 +856,12 @@ function check_flags () {
         shift
     done
 
-    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ]  || [ "$USE_RAPID_RESPONSE" = true ]  || [ "$USE_K8S" = true ]) && [ "$USE_AGENT" != true ]
+    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ] || [ "$USE_RUNTIME_VM" = true ]  || [ "$USE_RAPID_RESPONSE" = true ]  || [ "$USE_K8S" = true ]) && [ "$USE_AGENT" != true ]
     then
         echo "ERROR: Options only available with -a/--agent."
         exit 1
     fi
+
 }
 
 function overwrite_test_creds () {
