@@ -31,6 +31,11 @@ then
     --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
     --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.deploy=true $HELM_OPTS"
 
+    if [ "$USE_RUNTIME_VM" = true ]
+    then
+        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.runtimeScanner.settings.eveEnabled=true $HELM_OPTS"
+    fi
+
     if [ "$USE_K8S" = false ]
     then
         HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.containerdSocketPath="unix:///run/k3s/containerd/containerd.sock" \
@@ -69,7 +74,7 @@ fi
 
 # echo "Deploying Sysdig Agent with Helm"
 kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
-helm install sysdig-agent --namespace sysdig-agent \
+helm upgrade --install sysdig-agent --namespace sysdig-agent \
     --set global.clusterConfig.name="insq_${CLUSTER_NAME}" \
     --set global.sysdig.accessKey=${ACCESS_KEY} \
     --set global.sysdig.region=${HELM_REGION_ID} \
