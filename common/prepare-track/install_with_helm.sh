@@ -9,12 +9,15 @@
 ##
 
 OUTPUT=/opt/sysdig/helm_install.out
-SOCKET_PATH=/run/k3s/containerd/containerd.sock
+SOCKET_PATH=/var/run/containerd/containerd.sock
 CLUSTER_NAME=$1
 ACCESS_KEY=$2
 HELM_REGION_ID=$3
 SECURE_API_TOKEN=$4
 HELM_OPTS=""
+
+mkdir -p /var/run/containerd
+ln -s /var/run/k3s/containerd/containerd.sock ${SOCKET_PATH}
 
 helm repo add sysdig https://charts.sysdig.com >> ${OUTPUT} 2>&1
 helm repo update >> ${OUTPUT} 2>&1
@@ -31,13 +34,18 @@ then
     --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
     --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.deploy=true $HELM_OPTS"
 
+    if [ "$USE_RUNTIME_VM" = true ]
+    then
+        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.runtimeScanner.settings.eveEnabled=true $HELM_OPTS"
+    fi
+
     if [ "$USE_K8S" = false ]
     then
-        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.containerdSocketPath="unix:///run/k3s/containerd/containerd.sock" \
+        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.containerdSocketPath="unix://${SOCKET_PATH}" \
         --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].name=socketpath \
-        --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].hostPath.path=/run/k3s/containerd/containerd.sock \
+        --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].hostPath.path=${SOCKET_PATH} \
         --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].name=socketpath \
-        --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].mountPath=/var/run/containerd/containerd.sock $HELM_OPTS"
+        --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].mountPath=${SOCKET_PATH} $HELM_OPTS"
     fi
 else
     HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=false $HELM_OPTS"
@@ -62,14 +70,14 @@ then
     --set rapidResponse.rapidResponse.passphrase=training_secret_passphrase $HELM_OPTS"
 fi
 
-if [ "$USE_K8S" = false ]
-then
-    HELM_OPTS="--set agent.sysdig.settings.cri.socket_path=$SOCKET_PATH $HELM_OPTS"
-fi
+# if [ "$USE_K8S" = false ]
+# then
+#     HELM_OPTS="--set agent.sysdig.settings.cri.socket_path=$SOCKET_PATH $HELM_OPTS"
+# fi
 
 # echo "Deploying Sysdig Agent with Helm"
 kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
-helm install sysdig-agent --namespace sysdig-agent \
+helm upgrade --install sysdig-agent --namespace sysdig-agent \
     --set global.clusterConfig.name="insq_${CLUSTER_NAME}" \
     --set global.sysdig.accessKey=${ACCESS_KEY} \
     --set global.sysdig.region=${HELM_REGION_ID} \
