@@ -9,12 +9,15 @@
 ##
 
 OUTPUT=/opt/sysdig/helm_install.out
-SOCKET_PATH=/run/k3s/containerd/containerd.sock
+# SOCKET_PATH=/run/k3s/containerd/containerd.sock
 CLUSTER_NAME=$1
 ACCESS_KEY=$2
 HELM_REGION_ID=$3
 SECURE_API_TOKEN=$4
 HELM_OPTS=""
+
+mkdir -p /var/run/containerd
+ln -s /var/run/k3s/containerd/containerd.sock /var/run/containerd/containerd.sock
 
 helm repo add sysdig https://charts.sysdig.com >> ${OUTPUT} 2>&1
 helm repo update >> ${OUTPUT} 2>&1
@@ -67,10 +70,10 @@ then
     --set rapidResponse.rapidResponse.passphrase=training_secret_passphrase $HELM_OPTS"
 fi
 
-if [ "$USE_K8S" = false ]
-then
-    HELM_OPTS="--set agent.sysdig.settings.cri.socket_path=$SOCKET_PATH $HELM_OPTS"
-fi
+# if [ "$USE_K8S" = false ]
+# then
+#     HELM_OPTS="--set agent.sysdig.settings.cri.socket_path=$SOCKET_PATH $HELM_OPTS"
+# fi
 
 # echo "Deploying Sysdig Agent with Helm"
 kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
