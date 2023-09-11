@@ -84,6 +84,5 @@ helm upgrade --install sysdig-agent --namespace sysdig-agent \
     --set agent.resources.limits.cpu=2 \
     --set agent.resources.limits.memory=2048Mi \
     --set agent.sysdig.settings.drift_killer.enabled=true \
-    -f ${AGENT_CONF_DIR}/values.yaml \
     ${HELM_OPTS} \
 sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &
