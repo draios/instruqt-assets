@@ -41,9 +41,9 @@ then
 
     if [ "$USE_K8S" = false ]
     then
-        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.containerdSocketPath="unix:///run/k3s/containerd/containerd.sock" \
+        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.containerdSocketPath="unix:///var/run/containerd/containerd.sock" \
         --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].name=socketpath \
-        --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].hostPath.path=/run/k3s/containerd/containerd.sock \
+        --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].hostPath.path=/var/run/containerd/containerd.sock \
         --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].name=socketpath \
         --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].mountPath=/var/run/containerd/containerd.sock $HELM_OPTS"
     fi
