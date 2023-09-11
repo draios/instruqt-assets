@@ -9,7 +9,7 @@
 ##
 
 OUTPUT=/opt/sysdig/helm_install.out
-# SOCKET_PATH=/run/k3s/containerd/containerd.sock
+SOCKET_PATH=/var/run/containerd/containerd.sock
 CLUSTER_NAME=$1
 ACCESS_KEY=$2
 HELM_REGION_ID=$3
@@ -17,7 +17,7 @@ SECURE_API_TOKEN=$4
 HELM_OPTS=""
 
 mkdir -p /var/run/containerd
-ln -s /var/run/k3s/containerd/containerd.sock /var/run/containerd/containerd.sock
+ln -s /var/run/k3s/containerd/containerd.sock ${SOCKET_PATH}
 
 helm repo add sysdig https://charts.sysdig.com >> ${OUTPUT} 2>&1
 helm repo update >> ${OUTPUT} 2>&1
@@ -41,11 +41,11 @@ then
 
     if [ "$USE_K8S" = false ]
     then
-        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.containerdSocketPath="unix:///var/run/containerd/containerd.sock" \
+        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.containerdSocketPath="unix://${SOCKET_PATH}" \
         --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].name=socketpath \
-        --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].hostPath.path=/var/run/containerd/containerd.sock \
+        --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].hostPath.path=${SOCKET_PATH} \
         --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].name=socketpath \
-        --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].mountPath=/var/run/containerd/containerd.sock $HELM_OPTS"
+        --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].mountPath=${SOCKET_PATH} $HELM_OPTS"
     fi
 else
     HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=false $HELM_OPTS"
