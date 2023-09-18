@@ -860,7 +860,7 @@ function check_flags () {
     while [ ! $# -eq 0 ]
     do
         case "$1" in
-            -x) # on-prem backend
+            --on-prem) # on-prem backend
                 shift
                 ON_PREM_ENDPOINT=$1
                 echo "On Premise backend endpoint: $ON_PREM_ENDPOINT";
