@@ -831,7 +831,7 @@ function help () {
     echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
     echo "  -x, --use-curses            Use ncurses dialog menus instead of CLI."
     echo "  -8, --kube-adm              Customize installer for kubeadm k8s cluster"
-    echo "  -x <on_prem_endpoint>       In case an on-prem backend is used, set here the endpoint value."                     
+    echo "  --on-prem <on_prem_endpoint>       In case an on-prem backend is used, set here the endpoint value."                     
     echo
     echo
     echo "ENVIRONMENT VARIABLES:"
