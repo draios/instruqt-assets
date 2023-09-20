@@ -79,6 +79,9 @@ function config_sysdig_tab_redirect () {
     OLD_STRING="http {"
     NEW_STRING="http {     server {         listen 8997;         server_name localhost;         rewrite ^/(.*)$ $MONITOR_URL/\$1 redirect;     }     server {         listen 8998;         server_name localhost;         rewrite ^/(.*)$ $SECURE_URL/\$1 redirect;     } "
 
+    #backup
+    cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
+    
     sed -i -e "s@${OLD_STRING}@${NEW_STRING}@g" /etc/nginx/nginx.conf
 
     if [ "$USE_AGENT_REGION" = true ]
