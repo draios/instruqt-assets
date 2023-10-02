@@ -32,6 +32,7 @@ if [ "$USE_NODE_ANALYZER" = true ]
 then
     HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=true \
     --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
+    --set nodeAnalyzer.nodeAnalyzer.sslVerifyCertificate=false \
     --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.deploy=true $HELM_OPTS"
 
     if [ "$USE_K8S" = false ]
