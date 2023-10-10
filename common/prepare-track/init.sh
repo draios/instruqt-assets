@@ -661,6 +661,9 @@ function deploy_cloud_bench () {
 
     echo -e " Cloud-Bench is being installed in the background.\n"
 
+    SYSDIG_SECURE_API_TOKEN=$(cat /opt/sysdig/user_data_SECURE_API_OK)
+    SECURE_API_ENDPOINT=$(cat /opt/sysdig/SECURE_API_ENDPOINT)
+
     source $TRACK_DIR/cloud/install_with_terraform.sh $CLOUD_PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_API_ENDPOINT $CLOUD_REGION $CLOUD_ACCOUNT_ID
 }
 

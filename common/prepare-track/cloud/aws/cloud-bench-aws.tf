@@ -21,11 +21,6 @@ variable "training_aws_region" {
   description = "The AWS Region"
 }
 
-variable "training_aws_alias" {
-  type        = string
-  description = "The aws account alias"
-}
-
 provider "sysdig" {
   sysdig_secure_url       = var.training_secure_url
   sysdig_secure_api_token = var.training_secure_api_token
@@ -37,5 +32,4 @@ provider "aws" {
 
 module "sysdig-sfc-agentless" {
   source = "sysdiglabs/secure-for-cloud/aws//modules/services/cloud-bench"
-  alias = var.training_aws_alias
 }
