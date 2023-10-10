@@ -59,6 +59,3 @@ then
         -var="training_azure_subscription=$CLOUD_ACCOUNT_ID" #\
         #-y >> ${OUTPUT} 2>&1
 fi
-
-# Trigger Cloud Re-evaluation
-cloud_reeval

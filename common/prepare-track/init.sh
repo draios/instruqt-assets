@@ -968,6 +968,9 @@ function setup () {
         track_has_cloud_account
         deploy_cloud_bench
         test_cloud_bench
+        # trigger cloud reevaluation
+        cloud_reeval
+
     fi
     
     if [ "$SKIP_CLEANUP" = false ]
