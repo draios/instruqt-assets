@@ -66,6 +66,8 @@ function panic_msg () {
     exit 1
 }
 
+
+
 ##
 # Define nginx.conf values to enable redirect
 # to the Sysdig Region selected by the user
@@ -632,14 +634,15 @@ function track_has_cloud_account () {
 }
 
 ##
-# Deploys the cloud connector.
+# Deploys the cloud bench.
 ##
-function deploy_cloud_connector () {
-    CLOUD_CONNECTOR_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
-    CLOUD_CONNECTOR_DEPLOY_QUERY=$(date +"%FT%H:%M:%S") # get a deployment date that matches the format and timezone of the date returned by sysdig API CloudProvidersLastSeen
+
+function deploy_cloud_bench () {
+    CLOUD_BENCH_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
+    CLOUD_BENCH_DEPLOY_QUERY=$(date +"%FT%H:%M:%S") # get a deployment date that matches the format and timezone of the date returned by sysdig API CloudProvidersLastSeen
     CLOUD_REGION=""
-    echo ${CLOUD_CONNECTOR_DEPLOY_DATE} > $WORK_DIR/cloud_connector_deploy_date
-    echo ${CLOUD_CONNECTOR_DEPLOY_QUERY} > $WORK_DIR/cloud_connector_deploy_query
+    echo ${CLOUD_BENCH_DEPLOY_DATE} > $WORK_DIR/cloud_bench_deploy_date
+    echo ${CLOUD_BENCH_DEPLOY_QUERY} > $WORK_DIR/cloud_bench_deploy_query
     
     echo "Configuring Sysdig CloudVision for $CLOUD_PROVIDER"
 
@@ -656,7 +659,7 @@ function deploy_cloud_connector () {
         CLOUD_REGION="foo"
     fi
 
-    echo -e "  CloudVision is being installed in the background.\n"
+    echo -e " Cloud-Bench is being installed in the background.\n"
 
     source $TRACK_DIR/cloud/install_with_terraform.sh $CLOUD_PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_API_ENDPOINT $CLOUD_REGION $CLOUD_ACCOUNT_ID
 }
@@ -664,62 +667,35 @@ function deploy_cloud_connector () {
 ##
 # Test if the Cloud account is connected successfully.
 ##
-function test_cloud_connector () {
+function test_cloud_bench () {
     echo "    Testing if the cloud account is connected..."
 
     attempt=0
     MAX_ATTEMPTS=36 # 6 minutes
-    connected=false
-
-    while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
+    HTTP_RESPONSE=0
+    while [ ${HTTP_RESPONSE} -ne 200 ] && [ ${attempt} -lt ${MAX_ATTEMPTS} ]
     do
         sleep 10
-        
-        # asks the sysdig secure API about cloud accounts (provider, account_id, date_last_seen)
-        # ordered by date_last_seen (more recent first)
-        # applies some filtering to use the output usable (date format, quotes, etc.)
-        # and writes it to .cloudProvidersLastSeen
-        curl -s --header "Content-Type: application/json"   \
-        -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
-        --request GET \
-        ${SECURE_API_ENDPOINT}/api/cloud/v2/dataSources/accounts\?limit\=5000\&offset\=0 \
-        | jq -r '[.[] | {provider: .provider, id: .id, alias: .alias, lastSeen: .cloudConnectorLastSeenAt}] | sort_by(.lastSeen) | reverse | .[] | "\(.provider) \(.id) \(.alias) \(.lastSeen)"' \
-        | cut -f1 -d"." \
-        | awk ' { t = $1; $1 = $(NF); $(NF) = t; print; } ' \
-        > .cloudProvidersLastSeen
 
-        CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH=$(date --date "$CLOUD_CONNECTOR_DEPLOY_QUERY" +%s)
-
-        while read line; do # reading each cloud provider connected to the sysdig account
-            
-            if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID}" ]]
-            then 
-                # the account_id matches
-                #LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f1) # extract date
-                #[[ $LAST_SEEN_DATE == "null" ]] && LAST_SEEN_DATE_EPOCH=0 || LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
-
-                # is this account date_last_seen value greater than the deployment_date in this script?
-                # ^ this means, we want the cloud account to be active now
-                # Instruqt reuses the accounts, so we don't want a false positive for reusing an account
-                #if [[ "${LAST_SEEN_DATE_EPOCH}" > "${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}" ]]
-                #then
-                echo "    Found cloud account: $line"
-                connected=true
-                break
-                #fi
-            fi
-        done < .cloudProvidersLastSeen
+        HTTP_RESPONSE=$(curl --head -s --header "Content-Type: application/json" \
+          -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
+          --request GET \
+          ${SECURE_API_ENDPOINT}/api/cloud/v2/accounts/${CLOUD_ACCOUNT_ID} | awk '/^HTTP/{print $2}')
         
         attempt=$(( $attempt + 1 ))
     done
 
-    if [ "$connected" = true ]
+    if [ "$HTTP_RESPONSE" -eq "200" ]
     then
-        echo "  Sysdig Vision successfully installed."
+        echo "  Sysdig successfully connected."
+        curl -s --header "Content-Type: application/json" \
+          -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
+          --request GET \
+          ${SECURE_API_ENDPOINT}/api/cloud/v2/accounts/${CLOUD_ACCOUNT_ID}
         touch $WORK_DIR/user_data_CLOUDVISION_OK
     else
         echo "  FAIL"
-        echo "  Sysdig Vision installation went wrong. Use the provided channels to report this issue."
+        echo "  Cloud Bench integration went wrong. Use the provided channels to report this issue."
         panic_msg
     fi
 }
@@ -727,6 +703,7 @@ function test_cloud_connector () {
 ##
 # Delete files only needed while running the script.
 ##
+
 function clean_setup () {
 
     if [ "$USE_AGENT" == true ]
@@ -986,8 +963,8 @@ function setup () {
         # we can't run `track_has_cloud_account` and `deploy_cloud_connector`
         # before `configure_API` because they use data set within `configure_API`
         track_has_cloud_account
-        deploy_cloud_connector
-        test_cloud_connector
+        deploy_cloud_bench
+        test_cloud_bench
     fi
     
     if [ "$SKIP_CLEANUP" = false ]
