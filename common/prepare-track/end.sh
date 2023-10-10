@@ -134,6 +134,8 @@ function remove_cloud_bench () {
     SYSDIG_SECURE_API_TOKEN=$(cat /opt/sysdig/user_data_SECURE_API_OK)
     SECURE_API_ENDPOINT=$(cat /opt/sysdig/SECURE_API_ENDPOINT)
 
+    echo source $TRACK_DIR/cloud/uninstall_with_terraform.sh $CLOUD_PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_API_ENDPOINT $CLOUD_REGION $CLOUD_ACCOUNT_ID
+
     source $TRACK_DIR/cloud/uninstall_with_terraform.sh $CLOUD_PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_API_ENDPOINT $CLOUD_REGION $CLOUD_ACCOUNT_ID
 }
 

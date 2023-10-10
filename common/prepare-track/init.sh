@@ -969,7 +969,7 @@ function setup () {
         deploy_cloud_bench
         test_cloud_bench
         # trigger cloud reevaluation
-        cloud_reeval
+        # cloud_reeval
     fi
     
     if [ "$SKIP_CLEANUP" = false ]
