@@ -644,7 +644,7 @@ function deploy_cloud_bench () {
     echo ${CLOUD_BENCH_DEPLOY_DATE} > $WORK_DIR/cloud_bench_deploy_date
     echo ${CLOUD_BENCH_DEPLOY_QUERY} > $WORK_DIR/cloud_bench_deploy_query
     
-    echo "Configuring Sysdig CloudVision for $CLOUD_PROVIDER"
+    echo "Configuring Cloud-Bench integration for $CLOUD_PROVIDER"
 
     # we are defining here some values (region) but in future we might want the user to choose its region
     # right now there's not a reason to select one or another
@@ -695,7 +695,7 @@ function test_cloud_bench () {
           -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
           --request GET \
           ${SECURE_API_ENDPOINT}/api/cloud/v2/accounts/${CLOUD_ACCOUNT_ID}
-        touch $WORK_DIR/user_data_CLOUDVISION_OK
+        touch $WORK_DIR/user_data_CLOUDBENCH_OK
     else
         echo "  FAIL"
         echo "  Cloud Bench integration went wrong. Use the provided channels to report this issue."
