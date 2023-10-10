@@ -16,7 +16,6 @@ SYSDIG_SECURE_API_TOKEN=$2
 SECURE_API_ENDPOINT=$3
 CLOUD_REGION=$4
 CLOUD_ACCOUNT_ID=$5
-USER_ALIAS=$6
 
 cd /root/prepare-track/cloud
 
@@ -30,8 +29,6 @@ then
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_API_ENDPOINT" \
         -var="training_aws_region=$CLOUD_REGION" \
-        -var="training_aws_alias=instruqt-${CLOUD_ACCOUNT_ID}" \
-        -var="deploy_scanner=$USE_CLOUD_SCAN_ENGINE" \
         >> ${OUTPUT} 2>&1 \
     && echo "    Terraform apply completed! Check all TF deployment logs at: $OUTPUT"
 fi
