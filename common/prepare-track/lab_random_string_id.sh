@@ -2,22 +2,29 @@
 ##
 # this is used as a common string for user and cluster name in the lab session
 ##
+WORK_DIR=/opt/sysdig
 
 function generate_random_id () {
 
     if [ ! -f $WORK_DIR/random_string_OK ] # random_id not set
     then
-        apt install -y wamerican </dev/null
-        cp /usr/share/dict/words /tmp/dict
-        awk '!/\x27/' /tmp/dict > temp && mv temp /tmp/dict
-        awk '!/[A-Z]/'   /tmp/dict > temp && mv temp /tmp/dict
-        awk '/[a-z]/'   /tmp/dict > temp && mv temp /tmp/dict
-        sed -i 'y/āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜĀÁǍÀĒÉĚÈĪÍǏÌŌÓǑÒŪÚǓÙǕǗǙǛ/aaaaeeeeiiiioooouuuuuuuuAAAAEEEEIIIIOOOOUUUUUUUU/' /tmp/dict
-        shuf -n2 /tmp/dict | cut -d$'\t' -f1 | tr -s "\n" "_" | echo $(</dev/stdin)"student@sysdigtraining.com" > /opt/sysdig/ACCOUNT_PROVISIONED_USER
+        cd prepare-track
+        mapfile nouns < ./lab_random_string_id_nouns
+        mapfile adjectives < ./lab_random_string_id_adjectives
+
+        nounIndex=$RANDOM%$((${#nouns[@]}-1))
+        adjectiveIndex=$RANDOM%$((${#adjectives[@]}-1))
+
+        adjective="$(echo -e "${adjectives[$adjectiveIndex]}" | tr -d '[:space:]')"
+        noun="$(echo -e "${nouns[$nounIndex]}" | tr -d '[:space:]')"
+        salt="$(shuf -i 1-99999 -n 1)"
+        random_id="$adjective"_"$noun"_"$salt"
+
+        echo "${random_id}_student@sysdigtraining.com" > $WORK_DIR/ACCOUNT_PROVISIONED_USER
         #create flag
-        touch $WORK_DIR/random_string_OK
+        echo "$random_id" > $WORK_DIR/random_string_OK
     fi
-        echo "Random user string from dictionary: "$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER | sed -r 's/@sysdigtraining.com//')
+        echo "Random user string from dictionary: $random_id"
 }
 
 generate_random_id

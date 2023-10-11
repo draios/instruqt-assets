@@ -13,35 +13,22 @@
 
 set -euxo pipefail
 
-if [ $# -ne 4 ]
+if [ $# -ne 6 ]
   then
-    echo "$0: Provide 6 arguments: Monitor API token, Monitor API URL, Secure API token, Secure API URL, Agent Key, region number (see init.sh)"
-    echo "$0: Defaulting to training account."
-    
-    # parent account data, we create with pablo.lopezzaldivar+training@sysdig.com token
-    ACCOUNT_PROVISIONER_MONITOR_API_TOKEN=[REDACTED]
-    ACCOUNT_PROVISIONER_MONITOR_API_URL=https://us2.app.sysdig.com
-    ACCOUNT_PROVISIONER_SECURE_API_TOKEN=[REDACTED]
-    ACCOUNT_PROVISIONER_SECURE_API_URL=https://us2.app.sysdig.com
-    ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=[REDACTED]
-    ACCOUNT_PROVISIONER_REGION_NUMBER=2
+    echo "$0: Provide 4 arguments: Secure API token, Secure API URL, Agent Key, region number (see init.sh)"
 else
-    ACCOUNT_PROVISIONER_MONITOR_API_TOKEN=$1
-    ACCOUNT_PROVISIONER_MONITOR_API_URL=$2
-    ACCOUNT_PROVISIONER_SECURE_API_TOKEN=$3
-    ACCOUNT_PROVISIONER_SECURE_API_URL=$4
-    ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=$5
-    ACCOUNT_PROVISIONER_REGION_NUMBER=$6
+    ACCOUNT_PROVISIONER_SECURE_API_TOKEN=$1
+    ACCOUNT_PROVISIONER_SECURE_API_URL=$2
+    ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=$3
+    ACCOUNT_PROVISIONER_REGION_NUMBER=$4
 fi
 
 WORK_DIR=/opt/sysdig
-TRACK_DIR=/root/prepare-track
+TRACK_DIR=/tmp/instruqt-assets/common/prepare-track
 mkdir -p $WORK_DIR
 mkdir -p $TRACK_DIR
 
 # persist values
-echo "${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" > $WORK_DIR/ACCOUNT_PROVISIONER_MONITOR_API_TOKEN
-echo "${ACCOUNT_PROVISIONER_MONITOR_API_URL}" > $WORK_DIR/ACCOUNT_PROVISIONER_MONITOR_API_URL
 echo "${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}" > $WORK_DIR/ACCOUNT_PROVISIONER_SECURE_API_TOKEN
 echo "${ACCOUNT_PROVISIONER_SECURE_API_URL}" > $WORK_DIR/ACCOUNT_PROVISIONER_SECURE_API_URL
 echo "${ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY}" > $WORK_DIR/ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY
@@ -59,6 +46,7 @@ agent variable set SPA_PASS ${SPA_PASS}
 SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER)
 echo ${SPA_USER}
 agent variable set SPA_USER ${SPA_USER}
+agent variable set SPA_SECURE_API_TOKEN ${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}
 
 # create user in parent account
 curl -s -k -X POST \
@@ -123,84 +111,4 @@ curl -s -k -X POST \
     "choices": []
   }
 ]' ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/userProfile/questionnaire \
-| jq > /dev/null
-
-# TODO: get monitor operations team ID
-MONITOR_OPS_TEAM_ID=10018845
-
-# get monitor operations team info
-curl -s -k -X GET \
--H "Content-Type: application/json" \
--H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
-${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
-| jq > $WORK_DIR/monitor-operations-team.json
-
-# edits
-#   remove team, get all other info
-jq '.team' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-
-#   update version
-# jq '.version += 1' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-# cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-# rm "$WORK_DIR/monitor-operations-team.json.tmp"
-
-# remove all users that are role ROLE_TEAM_MANAGER
-jq '.userRoles[] |= del(. | select(.role == "ROLE_TEAM_MANAGER"))' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-
-# clean nulls in .userRoles[]
-# del(.[][] | nulls)
-jq '.userRoles |= del(.[] | nulls)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-
-# remove fields         "properties" "customerId" "dateCreated" "lastUpdated" "userCount"
-jq '. |= del(.properties)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-jq '. |= del(.customerId)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-jq '. |= del(.dateCreated)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-jq '. |= del(.lastUpdated)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-jq '. |= del(.userCount)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-
-# add fields   "searchFilter" "filter"
-jq --argjson var null '. + {searchFilter: $var}' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-jq --argjson var null '. + {filter: $var}' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-
-# add new user to group
-# this is not working, we should remove existing users (account managers) and push only the new ones. 
-# the get is returning account_managers
-jq '.userRoles[.userRoles| length] |= . + {
-        "teamId": '${MONITOR_OPS_TEAM_ID}',
-        "teamName": "Monitor Operations",
-        "teamTheme": "#7BB0B2",
-        "userId": '${SPA_USER_ID}',
-        "userName": "'${SPA_USER}'",
-        "role": "ROLE_TEAM_STANDARD"
-    }' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-
-
-# update Monitor Operations team with new user assigned
-curl -s -k -X PUT \
--H "Content-Type: application/json" \
--H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
--d @$WORK_DIR/monitor-operations-team.json \
-${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
 | jq > /dev/null
