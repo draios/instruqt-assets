@@ -22,7 +22,7 @@ cd /root/prepare-track/cloud
 if [ "$PROVIDER" == "aws" ]
 then
     cd aws
-    echo "    Terraform is deleting the cloud account integratoin. Deleting... (this will take a few minutes)" \
+    echo "    Terraform is deleting the cloud account integration. Deleting... (this will take a few minutes)" \
     && terraform destroy -auto-approve \
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_API_ENDPOINT" \
