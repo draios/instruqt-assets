@@ -691,10 +691,10 @@ function test_cloud_bench () {
     if [ "$HTTP_RESPONSE" -eq "200" ]
     then
         echo "  Sysdig successfully connected."
-        curl -s --header "Content-Type: application/json" \
-          -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
-          --request GET \
-          ${SECURE_API_ENDPOINT}/api/cloud/v2/accounts/${CLOUD_ACCOUNT_ID}
+        #curl -s --header "Content-Type: application/json" \
+        #  -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
+        #  --request GET \
+        #  ${SECURE_API_ENDPOINT}/api/cloud/v2/accounts/${CLOUD_ACCOUNT_ID}
         touch $WORK_DIR/user_data_CLOUDBENCH_OK
     else
         echo "  FAIL"
