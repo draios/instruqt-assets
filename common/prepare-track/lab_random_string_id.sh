@@ -17,7 +17,7 @@ function generate_random_id () {
 
         adjective="$(echo -e "${adjectives[$adjectiveIndex]}" | tr -d '[:space:]')"
         noun="$(echo -e "${nouns[$nounIndex]}" | tr -d '[:space:]')"
-        salt="$(tr -dc 0-9 </dev/urandom | head -c 5)"
+        salt="$(shuf -i 1-99999 -n 1)"
         random_id="$adjective"_"$noun"_"$salt"
 
         echo "${random_id}_student@sysdigtraining.com" > $WORK_DIR/ACCOUNT_PROVISIONED_USER
