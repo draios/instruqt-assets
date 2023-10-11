@@ -13,7 +13,7 @@
 
 set -euxo pipefail
 
-if [ $# -ne 6 ]
+if [ $# -ne 4 ]
   then
     echo "$0: Provide 4 arguments: Secure API token, Secure API URL, Agent Key, region number (see init.sh)"
 else
