@@ -78,7 +78,7 @@ fi
 # echo "Deploying Sysdig Agent with Helm"
 kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
 helm upgrade --install sysdig-agent --namespace sysdig-agent \
-    --set global.clusterConfig.name="insq_${CLUSTER_NAME}" \
+    --set global.clusterConfig.name="${CLUSTER_NAME}" \
     --set global.sysdig.accessKey=${ACCESS_KEY} \
     --set global.sysdig.region=${HELM_REGION_ID} \
     --set agent.resourceProfile=custom \
