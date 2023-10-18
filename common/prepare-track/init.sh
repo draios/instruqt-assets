@@ -475,11 +475,13 @@ function intro () {
 function deploy_agent () {
 
     AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
-    RANDOM_CLUSTER_ID=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER | sed -r 's/@sysdigtraining.com//' | echo $(</dev/stdin)"_cluster")
+    RANDOM_USER_ID=$(cat $WORK_DIR/random_string_OK)
     echo ${AGENT_DEPLOY_DATE} > $WORK_DIR/agent_deploy_date
+    RANDOM_CLUSTER_ID=$(echo ${RANDOM_USER_ID}_${AGENT_DEPLOY_DATE})
     echo ${RANDOM_CLUSTER_ID} > $WORK_DIR/agent_cluster_id
+    
     # Expose Cluster ID as Instruqt var
-    agent variable set SPA_CLUSTER insq_${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID}
+    agent variable set SPA_CLUSTER ${RANDOM_CLUSTER_ID}
     
     echo "Configuring Sysdig Agent"
 
@@ -510,7 +512,7 @@ function deploy_agent () {
     echo -e "  The agent is being installed in the background.\n"
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
-    install_agent ${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID} ${SYSDIG_SECURE_API_TOKEN}
+    install_agent ${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID} ${SYSDIG_SECURE_API_TOKEN}
 }
 
 ##
@@ -561,7 +563,7 @@ function test_agent () {
 
         echo "  OK. Sysdig Agent successfully installed."
         touch $WORK_DIR/user_data_AGENT_OK
-        echo "  Sysdig Agent cluster.name: insq_${CLUSTER_NAME}"
+        echo "  Sysdig Agent cluster.name: $(cat $WORK_DIR/agent_cluster_id)"
     else
         echo "  FAIL"
         echo "  Agent failed to connect to back-end. Check your Agent Key."
