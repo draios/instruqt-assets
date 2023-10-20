@@ -44,6 +44,7 @@ USE_CLOUD=false
 USE_CLOUD_SCAN_ENGINE=false
 USE_CLOUD_REGION=false
 USE_AGENT_REGION=false
+USE_RUNTIME_VM=false
 USE_CURSES=false
 
 ##############################    GLOBAL VARS    ##############################
@@ -78,6 +79,9 @@ function config_sysdig_tab_redirect () {
     OLD_STRING="http {"
     NEW_STRING="http {     server {         listen 8997;         server_name localhost;         rewrite ^/(.*)$ $MONITOR_URL/\$1 redirect;     }     server {         listen 8998;         server_name localhost;         rewrite ^/(.*)$ $SECURE_URL/\$1 redirect;     } "
 
+    #backup
+    cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
+    
     sed -i -e "s@${OLD_STRING}@${NEW_STRING}@g" /etc/nginx/nginx.conf
 
     if [ "$USE_AGENT_REGION" = true ]
@@ -482,6 +486,10 @@ function intro () {
       echo "    - Customize Helm installer for kubeadm K8s cluster."
     fi
 
+    if [ "$USE_RUNTIME_VM" == true ]; then
+      echo "    - Deploy Runtime Scanner. Requires --node-analyzer."
+    fi
+
     echo "  Follow the instructions below."
     echo
     echo "----------------------------------------------------------"
@@ -494,11 +502,13 @@ function intro () {
 function deploy_agent () {
 
     AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
-    RANDOM_CLUSTER_ID=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER | sed -r 's/@sysdigtraining.com//' | echo $(</dev/stdin)"_cluster")
+    RANDOM_USER_ID=$(cat $WORK_DIR/random_string_OK)
     echo ${AGENT_DEPLOY_DATE} > $WORK_DIR/agent_deploy_date
+    RANDOM_CLUSTER_ID=$(echo ${RANDOM_USER_ID}_${AGENT_DEPLOY_DATE})
     echo ${RANDOM_CLUSTER_ID} > $WORK_DIR/agent_cluster_id
+    
     # Expose Cluster ID as Instruqt var
-    agent variable set SPA_CLUSTER insq_${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID}
+    agent variable set SPA_CLUSTER ${RANDOM_CLUSTER_ID}
     
     echo "Configuring Sysdig Agent"
 
@@ -529,7 +539,7 @@ function deploy_agent () {
     echo -e "  The agent is being installed in the background.\n"
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
-    install_agent ${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID} ${SYSDIG_SECURE_API_TOKEN}
+    install_agent ${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID} ${SYSDIG_SECURE_API_TOKEN}
 }
 
 ##
@@ -580,7 +590,7 @@ function test_agent () {
 
         echo "  OK. Sysdig Agent successfully installed."
         touch $WORK_DIR/user_data_AGENT_OK
-        echo "  Sysdig Agent cluster.name: insq_${CLUSTER_NAME}"
+        echo "  Sysdig Agent cluster.name: $(cat $WORK_DIR/agent_cluster_id)"
     else
         echo "  FAIL"
         echo "  Agent failed to connect to back-end. Check your Agent Key."
@@ -818,20 +828,21 @@ function help () {
     echo "  --skip-cleanup              Skip script setup clean-up actions."
     echo "  --provision-user            Creates user in Sysdig Saas Training account for use in this lab."
     echo "  -a, --agent                 Deploy a Sysdig Agent."
+    echo "  -b, --rapid-response        Enable Rapid Response"
     echo "  -c, --cloud                 Set up environment for Sysdig Secure for Cloud."
     echo "  -h, --help                  Show this help."
+    echo "  -k, --kspm                  Enable KSPM. Use with -k/--kspm."
     echo "  -m, --monitor               Set up environment for Monitor API usage."
     echo "  -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent."
-    echo "  -k, --kspm                  Enable KSPM. Use with -k/--kspm."
     echo "  -p, --prometheus            Enable Prometheus. Use with -a/--agent."
-    echo "  -b, --rapid-response        Enable Rapid Response"
-    echo "  -s, --secure                Set up environment for Secure API usage."
-    echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
     echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account."
+    echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
+    echo "  -s, --secure                Set up environment for Secure API usage."
     echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
     echo "  -x, --use-curses            Use ncurses dialog menus instead of CLI."
     echo "  -8, --kube-adm              Customize installer for kubeadm k8s cluster"
     echo "  --on-prem <on_prem_endpoint>       In case an on-prem backend is used, set here the endpoint value."                     
+    echo "      --runtime-vm            Enable VM Runtime Scanner. Use with --node-analyzer."
     echo
     echo
     echo "ENVIRONMENT VARIABLES:"
@@ -914,6 +925,9 @@ function check_flags () {
             --kube-adm | -8)
                 export USE_K8S=true
                 ;;
+            --runtime-vm)
+                export USE_RUNTIME_VM=true
+                ;;
             --help | -h)
                 help
                 exit 0
@@ -927,11 +941,12 @@ function check_flags () {
         shift
     done
 
-    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ]  || [ "$USE_RAPID_RESPONSE" = true ]  || [ "$USE_K8S" = true ]) && [ "$USE_AGENT" != true ]
+    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ] || [ "$USE_RUNTIME_VM" = true ]  || [ "$USE_RAPID_RESPONSE" = true ]  || [ "$USE_K8S" = true ]) && [ "$USE_AGENT" != true ]
     then
         echo "ERROR: Options only available with -a/--agent."
         exit 1
     fi
+
 }
 
 function overwrite_test_creds () {
