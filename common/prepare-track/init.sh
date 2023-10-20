@@ -174,7 +174,21 @@ function set_values () {
             SECURE_API_ENDPOINT=$MONITOR_URL
             PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
-        
+
+        *"On Premises - onprem"*)
+            # hardcoded to our first onprem test env, this envvar (DOMAIN) should be customizable
+            DOMAIN=$(cat $WORK_DIR/ON_PREM_ENDPOINT)
+            # DOMAIN='mateo-burillo-aramco-osc-4044.dev.draios.com'
+            MONITOR_URL='https://'$DOMAIN
+            SECURE_URL=$MONITOR_URL'/secure'
+            AGENT_COLLECTOR=$DOMAIN
+            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=custom
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$MONITOR_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+            ;;
+
         *) # default to us1 values
             # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-east-north-virginia
             MONITOR_URL='https://app.sysdigcloud.com'
@@ -215,6 +229,10 @@ function select_region () {
         echo "   3) US West GCP (Dallas) - us4"
         echo "   4) European Union (Frankfurt) - eu1"
         echo "   5) AP Australia (Sydney) - au1"
+        if [[ -n "$(cat $WORK_DIR/ON_PREM_ENDPOINT)" ]]
+        then
+            echo "   6) On Premises - onprem"
+        fi
         echo
 
         if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
@@ -259,6 +277,15 @@ function select_region () {
             ;;
         5)
             REGION="AP Australia (Sydney) - au1"
+            ;;
+        6)
+            if [[ -n "$(cat $WORK_DIR/ON_PREM_ENDPOINT)" ]]
+            then
+                REGION="On Premises - onprem"
+            else
+                echo "${REGION_N} is not a valid an option."
+                select_region
+            fi
             ;;
         *)
             echo "${REGION_N} is not a valid an option."
@@ -327,7 +354,7 @@ function configure_API () {
 
         # Test connection
         echo -n "  Testing connection to API on endpoint ${PRODUCT_API_ENDPOINT}... "
-        curl -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep 'HTTP/2 200' &> /dev/null
+        curl --insecure -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep 'HTTP/2 200' &> /dev/null
         
         if [ $? -eq 0 ]
         then
@@ -386,7 +413,7 @@ function install_agent () {
 
     if [[ "$INSTALL_WITH" == "helm" ]]
     then
-        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID $SECURE_API_TOKEN
+        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID $SECURE_API_TOKEN $COLLECTOR
     else
         source $TRACK_DIR/install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
     fi
@@ -814,6 +841,7 @@ function help () {
     echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
     echo "  -x, --use-curses            Use ncurses dialog menus instead of CLI."
     echo "  -8, --kube-adm              Customize installer for kubeadm k8s cluster"
+    echo "  --on-prem <on_prem_endpoint>       In case an on-prem backend is used, set here the endpoint value."                     
     echo "      --runtime-vm            Enable VM Runtime Scanner. Use with --node-analyzer."
     echo
     echo
@@ -843,6 +871,12 @@ function check_flags () {
     while [ ! $# -eq 0 ]
     do
         case "$1" in
+            --on-prem) # on-prem backend
+                shift
+                ON_PREM_ENDPOINT=$1
+                echo "On Premise backend endpoint: $ON_PREM_ENDPOINT";
+                echo "${ON_PREM_ENDPOINT}" > $WORK_DIR/ON_PREM_ENDPOINT
+                ;;
             --skip-cleanup)
                 SKIP_CLEANUP=true
                 ;;

@@ -3,7 +3,7 @@
 # Deploy a Sysdig Agent using Helm.
 #
 # Usage:
-#   install_with_helm.sh ${CLUSTER_NAME} ${ACCESS_KEY} ${HELM_REGION_ID} ${SECURE_API_TOKEN}
+#   install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID $SECURE_API_TOKEN $COLLECTOR
 #   (check ./init.sh to learn more about possible HELM_REGION_ID values )
 #
 ##
@@ -14,6 +14,7 @@ CLUSTER_NAME=$1
 ACCESS_KEY=$2
 HELM_REGION_ID=$3
 SECURE_API_TOKEN=$4
+COLLECTOR=$5
 HELM_OPTS=""
 
 mkdir -p /var/run/containerd
@@ -24,14 +25,17 @@ helm repo update >> ${OUTPUT} 2>&1
 
 # ingest k8sAuditDetections via admission controller by default (with AC scanning disabled)
 HELM_OPTS="--set admissionController.enabled=true \
+    --set admissionController.verifySSL=false \
 	--set admissionController.features.k8sAuditDetections=true \
 	--set admissionController.scanner.enabled=false \
+    --set admissionController.sysdig.apiEndpoint=${COLLECTOR} \
 	--set admissionController.sysdig.secureAPIToken=${SECURE_API_TOKEN} ${HELM_OPTS}"
 
 if [ "$USE_NODE_ANALYZER" = true ]
 then
     HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=true \
     --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
+    --set nodeAnalyzer.nodeAnalyzer.sslVerifyCertificate=false \
     --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.deploy=true $HELM_OPTS"
 
     if [ "$USE_RUNTIME_VM" = true ]
@@ -67,6 +71,8 @@ fi
 if [ "$USE_RAPID_RESPONSE" = true ]
 then
     HELM_OPTS="--set rapidResponse.enabled=true \
+    --set rapidResponse.rapidResponse.apiEndpoint=${COLLECTOR} \
+    --set rapidResponse.rapidResponse.sslVerifyCertificate=false \
     --set rapidResponse.rapidResponse.passphrase=training_secret_passphrase $HELM_OPTS"
 fi
 
@@ -87,5 +93,8 @@ helm upgrade --install sysdig-agent --namespace sysdig-agent \
     --set agent.resources.limits.cpu=2 \
     --set agent.resources.limits.memory=2048Mi \
     --set agent.sysdig.settings.drift_killer.enabled=true \
+    --set agent.collectorSettings.sslVerifyCertificate=false \
+    --set agent.collectorSettings.collectorHost=${COLLECTOR} \
+    -f ${AGENT_CONF_DIR}/values.yaml \
     ${HELM_OPTS} \
 sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &
