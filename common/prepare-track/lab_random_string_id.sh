@@ -17,12 +17,14 @@ function generate_random_id () {
 
         adjective="$(echo -e "${adjectives[$adjectiveIndex]}" | tr -d '[:space:]')"
         noun="$(echo -e "${nouns[$nounIndex]}" | tr -d '[:space:]')"
+        salt="$(shuf -i 1-99999 -n 1)"
+        random_id="$adjective"_"$noun"_"$salt"
 
-        echo "$adjective"_"$noun" | echo $(</dev/stdin)"_student@sysdigtraining.com" > $WORK_DIR/ACCOUNT_PROVISIONED_USER
+        echo "${random_id}_student@sysdigtraining.com" > $WORK_DIR/ACCOUNT_PROVISIONED_USER
         #create flag
-        touch $WORK_DIR/random_string_OK
+        echo "$random_id" > $WORK_DIR/random_string_OK
     fi
-        echo "Random user string from dictionary: "$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER | sed -r 's/@sysdigtraining.com//')
+        echo "Random user string from dictionary: $random_id"
 }
 
 generate_random_id
