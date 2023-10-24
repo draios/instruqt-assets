@@ -13,6 +13,8 @@
 
 set -euxo pipefail
 
+USE_MONITOR=""
+
 if [ $# -eq 6 ]
 then
   ACCOUNT_PROVISIONER_MONITOR_API_TOKEN=$1
