@@ -150,22 +150,6 @@ then
   cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
   rm "$WORK_DIR/monitor-operations-team.json.tmp"
 
-  #   update version
-  # jq '.version += 1' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-  # cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-  # rm "$WORK_DIR/monitor-operations-team.json.tmp"
-
-  # remove all users that are role ROLE_TEAM_MANAGER
-  jq '.userRoles[] |= del(. | select(.role == "ROLE_TEAM_MANAGER"))' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-  cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-  rm "$WORK_DIR/monitor-operations-team.json.tmp"
-
-  # clean nulls in .userRoles[]
-  # del(.[][] | nulls)
-  jq '.userRoles |= del(.[] | nulls)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-  cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-  rm "$WORK_DIR/monitor-operations-team.json.tmp"
-
   # remove fields         "properties" "customerId" "dateCreated" "lastUpdated" "userCount"
   jq '. |= del(.properties)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
   cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
