@@ -11,7 +11,7 @@
 # TODO: merge both approaches, from a functional lab perspective, both are the same
 ##
 
-set -euxo pipefail
+set -exo pipefail
 
 USE_MONITOR="$USE_MONITOR"
 
