@@ -19,7 +19,9 @@ F_CLEAR='\e[0m'
 
 WORK_DIR=/opt/sysdig
 TRACK_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd -P )
-AGENT_CONF_DIR=/root/sysdig-agent
+AGENT_CONF_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")"; cd ../sysdig-agent; pwd -P )
+echo "TRACK_DIR: ${TRACK_DIR}"
+echo "AGENT_CONF_DIR: ${AGENT_CONF_DIR}"
 
 TITLE="Sysdig Agent installation"
 
