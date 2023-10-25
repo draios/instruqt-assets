@@ -39,14 +39,15 @@ then
 
     if [ "$USE_RUNTIME_VM" = true ]
     then
-        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.runtimeScanner.settings.eveEnabled=true $HELM_OPTS"
+        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.runtimeScanner.settings.eveEnabled=true \
+	$HELM_OPTS"
     fi
 
     if [ "$USE_K8S" = false ]
     then
         HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.containerdSocketPath="unix://${SOCKET_PATH}" \
-        --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].name=socketpath \
-        --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].hostPath.path=${SOCKET_PATH} \
+	--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].name=socketpath \
+	--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].hostPath.path=${SOCKET_PATH} \
         --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].name=socketpath \
         --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].mountPath=${SOCKET_PATH} $HELM_OPTS"
     fi
@@ -63,8 +64,8 @@ fi
 
 if [ "$USE_PROMETHEUS" = true ]
 then
-    HELM_OPTS="--set sysdig.settings.prometheus.enabled=true $HELM_OPTS"
-    HELM_OPTS="-f $AGENT_CONF_DIR/prometheus.yaml $HELM_OPTS"
+    HELM_OPTS="--set sysdig.settings.prometheus.enabled=true \
+    -f $AGENT_CONF_DIR/prometheus.yaml $HELM_OPTS"
 fi
 
 if [ "$USE_RAPID_RESPONSE" = true ]
