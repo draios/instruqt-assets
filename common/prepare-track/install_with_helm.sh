@@ -64,7 +64,7 @@ fi
 
 if [ "$USE_PROMETHEUS" = true ]
 then
-    HELM_OPTS="--set agent.prometheus.file=true $HELM_OPTS"
+    HELM_OPTS="--set agent.prometheus.enabled=true $HELM_OPTS"
     HELM_OPTS="-f $AGENT_CONF_DIR/prometheus.yaml $HELM_OPTS"
 fi
 
