@@ -64,8 +64,8 @@ fi
 
 if [ "$USE_PROMETHEUS" = true ]
 then
-    HELM_OPTS="--set agent.prometheus.enabled=true $HELM_OPTS"
-    HELM_OPTS="-f $AGENT_CONF_DIR/prometheus.yaml $HELM_OPTS"
+    HELM_OPTS="--set agent.prometheus.enabled=true \
+    -f $AGENT_CONF_DIR/prometheus.yaml $HELM_OPTS"
 fi
 
 if [ "$USE_RAPID_RESPONSE" = true ]
