@@ -30,6 +30,6 @@ provider "aws" {
   region = var.training_aws_region
 }
 
-module "sysdig-sfc-agentless" {
-  source = "sysdiglabs/secure-for-cloud/aws//modules/services/cloud-bench"
+module "secure_for_cloud_aws_single_account_ecs" {
+   source = "sysdiglabs/secure-for-cloud/aws//examples/single-account-ecs"
 }
