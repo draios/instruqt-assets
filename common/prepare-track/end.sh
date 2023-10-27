@@ -107,37 +107,39 @@ function track_has_cloud_account () {
 # Deploys the cloud bench.
 ##
 
-function remove_cloud_bench () {
-    CLOUD_BENCH_REMOVAL_DATE=$(date -d '+2 hour' +"%F__%H_%M")
-    CLOUD_BENCH_REMOVAL_QUERY=$(date +"%FT%H:%M:%S") # get a removal date that matches the format and timezone of the date returned by sysdig API CloudProvidersLastSeen
-    CLOUD_REGION=""
-    echo ${CLOUD_BENCH_REMOVAL_DATE} > $WORK_DIR/cloud_bench_removal_date
-    echo ${CLOUD_BENCH_REMOVAL_QUERY} > $WORK_DIR/cloud_bench_removal_query
-    
-    echo "Removing Cloud-Bench integration for $CLOUD_PROVIDER"
 
-    # we are defining here some values (region) but in future we might want the user to choose its region
-    # right now there's not a reason to select one or another
-    if [ $CLOUD_PROVIDER = "aws" ]
-    then
-        CLOUD_REGION="us-east-1"
-    elif [ $CLOUD_PROVIDER = "gcp" ]
-    then
-        CLOUD_REGION="us-east1"
-    elif [ $CLOUD_PROVIDER = "azure" ]
-    then
-        CLOUD_REGION="foo"
-    fi
+cat <<EOF >>end.sh
+#!/bin/sh
 
-    echo -e " Cloud-Bench is being uninstalled in the background.\n"
+CLOUD_REGION=""
+echo "Removing Cloud-Bench integration for $CLOUD_PROVIDER"
 
-    SYSDIG_SECURE_API_TOKEN=$(cat /opt/sysdig/user_data_SECURE_API_OK)
-    SECURE_API_ENDPOINT=$(cat /opt/sysdig/SECURE_API_ENDPOINT)
+CLOUD_REGION="us-east-1"
+echo -e " Cloud-Bench is being uninstalled in the background.\n"
 
-    echo source $TRACK_DIR/cloud/uninstall_with_terraform.sh $CLOUD_PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_API_ENDPOINT $CLOUD_REGION $CLOUD_ACCOUNT_ID
+SYSDIG_SECURE_API_TOKEN=$(cat /opt/sysdig/user_data_SECURE_API_OK)
+SECURE_API_ENDPOINT=$(cat /opt/sysdig/SECURE_API_ENDPOINT)
 
-    source $TRACK_DIR/cloud/uninstall_with_terraform.sh $CLOUD_PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_API_ENDPOINT $CLOUD_REGION $CLOUD_ACCOUNT_ID
-}
+OUTPUT=/opt/sysdig/cloud/terraform_uninstall.out
+mkdir -p /opt/sysdig/cloud/
+touch $OUTPUT
+
+PROVIDER=$CLOUD_PROVIDER
+SYSDIG_SECURE_API_TOKEN=$SYSDIG_SECURE_API_TOKEN
+SECURE_API_ENDPOINT=$SECURE_API_ENDPOINT
+CLOUD_REGION=$CLOUD_REGION
+CLOUD_ACCOUNT_ID=$CLOUD_ACCOUNT_ID
+
+cd /root/prepare-track/cloud/aws
+echo "    Terraform is deleting the cloud account integration. Deleting... (this will take a few minutes)" \
+&& terraform destroy -auto-approve \
+    -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
+    -var="training_secure_url=$SECURE_API_ENDPOINT" \
+    -var="training_aws_region=$CLOUD_REGION" \
+    >> ${OUTPUT} 2>&1 \
+&& echo "    Terraform destroy completed! Check all TF deployment logs at: $OUTPUT"
+
+EOF
 
 ##
 # Test if the Cloud account is connected successfully.
