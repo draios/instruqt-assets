@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vectorial
+  namespace: javaserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vectorial
+  template:
+    metadata:
+      labels:
+        app: vectorial
+    spec:
+      containers:
+      - name: vectorial-container
+        image: mateobur/vectorial:0.3
+        resources:
+          requests:
+            memory: "50Mi"
+            cpu: "50m"
+          limits:
+            memory: "100Mi"
+            cpu: "800m"
