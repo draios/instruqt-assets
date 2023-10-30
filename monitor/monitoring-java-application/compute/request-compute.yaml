@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-requester-compute-deployment
+  namespace: javaserver
+  labels:
+    app: simple-requester-compute
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: simple-requester-compute
+  template:
+    metadata:
+      labels:
+        app: simple-requester-compute
+    spec:
+      containers:
+      - name: simple-requester-compute
+        image: mateobur/compute-requester:0.2
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+
