@@ -126,13 +126,6 @@ curl -s -k -X POST \
 ]' ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/userProfile/questionnaire \
 | jq > /dev/null
 
-# get monitor operations team ID
-MONITOR_OPS_TEAM_ID=$($(curl -s -k -X GET \
-        -H "Content-Type: application/json" \
-        -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}" \
-        ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/teams \
-        | jq -r '.[][] | select(.immutable) | select(.products[] | contains("SDC"))| .id') 
-
 # get monitor operations team info
 curl -s -k -X GET \
 -H "Content-Type: application/json" \
