@@ -126,6 +126,9 @@ curl -s -k -X POST \
 ]' ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/userProfile/questionnaire \
 | jq > /dev/null
 
+# TODO: get monitor operations team ID
+MONITOR_OPS_TEAM_ID=10018845
+
 # get monitor operations team info
 curl -s -k -X GET \
 -H "Content-Type: application/json" \
