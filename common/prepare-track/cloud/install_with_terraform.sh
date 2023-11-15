@@ -29,7 +29,6 @@ then
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_API_ENDPOINT" \
         -var="training_aws_region=$CLOUD_REGION" \
-        -var="deploy_scanner=$USE_CLOUD_SCAN_ENGINE" \
         >> ${OUTPUT} 2>&1 \
     && echo "    Terraform apply completed! Check all TF deployment logs at: $OUTPUT"
 fi
