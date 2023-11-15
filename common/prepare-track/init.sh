@@ -178,17 +178,18 @@ function set_values () {
             ;;
 
         *"On Premises - onprem"*)
-            # hardcoded to our first onprem test env, this envvar (DOMAIN) should be customizable
-            DOMAIN=$(cat $WORK_DIR/ON_PREM_ENDPOINT)
-            # DOMAIN='mateo-burillo-aramco-osc-4044.dev.draios.com'
-            MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR=$DOMAIN
-            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=custom
-            MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$MONITOR_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+            if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ];
+                DOMAIN=$(cat $WORK_DIR/ON_PREM_ENDPOINT)
+                # DOMAIN='mateo-burillo-aramco-osc-4044.dev.draios.com'
+                MONITOR_URL='https://'$DOMAIN
+                SECURE_URL=$MONITOR_URL'/secure'
+                AGENT_COLLECTOR=$DOMAIN
+                NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+                HELM_REGION_ID=custom
+                MONITOR_API_ENDPOINT=$MONITOR_URL
+                SECURE_API_ENDPOINT=$MONITOR_URL
+                PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+            fi
             ;;
 
         *) # default to us1 values
