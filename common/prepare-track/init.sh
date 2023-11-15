@@ -178,7 +178,7 @@ function set_values () {
             ;;
 
         *"On Premises - onprem"*)
-            if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ];
+            if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ]; then
                 DOMAIN=$(cat $WORK_DIR/ON_PREM_ENDPOINT)
                 # DOMAIN='mateo-burillo-aramco-osc-4044.dev.draios.com'
                 MONITOR_URL='https://'$DOMAIN
