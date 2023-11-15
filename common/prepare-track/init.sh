@@ -232,7 +232,7 @@ function select_region () {
         echo "   3) US West GCP (Dallas) - us4"
         echo "   4) European Union (Frankfurt) - eu1"
         echo "   5) AP Australia (Sydney) - au1"
-        if [[ -n "$(cat $WORK_DIR/ON_PREM_ENDPOINT)" ]]
+        if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ];
         then
             echo "   6) On Premises - onprem"
         fi
@@ -282,7 +282,7 @@ function select_region () {
             REGION="AP Australia (Sydney) - au1"
             ;;
         6)
-            if [[ -n "$(cat $WORK_DIR/ON_PREM_ENDPOINT)" ]]
+            if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ];
             then
                 REGION="On Premises - onprem"
             else
