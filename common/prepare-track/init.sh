@@ -356,7 +356,7 @@ function configure_API () {
 
         # Test connection
         echo -n "  Testing connection to API on endpoint ${PRODUCT_API_ENDPOINT}... "
-        curl --insecure -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep 'HTTP/2 200' &> /dev/null
+        curl --insecure -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep '200 OK' &> /dev/null
         
         if [ $? -eq 0 ]
         then
