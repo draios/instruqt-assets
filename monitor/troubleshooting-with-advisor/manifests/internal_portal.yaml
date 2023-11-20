@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: internal-portal-deployment
+  namespace: application
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: internal-portal
+  template:
+    metadata:
+      labels:
+        app: internal-portal
+    spec:
+      containers:
+      - name: internal-portal-container
+        image: mateobur/internal-portal:0.1
+      imagePullSecrets:
+      - name: registrykey
