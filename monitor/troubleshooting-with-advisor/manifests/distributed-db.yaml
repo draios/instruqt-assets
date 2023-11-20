@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: distributed-db-deployment
+  namespace: distributed-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: distributed-db
+  template:
+    metadata:
+      labels:
+        app: distributed-db
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: dedicated
+                operator: In
+                values:
+                - test
+      containers:
+      - name: distributed-db
+        image: polinux/stress
+        command: ["stress"]
+        args:
+          - "--vm"
+          - "1"
+          - "--vm-bytes"
+          - "200M"
+          - "--vm-keep"
+          - "--timeout"
+          - "3600s"
