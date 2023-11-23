@@ -4,7 +4,7 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 kubectl create ns application
 kubectl create ns stress-test
-kubectl create ns stress-test-cpu
+kubectl create ns javaserver
 kubectl label node worker1 dedicated=test
 kubectl create ns distributed-db
 
