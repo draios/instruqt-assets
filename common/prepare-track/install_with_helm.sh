@@ -131,5 +131,3 @@ helm upgrade --install sysdig-agent --namespace sysdig-agent \
     -f ${AGENT_CONF_DIR}/values.yaml \
     ${HELM_OPTS} \
 sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &
-
-bash
