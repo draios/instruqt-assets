@@ -17,6 +17,36 @@ SECURE_API_TOKEN=$4
 COLLECTOR=$5
 HELM_OPTS=""
 
+# new hostnames, to avoid duplicated names as much as possible
+function custom_hostnaming () {
+    # Fetch current node names dynamically using kubectl
+    current_hostnames=($(kubectl get nodes -o=jsonpath='{.items[*].metadata.name}'))
+    # Array of new hostnames
+    new_hostnames=()
+    # Loop through each node
+    for current_hostname in "${current_hostnames[@]}"; do
+        # Generate a new hostname based on the current hostname and random string
+        new_hostname="${current_hostname}_$(cat /opt/sysdig/random_string_OK)"
+        new_hostname=$(echo "$new_hostname" | tr '_' '-')
+        # Connect to each of the nodes to:
+        #  - set new hostname in /etc/hostname
+        #  - Add new entry to /etc/hosts with the new name
+        if [[ $(hostname) != $current_hostname ]]; #it's a different host
+        then
+            ssh root@$current_hostname "hostnamectl set-hostname $new_hostname"
+            ssh root@$current_hostname 'echo "127.0.0.1 '$new_hostname'" >> /etc/hosts'
+
+        else # it's me
+            hostnamectl set-hostname $new_hostname
+            echo "127.0.0.1 $new_hostname" >> /etc/hosts
+        fi
+
+        # Rename the hostname in k8s
+        kubectl annotate node "$current_hostname" "kubectl.kubernetes.io/hostname=$new_hostname"
+
+    done
+}
+
 mkdir -p /var/run/containerd
 ln -s /var/run/k3s/containerd/containerd.sock ${SOCKET_PATH}
 
@@ -79,6 +109,9 @@ fi
 # then
 #     HELM_OPTS="--set agent.sysdig.settings.cri.socket_path=$SOCKET_PATH $HELM_OPTS"
 # fi
+
+# new hostnames, to avoid duplicated names as much as possible
+custom_hostnaming
 
 # echo "Deploying Sysdig Agent with Helm"
 kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
