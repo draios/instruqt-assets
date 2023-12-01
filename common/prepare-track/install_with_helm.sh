@@ -71,7 +71,6 @@ fi
 if [ "$USE_RAPID_RESPONSE" = true ]
 then
     HELM_OPTS="--set rapidResponse.enabled=true \
-    --set rapidResponse.rapidResponse.apiEndpoint="us2.app.sysdig.com" \
     --set rapidResponse.rapidResponse.sslVerifyCertificate=false \
     --set rapidResponse.rapidResponse.passphrase=training_secret_passphrase $HELM_OPTS"
 fi
