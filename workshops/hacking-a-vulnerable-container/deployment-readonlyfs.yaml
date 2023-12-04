@@ -30,6 +30,9 @@ spec:
         fsGroup: 1000
       containers:
       - name: security-playground
+        env:
+        - name: TMPDIR
+          value: "/py-temp"
         image: ghcr.io/andrewd-sysdig/security-playground:latest
         imagePullPolicy: Always
         ports:
@@ -46,12 +49,12 @@ spec:
           privileged: false
           readOnlyRootFilesystem: true
         volumeMounts:
-          - mountPath: /tmp
-            name: tmp-volume
+        - mountPath: /py-temp
+          name: py-temp
       volumes:
-        - hostPath:
-              path: /tmp2
-          name: tmp-volume
+      - name: py-temp
+        emptyDir:
+          sizeLimit: 500Mi
 
 ---
 apiVersion: v1
