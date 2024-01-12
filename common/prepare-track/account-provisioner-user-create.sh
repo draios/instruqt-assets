@@ -208,4 +208,4 @@ ${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
 
 # Now create zone, team and update user
 cp $TRACK_DIR/create_sysdig_user_and_team_scope.py $WORK_DIR
-python3 $WORK_DIR/create_sysdig_user_and_team_scope.py --update --region us2 --apitoken $(cat $WORK_DIR/ACCOUNT_PROVISIONER_SECURE_API_TOKEN) --debug --clustername "insq_$(cat $WORK_DIR/agent_deploy_date)_$(cat $WORK_DIR/agent_cluster_id)" --userid $(cat $WORK_DIR/account.json | jq .user.id)
+python3 $WORK_DIR/create_sysdig_user_and_team_scope.py --update --region us2 --apitoken $(cat $WORK_DIR/ACCOUNT_PROVISIONER_SECURE_API_TOKEN) --debug --clustername "insq_$(cat $WORK_DIR/agent_deploy_date)_$(cat $WORK_DIR/agent_cluster_id)" --userid $(cat $WORK_DIR/account.json | jq .user.id) > $WORK_DIR/create_python_log.log
