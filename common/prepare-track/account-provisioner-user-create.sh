@@ -195,13 +195,13 @@ jq '.userRoles[.userRoles| length] |= . + {
         "role": "ROLE_TEAM_EDIT"
     }' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
+#rm "$WORK_DIR/monitor-operations-team.json.tmp"
 
 
 # update Monitor Operations team with new user assigned
-curl -s -k -X PUT \
--H "Content-Type: application/json" \
--H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
--d @$WORK_DIR/monitor-operations-team.json \
-${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
-| jq > /dev/null
+#curl -s -k -X PUT \
+#-H "Content-Type: application/json" \
+#-H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
+#-d @$WORK_DIR/monitor-operations-team.json \
+#${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
+#| jq > /dev/null
