@@ -10,8 +10,8 @@ metric_licenses = Gauge('acme_corp', 'Acme Corporation', ['product', 'type'], re
 
 
 def query_rest_api():
-    produced = random.randint(a=50, b=100)
-    sold = random.randint(a=50, b=100)
+    produced = random.randint(a=100, b=150)
+    sold = random.randint(a=0, b=50)
 
     logging.debug(f"main:: widgets:produced = {produced}, widgets:sold = {sold}")
 
