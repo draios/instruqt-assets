@@ -186,14 +186,14 @@ rm "$WORK_DIR/monitor-operations-team.json.tmp"
 # add new user to group
 # this is not working, we should remove existing users (account managers) and push only the new ones. 
 # the get is returning account_managers
-#jq '.userRoles[.userRoles| length] |= . + {
-#        "teamId": '${MONITOR_OPS_TEAM_ID}',
-#        "teamName": "Monitor Operations",
-#        "teamTheme": "#7BB0B2",
-#        "userId": '${SPA_USER_ID}',
-#        "userName": "'${SPA_USER}'",
-#        "role": "ROLE_TEAM_EDIT"
-#    }' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+jq '.userRoles[.userRoles| length] |= . + {
+        "teamId": '${MONITOR_OPS_TEAM_ID}',
+        "teamName": "Monitor Operations",
+        "teamTheme": "#7BB0B2",
+        "userId": '${SPA_USER_ID}',
+        "userName": "'${SPA_USER}'",
+        "role": "ROLE_TEAM_EDIT"
+    }' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 
 # Make user TEAM_EDIT role
 # Prepare the command
