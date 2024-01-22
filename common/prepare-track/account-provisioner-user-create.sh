@@ -196,7 +196,7 @@ rm "$WORK_DIR/monitor-operations-team.json.tmp"
 #    }' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 
 # Make user TEAM_EDIT role
-jq '(.userRoles[] | select(.userName == "${SPA_USER}").role) |= "ROLE_TEAM_EDIT"' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+jq --arg user "$SPA_USER" '(.userRoles[] | select(.userName == $user).role) |= "ROLE_TEAM_EDIT"' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 
 cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
 rm "$WORK_DIR/monitor-operations-team.json.tmp"
