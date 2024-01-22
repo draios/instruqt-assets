@@ -70,7 +70,7 @@ curl -s -k -X POST \
 "password": "'${SPA_PASS}'",
 "firstName": "Training",
 "lastName": "Student",
-"systemRole": "ROLE_ADVANCED_USER"
+"systemRole": "ROLE_USER"
 }' \
 ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/user/provisioning/ \
 | jq > $WORK_DIR/account.json
