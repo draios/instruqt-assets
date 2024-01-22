@@ -195,14 +195,15 @@ jq '.userRoles[.userRoles| length] |= . + {
         "role": "ROLE_TEAM_EDIT"
     }' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 
-# Make user TEAM_EDIT role
-# Prepare the command
-command="jq --arg user \"$SPA_USER\" '(.userRoles[] | select(.userName == \$user).role) |= \"ROLE_TEAM_EDIT\"' \"$WORK_DIR/monitor-operations-team.json\" > \"$WORK_DIR/monitor-operations-team.json.tmp\""
-echo $command
-eval $command
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+
+# Make user TEAM_EDIT role if not already
+jq --arg user "$SPA_USER" '(.userRoles[] | select(.userName == $user).role) |= "ROLE_TEAM_EDIT"' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 
 cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
 rm "$WORK_DIR/monitor-operations-team.json.tmp"
+
 cat "$WORK_DIR/monitor-operations-team.json"
 
 # update Monitor Operations team with new user assigned
