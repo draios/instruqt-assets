@@ -70,7 +70,7 @@ curl -s -k -X POST \
 "password": "'${SPA_PASS}'",
 "firstName": "Training",
 "lastName": "Student",
-"systemRole": "ROLE_USER"
+"systemRole": "ROLE_ADVANCED_USER"
 }' \
 ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/user/provisioning/ \
 | jq > $WORK_DIR/account.json
@@ -192,7 +192,7 @@ jq '.userRoles[.userRoles| length] |= . + {
         "teamTheme": "#7BB0B2",
         "userId": '${SPA_USER_ID}',
         "userName": "'${SPA_USER}'",
-        "role": "ROLE_TEAM_STANDARD"
+        "role": "ROLE_TEAM_EDIT"
     }' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
 rm "$WORK_DIR/monitor-operations-team.json.tmp"
