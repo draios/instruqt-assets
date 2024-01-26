@@ -128,3 +128,7 @@ curl -s -k -X POST \
 
 # TODO: get monitor operations team ID
 MONITOR_OPS_TEAM_ID=10018845
+
+# Add user to Monitor Operations group via new API so things like auto-start dont override each other 
+curl -s -k -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" --data-binary '{"standardTeamRole": "ROLE_TEAM_EDIT"}' https://app.us2.sysdig.com/platform/v1/teams/${MONITOR_OPS_TEAM_ID}/users/${SPA_USER_ID}
+
