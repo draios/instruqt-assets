@@ -493,11 +493,11 @@ def main():
 
                 delete_default_team_memberships(_args=args,
                                                 _userid=userid)
-                with open('userid', "w") as file:
+                with open('/opt/sysdig/userid', "w") as file:
                     file.write(str(userid))
-                with open('teamid', "w") as file:
+                with open('/opt/sysdig/teamid', "w") as file:
                     file.write(str(teamid))
-                with open('zoneid', "w") as file:
+                with open('/opt/sysdig/zoneid', "w") as file:
                     file.write(str(zoneid))
 
     if args.delete:
