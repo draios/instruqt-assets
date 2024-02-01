@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-allocate-deployment
+  namespace: javaserver
+  labels:
+    app: simple-allocate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-allocate
+  template:
+    metadata:
+      labels:
+        app: simple-allocate
+    spec:
+      containers:
+      - name: allocate
+        image: mateobur/simple-allocate:0.3
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+
