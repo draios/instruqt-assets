@@ -98,9 +98,7 @@ then
     -f $AGENT_CONF_DIR/prometheus.yaml $HELM_OPTS"
 fi
 
-if [ "$USE_RAPID_RESPONSE" = true ]
-then
-    HELM_OPTS="--set rapidResponse.enabled=true \
+if [ "$USE_RAPID_RESPONSE" = true ]100755 → 100644
     --set rapidResponse.rapidResponse.sslVerifyCertificate=false \
     --set rapidResponse.rapidResponse.passphrase=training_secret_passphrase $HELM_OPTS"
 fi
