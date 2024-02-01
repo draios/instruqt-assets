@@ -18,9 +18,12 @@ F_CYAN='\e[36m'
 F_CLEAR='\e[0m'
 
 WORK_DIR=/opt/sysdig
-TRACK_DIR=/tmp/instruqt-assets/common/prepare-track
-AGENT_CONF_DIR=/root/sysdig-agent
+TRACK_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd -P )
+AGENT_CONF_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")"; cd ../sysdig-agent; pwd -P )
+echo "TRACK_DIR: ${TRACK_DIR}"
+echo "AGENT_CONF_DIR: ${AGENT_CONF_DIR}"
 
+TITLE="Sysdig Agent installation"
 
 ##############################    GLOBAL VARS    ##############################
 INSTALL_WITH=''
@@ -354,7 +357,7 @@ function configure_API () {
 
         # Test connection
         echo -n "  Testing connection to API on endpoint ${PRODUCT_API_ENDPOINT}... "
-        curl -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep '200 OK' &> /dev/null
+        curl --insecure -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep '200 OK' &> /dev/null
         
         if [ $? -eq 0 ]
         then
@@ -506,8 +509,6 @@ function deploy_agent () {
     echo ${AGENT_DEPLOY_DATE} > $WORK_DIR/agent_deploy_date
     RANDOM_CLUSTER_ID=$(echo ${RANDOM_USER_ID}_${AGENT_DEPLOY_DATE})
     echo ${RANDOM_CLUSTER_ID} > $WORK_DIR/agent_cluster_id
-    # Expose Cluster ID as Instruqt var
-    agent variable set SPA_CLUSTER insq_${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID}
     
     # Expose Cluster ID as Instruqt var
     agent variable set SPA_CLUSTER ${RANDOM_CLUSTER_ID}

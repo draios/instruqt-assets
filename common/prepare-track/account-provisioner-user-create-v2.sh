@@ -129,51 +129,9 @@ curl -s -k -X POST \
 # TODO: get monitor operations team ID
 MONITOR_OPS_TEAM_ID=10018845
 
-# get monitor operations team info
-curl -s -k -X GET \
--H "Content-Type: application/json" \
--H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
-${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
-| jq > $WORK_DIR/monitor-operations-team.json
+# Add user to Monitor Operations group via new API so things like auto-start dont override each other 
+curl -s -k -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" --data-binary '{"standardTeamRole": "ROLE_TEAM_EDIT"}' https://api.us2.sysdig.com/platform/v1/teams/${MONITOR_OPS_TEAM_ID}/users/${SPA_USER_ID}
 
-# edits
-#   remove team, get all other info
-jq '.team' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-
-#   update version
-# jq '.version += 1' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-# cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-# rm "$WORK_DIR/monitor-operations-team.json.tmp"
-
-# remove all users that are role ROLE_TEAM_MANAGER
-jq '.userRoles[] |= del(. | select(.role == "ROLE_TEAM_MANAGER"))' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-
-# clean nulls in .userRoles[]
-# del(.[][] | nulls)
-jq '.userRoles |= del(.[] | nulls)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-
-# remove fields         "properties" "customerId" "dateCreated" "lastUpdated" "userCount"
-jq '. |= del(.properties)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-jq '. |= del(.customerId)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-jq '. |= del(.dateCreated)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-jq '. |= del(.lastUpdated)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
-jq '. |= del(.userCount)' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
-cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
-rm "$WORK_DIR/monitor-operations-team.json.tmp"
 
 # add fields   "searchFilter" "filter"
 jq --argjson var null '. + {searchFilter: $var}' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"

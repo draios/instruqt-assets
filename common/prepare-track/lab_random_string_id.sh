@@ -8,8 +8,9 @@ function generate_random_id () {
 
     if [ ! -f $WORK_DIR/random_string_OK ] # random_id not set
     then
-        mapfile nouns < /tmp/instruqt-assets/common/prepare-track/lab_random_string_id_nouns
-        mapfile adjectives < /tmp/instruqt-assets/common/prepare-track/lab_random_string_id_adjectives
+        cd prepare-track
+        mapfile nouns < ./lab_random_string_id_nouns
+        mapfile adjectives < ./lab_random_string_id_adjectives
 
         nounIndex=$RANDOM%$((${#nouns[@]}-1))
         adjectiveIndex=$RANDOM%$((${#adjectives[@]}-1))
