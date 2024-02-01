@@ -10,6 +10,7 @@
 
 trap '' 2 # Signal capture quit with Ctrl+C
 
+
 ###########################    GLOBAL CONSTANTS    ############################
 F_BOLD='\e[1m'
 F_RED='\x1B[31m'
@@ -70,8 +71,8 @@ function panic_msg () {
 ##
 # Define nginx.conf values to enable redirect
 # to the Sysdig Region selected by the user
-#
-#This function applies different changes depending
+# 
+# This function applies different changes depending
 # on the type of resources attached to a track:
 #   - hosts for an agent installation (nginx managed by systemctl)
 #   - container for cloud account (nginx process alone, no systemctl)
@@ -82,8 +83,8 @@ function config_sysdig_tab_redirect () {
 
     #backup
     cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
-
-sed -i -e "s@${OLD_STRING}@${NEW_STRING}@g" /etc/nginx/nginx.conf
+    
+    sed -i -e "s@${OLD_STRING}@${NEW_STRING}@g" /etc/nginx/nginx.conf
 
     if [ "$USE_AGENT_REGION" = true ]
     then
@@ -95,8 +96,8 @@ sed -i -e "s@${OLD_STRING}@${NEW_STRING}@g" /etc/nginx/nginx.conf
         pkill -f nginx
         nginx
     fi
-
-touch $WORK_DIR/region_setup_OK
+    
+    touch $WORK_DIR/region_setup_OK
 }
 
 ##
@@ -107,8 +108,8 @@ touch $WORK_DIR/region_setup_OK
 #        ${HELM_REGION_ID} values:
 #                    - "us1", "us2", "us4", "eu1" and "au1"
 #                    - not included yet "us3" (listed in helm chart but not in docs)
-#
-#Update when a new region is created.
+# 
+# Update when a new region is created.
 ##
 function set_values () {
     REGION=$1
@@ -203,8 +204,8 @@ function set_values () {
             PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
     esac
-
-echo "${MONITOR_API_ENDPOINT}" > $WORK_DIR/MONITOR_API_ENDPOINT
+    
+    echo "${MONITOR_API_ENDPOINT}" > $WORK_DIR/MONITOR_API_ENDPOINT
     echo "${SECURE_API_ENDPOINT}" > $WORK_DIR/SECURE_API_ENDPOINT
 
     config_sysdig_tab_redirect
@@ -222,8 +223,8 @@ function select_region () {
         echo
         echo "Check the docs if more info about regions is required to find what's yours:"
         echo "   https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges"
-        echo
-        echo"Please select your Sysdig SaaS account Region: "
+        echo 
+        echo "Please select your Sysdig SaaS account Region: "
         echo
         echo "   0) Abort install"
         echo "   1) US East (Virginia) - us1"
@@ -242,7 +243,7 @@ function select_region () {
             REGION_N=${TEST_REGION}
             echo "   Instruqt test or provided Sysdig SaaS region will be used."
         else
-            read -p "   Select Region (type number): "  REGION_N;
+            read -p "   Select Region (type number): "  REGION_N; 
         fi
     else
         REGION_N=$(dialog --title "$TITLE" \
@@ -302,8 +303,8 @@ function select_region () {
 
 ##
 # Configure Sysdig API access for Monitor or Secure.
-#
-#Usage:
+# 
+# Usage:
 #   configure_API ${PRODUCT} ${PRODUCT_URL} ${PRODUCT_API_ENDPOINT}
 #
 #   PRODUCT := { SECURE | MONITOR }
@@ -357,8 +358,8 @@ function configure_API () {
         # Test connection
         echo -n "  Testing connection to API on endpoint ${PRODUCT_API_ENDPOINT}... "
         curl --insecure -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep '200 OK' &> /dev/null
-
-if [ $? -eq 0 ]
+        
+        if [ $? -eq 0 ]
         then
             echo "  success"
             echo "${API_TOKEN}" > $WORK_DIR/user_data_${PRODUCT}_API_OK
@@ -369,8 +370,8 @@ if [ $? -eq 0 ]
         sleep 1
         echo
     done
-
-if [ ! -f $WORK_DIR/user_data_${PRODUCT}_API_OK ];
+    
+    if [ ! -f $WORK_DIR/user_data_${PRODUCT}_API_OK ];
     then
         echo "  Failed to connect to API Endpoint with selected Region and API Key(s)."
         panic_msg
@@ -462,8 +463,8 @@ function intro () {
     if [ "$USE_NODE_ANALYZER" == true ]; then
       echo "    - Enable the Agent Node Analyzer."
     fi
-
-if [ "$USE_KSPM" == true ]; then
+    
+    if [ "$USE_KSPM" == true ]; then
       echo "    - Enable KSPM."
     fi
 
@@ -497,6 +498,7 @@ if [ "$USE_KSPM" == true ]; then
     echo "----------------------------------------------------------"
 }
 
+
 ##
 # Ask for Agent Key and deploy a Sysdig Agent.
 ##
@@ -507,11 +509,12 @@ function deploy_agent () {
     echo ${AGENT_DEPLOY_DATE} > $WORK_DIR/agent_deploy_date
     RANDOM_CLUSTER_ID=$(echo ${RANDOM_USER_ID}_${AGENT_DEPLOY_DATE})
     echo ${RANDOM_CLUSTER_ID} > $WORK_DIR/agent_cluster_id
-
+    
     # Expose Cluster ID as Instruqt var
-agent variable set SPA_CLUSTER ${RANDOM_CLUSTER_ID}
-
+    agent variable set SPA_CLUSTER ${RANDOM_CLUSTER_ID}
+    
     echo "Configuring Sysdig Agent"
+
 
     if [ "$USE_CURSES" = false ]
     then
@@ -568,10 +571,10 @@ function test_agent () {
                 #kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 | grep "cm_collector" | grep -q "Processing messages" && connected=true
                 kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=300s && connected=true
                 FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
-
+                
                 ;;
             docker)
-### Todo: docker should check the existence of /opt/draios/logs/running <- leveraged by our kubernetes health check and is only created when the agent is officially connected to the backend
+                ### Todo: docker should check the existence of /opt/draios/logs/running <- leveraged by our kubernetes health check and is only created when the agent is officially connected to the backend
                 docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}" && connected=true
                 FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
                 ;;
@@ -581,7 +584,7 @@ function test_agent () {
                 FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
                 ;;
         esac
-
+        
         attempt=$(( $attempt + 1 ))
     done
 
@@ -602,21 +605,21 @@ function test_agent () {
 # Checks if the track includes a cloud account
 # and sets the CLOUD_ACCOUNT_ID variable with an identifier of the cloud account
 # that will be used to deploy the required infra in the cloud provider selected
-#
+# 
 # More info about resources and variables used in this function:
 #    -----------------------------------------------------------------------------
-#   Instruqt can attach a burner cloud account with a track. It injects
+#    Instruqt can attach a burner cloud account with a track. It injects 
 #    credentials to use the account in the host or cloud_container. This
 #    function checks if there's a cloud account in the track and in that case
-#    it sets the requiered env vars to use it and deploy sysdig secure fr cloud.
-#
+#    it sets the requiered env vars to use it and deploy sysdig secure for cloud.
+# 
 #    To learn more about it:
 #    https://docs.instruqt.com/how-to-guides/manage-sandboxes/access-cloud-accounts
-#   -----------------------------------------------------------------------------
-#
+#    -----------------------------------------------------------------------------
+# 
 # NOTE: this function do not support >1 cloud accounts attached to the track sandbox
 #
-#
+##
 function track_has_cloud_account () {
     if [ ! -z "$INSTRUQT_AWS_ACCOUNTS" ]
     then
@@ -669,10 +672,10 @@ function deploy_cloud_connector () {
     CLOUD_REGION=""
     echo ${CLOUD_CONNECTOR_DEPLOY_DATE} > $WORK_DIR/cloud_connector_deploy_date
     echo ${CLOUD_CONNECTOR_DEPLOY_QUERY} > $WORK_DIR/cloud_connector_deploy_query
-
+    
     echo "Configuring Sysdig CloudVision for $CLOUD_PROVIDER"
 
-# we are defining here some values (region) but in future we might want the user to choose its region
+    # we are defining here some values (region) but in future we might want the user to choose its region
     # right now there's not a reason to select one or another
     if [ $CLOUD_PROVIDER = "aws" ]
     then
@@ -703,10 +706,10 @@ function test_cloud_connector () {
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
         sleep 10
-
+        
         # asks the sysdig secure API about cloud accounts (provider, account_id, date_last_seen)
         # ordered by date_last_seen (more recent first)
-# applies some filtering to use the output usable (date format, quotes, etc.)
+        # applies some filtering to use the output usable (date format, quotes, etc.)
         # and writes it to .cloudProvidersLastSeen
         curl -s --header "Content-Type: application/json"   \
         -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
@@ -720,12 +723,12 @@ function test_cloud_connector () {
         CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH=$(date --date "$CLOUD_CONNECTOR_DEPLOY_QUERY" +%s)
 
         while read line; do # reading each cloud provider connected to the sysdig account
-
+            
             if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID}" ]]
-            then
-    # the account_id matches
+            then 
+                # the account_id matches
                 #LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f1) # extract date
-                [[ $LAST_SEEN_DATE == "null" ]] && LAST_SEEN_DATE_EPOCH=0 || LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
+                #[[ $LAST_SEEN_DATE == "null" ]] && LAST_SEEN_DATE_EPOCH=0 || LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
 
                 # is this account date_last_seen value greater than the deployment_date in this script?
                 # ^ this means, we want the cloud account to be active now
@@ -738,7 +741,7 @@ function test_cloud_connector () {
                 #fi
             fi
         done < .cloudProvidersLastSeen
-
+        
         attempt=$(( $attempt + 1 ))
     done
 
@@ -841,7 +844,7 @@ function help () {
     echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
     echo "  -x, --use-curses            Use ncurses dialog menus instead of CLI."
     echo "  -8, --kube-adm              Customize installer for kubeadm k8s cluster"
-    echo "  --on-prem <on_prem_endpoint>       In case an on-prem backend is used, set here the endpoint value."
+    echo "  --on-prem <on_prem_endpoint>       In case an on-prem backend is used, set here the endpoint value."                     
     echo "      --runtime-vm            Enable VM Runtime Scanner. Use with --node-analyzer."
     echo
     echo
@@ -860,7 +863,9 @@ function help () {
     echo "  HOST_OPTS                   Additional options for Host installation."
     echo
 
+
 }
+
 
 ##
 # Check and consume script flags.
@@ -1004,7 +1009,7 @@ function setup () {
     then
         configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
     fi
-
+    
     if [ "$USE_SECURE_API" = true ]
     then
         configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
@@ -1023,11 +1028,12 @@ function setup () {
         deploy_cloud_connector
         test_cloud_connector
     fi
-
+    
     if [ "$SKIP_CLEANUP" = false ]
     then
         clean_setup
     fi
+}
 
 ################################    SCRIPT    #################################
 setup $@
