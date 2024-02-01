@@ -132,3 +132,34 @@ MONITOR_OPS_TEAM_ID=10018845
 # Add user to Monitor Operations group via new API so things like auto-start dont override each other 
 curl -s -k -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" --data-binary '{"standardTeamRole": "ROLE_TEAM_EDIT"}' https://api.us2.sysdig.com/platform/v1/teams/${MONITOR_OPS_TEAM_ID}/users/${SPA_USER_ID}
 
+
+# add fields   "searchFilter" "filter"
+jq --argjson var null '. + {searchFilter: $var}' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+jq --argjson var null '. + {filter: $var}' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+
+# add new user to group
+# this is not working, we should remove existing users (account managers) and push only the new ones. 
+# the get is returning account_managers
+jq '.userRoles[.userRoles| length] |= . + {
+        "teamId": '${MONITOR_OPS_TEAM_ID}',
+        "teamName": "Monitor Operations",
+        "teamTheme": "#7BB0B2",
+        "userId": '${SPA_USER_ID}',
+        "userName": "'${SPA_USER}'",
+        "role": "ROLE_TEAM_STANDARD"
+    }' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
+cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
+rm "$WORK_DIR/monitor-operations-team.json.tmp"
+
+
+# update Monitor Operations team with new user assigned
+curl -s -k -X PUT \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
+-d @$WORK_DIR/monitor-operations-team.json \
+${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
+| jq > /dev/null
