@@ -1,6 +1,7 @@
-prometheus:
-  file: true
-  yaml: |
-    global:
-      scrape_interval: 10s
-    scrape_configs:
+agent:
+  prometheus:
+    file: true
+    yaml:
+      global:
+        scrape_interval: 10s
+      scrape_configs:
