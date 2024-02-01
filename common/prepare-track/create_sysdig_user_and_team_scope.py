@@ -214,7 +214,7 @@ def create_team_old(_args, _zoneid, _userid):
         "searchFilter": None,
         "default": False,
         "immutable": False,
-        "filter": f"kubernetes.cluster.name = \"{_args.clustername}\"",
+        "filter": f"kubernetes.cluster.name = \"{_args.clustername}\" and kubernetes.namespace.name = \"default\"",
         "namespaceFilters": {
             "prometheusRemoteWrite": None
         },
