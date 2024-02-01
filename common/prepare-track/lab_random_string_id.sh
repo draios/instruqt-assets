@@ -27,4 +27,4 @@ function generate_random_id () {
         echo "Random user string from dictionary: $random_id"
 }
 
-generate_random_id
+generate_random_id 
