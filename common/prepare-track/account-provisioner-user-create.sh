@@ -204,4 +204,4 @@ curl -s -k -X PUT \
 -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
 -d @$WORK_DIR/monitor-operations-team.json \
 ${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
-| jq > /dev/null
+| jq > /dev/null 
