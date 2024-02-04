@@ -15,7 +15,8 @@ ACCESS_KEY=$2
 HELM_REGION_ID=$3
 SECURE_API_TOKEN=$4
 COLLECTOR=$5
-HELM_OPTS=""
+# commenting out following line to make it possible to pass additional parameters for installation
+# HELM_OPTS=""
 
 # new hostnames, to avoid duplicated names as much as possible
 function custom_hostnaming () {
