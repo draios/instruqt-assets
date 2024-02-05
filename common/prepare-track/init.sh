@@ -191,6 +191,15 @@ function set_values () {
             SECURE_API_ENDPOINT='https://br-sao.security-compliance-secure.cloud.ibm.com'
             ;;
 
+        *"EU-ES"*)
+            MONITOR_URL='https://eu-es.monitoring.cloud.ibm.com'
+            SECURE_URL='https://eu-es.security-compliance-secure.cloud.ibm.com/secure'
+            AGENT_COLLECTOR='ingest.eu-es.monitoring.cloud.ibm.com'
+            NIA_ENDPOINT='eu-es.monitoring.cloud.ibm.com'
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT='https://eu-es.security-compliance-secure.cloud.ibm.com'
+            ;;
+
         *) # default to US South
             MONITOR_URL='https://us-south.monitoring.cloud.ibm.com'
             SECURE_URL='https://us-south.security-compliance-secure.cloud.ibm.com/secure'
@@ -232,6 +241,7 @@ function select_region () {
         echo "   7) AU-SYD"
         echo "   8) CA-TOR"
         echo "   9) BR-SAO"
+        echo "  10) EU-ES"
         echo
 
         if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
@@ -243,7 +253,7 @@ function select_region () {
         fi
     else
         REGION_N=$(dialog --title "$TITLE" \
-                          --menu "Select your IBM region:" 16 42 9 \
+                          --menu "Select your IBM region:" 18 42 9 \
                           1 "US-South" \
                           2 "EU-DE" \
                           3 "EU-GB" \
@@ -253,6 +263,7 @@ function select_region () {
                           7 "AU-SYD" \
                           8 "CA-TOR" \
                           9 "BR-SAO" \
+                          10 "EU-ES" \
                           3>&1 1>&2 2>&3 3>&-
                   )
         if [ $? -ne 0 ]
@@ -292,6 +303,9 @@ function select_region () {
             ;;
         9)
             REGION="BR-SAO"
+            ;;
+        10)
+            REGION="EU-ES"
             ;;
         *)
             echo "${REGION_N} is not a valid an option."
@@ -341,21 +355,25 @@ function configure_API () {
     do
         attempt=$(( $attempt + 1 ))
 
+        PRODUCT_NAME="MONITORING"
+
         if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
         then
             if [[ ${PRODUCT} == "MONITOR" ]];
             then
                 API_TOKEN=$(echo -n ${TEST_MONITOR_API} | base64 --decode)
+                PRODUCT_NAME="MONITORING"
             else #SECURE
                 API_TOKEN=$(echo -n ${TEST_SECURE_API} | base64 --decode)
+                PRODUCT_NAME="WORKLOAD PROTECTION"
             fi
             echo "TEST_${PRODUCT}_API_TOKEN=${API_TOKEN}"
         elif [ "$USE_CURSES" = false ]
         then
-            read -p "  Insert here your $PRODUCT API Token: "  API_TOKEN;
+            read -p "  Insert here your $PRODUCT_NAME API Token: "  API_TOKEN;
         else
             API_TOKEN=$(dialog --title "$TITLE" \
-                               --inputbox "(You can use copy/paste with right click menu)\n\nInsert your $PRODUCT API Token:" 10 60 \
+                               --inputbox "(You can use copy/paste with right click menu)\n\nInsert your $PRODUCT_NAME API Token:" 10 60 \
                                3>&1 1>&2 2>&3 3>&-
                        )
         fi
