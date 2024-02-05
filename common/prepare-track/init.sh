@@ -355,17 +355,19 @@ function configure_API () {
     do
         attempt=$(( $attempt + 1 ))
 
-        PRODUCT_NAME="MONITORING"
+        PRODUCT_NAME="WORKLOAD PROTECTION"
+        if [[ ${PRODUCT} == "MONITOR" ]];
+        then
+            PRODUCT_NAME="MONITORING"
+        fi
 
         if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
         then
             if [[ ${PRODUCT} == "MONITOR" ]];
             then
                 API_TOKEN=$(echo -n ${TEST_MONITOR_API} | base64 --decode)
-                PRODUCT_NAME="MONITORING"
             else #SECURE
                 API_TOKEN=$(echo -n ${TEST_SECURE_API} | base64 --decode)
-                PRODUCT_NAME="WORKLOAD PROTECTION"
             fi
             echo "TEST_${PRODUCT}_API_TOKEN=${API_TOKEN}"
         elif [ "$USE_CURSES" = false ]
