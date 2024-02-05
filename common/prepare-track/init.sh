@@ -253,7 +253,7 @@ function select_region () {
         fi
     else
         REGION_N=$(dialog --title "$TITLE" \
-                          --menu "Select your IBM region:" 18 42 9 \
+                          --menu "Select your IBM region:" 18 42 10 \
                           1 "US-South" \
                           2 "EU-DE" \
                           3 "EU-GB" \
