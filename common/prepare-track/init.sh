@@ -45,6 +45,7 @@ USE_CLOUD=false
 USE_CLOUD_SCAN_ENGINE=false
 USE_REGION_CLOUD=false
 USE_AGENT_REGION=false
+USE_RUNTIME_VM=false
 USE_CURSES=false
 
 ##############################    GLOBAL VARS    ##############################
@@ -515,6 +516,10 @@ function intro () {
       echo "    - Customize Helm installer for kubeadm K8s cluster."
     fi
 
+    if [ "$USE_RUNTIME_VM" == true ]; then
+      echo "    - Deploy Runtime Scanner. Requires --node-analyzer."
+    fi
+
     echo "  Follow the instructions below."
     echo
     echo "----------------------------------------------------------"
@@ -930,6 +935,9 @@ function check_flags () {
             --kube-adm | -8)
                 export USE_K8S=true
                 ;;
+            --runtime-vm)
+                export USE_RUNTIME_VM=true
+                ;;
             --help | -h)
                 help
                 exit 0
@@ -943,7 +951,7 @@ function check_flags () {
         shift
     done
 
-    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ]  || [ "$USE_RAPID_RESPONSE" = true ]  || [ "$USE_K8S" = true ]) && [ "$USE_AGENT" != true ]
+    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ] || [ "$USE_RUNTIME_VM" = true ] || [ "$USE_RAPID_RESPONSE" = true ]  || [ "$USE_K8S" = true ]) && [ "$USE_AGENT" != true ]
     then
         echo "ERROR: Options only available with -a/--agent."
         exit 1
