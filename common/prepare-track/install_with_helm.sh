@@ -25,6 +25,12 @@ then
     --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
     --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.deploy=true $HELM_OPTS"
 
+    if [ "$USE_RUNTIME_VM" = true ]
+    then
+        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.runtimeScanner.settings.eveEnabled=true \
+	    $HELM_OPTS"
+    fi
+
     if [ "$USE_K8S" = false ]
     then
         HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.containerdSocketPath="unix:///run/k3s/containerd/containerd.sock" \
