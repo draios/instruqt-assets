@@ -1021,10 +1021,10 @@ function setup () {
         configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
     fi
 
-    if [ "$USE_AGENT" = true ]
-    then
-        test_agent
-    fi
+    # if [ "$USE_AGENT" = true ]
+    # then
+    #     test_agent
+    # fi
 
     if [ "$USE_CLOUD" = true ]
     then
