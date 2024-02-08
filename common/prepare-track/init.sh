@@ -436,12 +436,13 @@ function install_agent () {
     ACCESS_KEY=$2
     AGENT_COLLECTOR=$3
     NIA_ENDPOINT=$4
+    API_TOKEN=$5
 
     installation_method
 
     if [[ "$INSTALL_WITH" == "helm" ]]
     then
-        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $AGENT_COLLECTOR $NIA_ENDPOINT
+        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $AGENT_COLLECTOR $NIA_ENDPOINT $API_TOKEN
     else
         source $TRACK_DIR/install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $AGENT_COLLECTOR
     fi
@@ -554,8 +555,9 @@ function deploy_agent () {
 
     echo -e "  The agent is being installed in the background.\n"
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
+    API_TOKEN="$(cat /opt/sysdig/user_data_SECURE_API_OK)"
 
-    install_agent ${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${NIA_ENDPOINT}
+    install_agent ${AGENT_DEPLOY_DATE}_${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${NIA_ENDPOINT} ${API_TOKEN}
 }
 
 ##
