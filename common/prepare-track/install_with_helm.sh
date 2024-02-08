@@ -59,6 +59,7 @@ HELM_OPTS="--set admissionController.enabled=true \
 	--set admissionController.verifySSL=false \
 	--set admissionController.features.k8sAuditDetections=true \
 	--set admissionController.scanner.enabled=false \
+	--set admissionController.sysdig.apiEndpoint=${NIA_ENDPOINT} \
 	--set admissionController.sysdig.secureAPIToken=${SECURE_API_TOKEN} ${HELM_OPTS}"
 
 if [ "$USE_NODE_ANALYZER" = true ]
@@ -88,7 +89,9 @@ fi
 
 if [ "$USE_KSPM" = true ]
 then
-    HELM_OPTS="--set global.kspm.deploy=true $HELM_OPTS"
+    HELM_OPTS="--set global.kspm.deploy=true \
+               --set kspmCollector.apiEndpoint=${NIA_ENDPOINT} \
+               $HELM_OPTS"
 else
     HELM_OPTS="--set global.kspm.deploy=false $HELM_OPTS"
 fi
