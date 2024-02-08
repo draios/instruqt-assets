@@ -121,18 +121,21 @@ fi
 custom_hostnaming
 
 # echo "Deploying Sysdig Agent with Helm"
+
+
+
 kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
-helm install sysdig-agent --namespace sysdig-agent \
-    --set global.clusterConfig.name="insq_${CLUSTER_NAME}" \
+helm upgrade --install sysdig-agent --namespace sysdig-agent \
+    --set global.clusterConfig.name="${CLUSTER_NAME}" \
     --set global.sysdig.accessKey=${ACCESS_KEY} \
-    --set agent.collectorSettings.collectorHost=${COLLECTOR} \
-    --set kspmCollector.apiEndpoint=${NIA_ENDPOINT} \
     --set agent.resourceProfile=custom \
     --set agent.resources.requests.cpu=1 \
     --set agent.resources.requests.memory=1024Mi \
     --set agent.resources.limits.cpu=2 \
     --set agent.resources.limits.memory=2048Mi \
     --set agent.sysdig.settings.drift_killer.enabled=true \
+    --set agent.collectorSettings.sslVerifyCertificate=false \
+    --set agent.collectorSettings.collectorHost=${COLLECTOR} \
     -f ${AGENT_CONF_DIR}/values.yaml \
     ${HELM_OPTS} \
 sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &
