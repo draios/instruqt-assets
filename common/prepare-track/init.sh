@@ -1008,11 +1008,6 @@ function setup () {
         select_region
     fi
 
-    if [ "$USE_AGENT" = true ]
-    then
-        deploy_agent
-    fi
-
     if [ "$USE_MONITOR_API" = true ]
     then
         configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
@@ -1021,6 +1016,11 @@ function setup () {
     if [ "$USE_SECURE_API" = true ]
     then
         configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
+    fi
+
+    if [ "$USE_AGENT" = true ]
+    then
+        deploy_agent
     fi
 
     # if [ "$USE_AGENT" = true ]
