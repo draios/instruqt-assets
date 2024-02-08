@@ -9,7 +9,7 @@
 ##
 
 OUTPUT=/opt/sysdig/helm_install.out
-SOCKET_PATH=/run/k3s/containerd/containerd.sock
+SOCKET_PATH=/var/run/containerd/containerd.sock
 CLUSTER_NAME=$1
 ACCESS_KEY=$2
 COLLECTOR=$3
