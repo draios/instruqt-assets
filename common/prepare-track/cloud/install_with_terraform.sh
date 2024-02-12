@@ -26,7 +26,7 @@ if [ "$PROVIDER" == "aws" ]
 then
     cd aws
 
-    bucket_name="audit-$(echo $RANDOM_ID | sed 's/_/-/g'))"
+    bucket_name="audit-$(echo $RANDOM_ID | sed 's/_/-/g')"
     trail_name="trail-$bucket_name"
 
     # Create an S3 bucket
