@@ -6,8 +6,6 @@
 #   install_with_terraform.sh $PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_API_ENDPOINT $CLOUD_REGION $CLOUD_ACCOUNT_ID
 ##
 
-apt update && apt install -y less
-
 # logs
 OUTPUT=/opt/sysdig/cloud/terraform_install.out
 mkdir -p /opt/sysdig/cloud/
@@ -30,7 +28,7 @@ then
     trail_name="trail-$bucket_name"
 
     # Create an S3 bucket
-    aws s3api create-bucket --bucket "$bucket_name" --region us-east-1 | jq '.'
+    aws s3api create-bucket --bucket "$bucket_name" --region us-east-1 | jq '.' >> ${OUTPUT} 2>&1
 
     # Generate a bucket policy JSON file
     cat <<EOF > bucket-policy.json
@@ -65,10 +63,10 @@ then
 EOF
 
     # Apply the bucket policy
-    aws s3api put-bucket-policy --bucket "$bucket_name" --policy file://bucket-policy.json  | jq '.'
+    aws s3api put-bucket-policy --bucket "$bucket_name" --policy file://bucket-policy.json  | jq '.' >> ${OUTPUT} 2>&1
 
     # Create a CloudTrail trail
-    aws cloudtrail create-trail --name "$trail_name" --s3-bucket-name "$bucket_name"  | jq '.'
+    aws cloudtrail create-trail --name "$trail_name" --s3-bucket-name "$bucket_name"  | jq '.' >> ${OUTPUT} 2>&1
 
     # Start the trail
     aws cloudtrail start-logging --name "$trail_name" | jq '.'
@@ -91,9 +89,6 @@ EOF
     cat api_response.json | jq -r .installAction > main.tf
     ROLE_NAME=$(cat api_response.json | jq -r .values.roleName)
 
-
-    terraform init && terraform apply -auto-approve
-
     echo "  Initializing Terraform modules, backend and provider plugins" \
     && terraform init >> ${OUTPUT} 2>&1 \
     && echo "    Terraform has been successfully initialized. Applying... (this will take a few minutes)" \
@@ -115,27 +110,27 @@ EOF
     # enable components
     cat api_response.json | jq -c '.accountConfig.components[]' | while read -r data; 
         do
-            echo "Adding component: $data"
-            echo ""
+            echo "Adding component: $data" >> ${OUTPUT} 2>&1
+            echo "" >> ${OUTPUT} 2>&1
             curl -s -k -X POST \
                 -H "Content-Type: application/json" \
                 -H "Authorization: Bearer ${SYSDIG_SECURE_API_TOKEN}" \
                 --data "$data" \
-                "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts/${ACCOUNT_ID_INTERNAL}/components"
-            echo ""
+                "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts/${ACCOUNT_ID_INTERNAL}/components" | jq >> ${OUTPUT} 2>&1
+            echo "" >> ${OUTPUT} 2>&1
         done
 
     # add features
     cat api_response.json | jq -c '.accountConfig.features[]' | while read -r data;
         do
             FEATURE=$(echo $data | jq -r .type)
-            echo "Adding feature: ${FEATURE}"
+            echo "Adding feature: ${FEATURE}" >> ${OUTPUT} 2>&1
             curl -s -k -X PUT \
                 -H "Content-Type: application/json" \
                 -H "Authorization: Bearer ${SYSDIG_SECURE_API_TOKEN}" \
                 --data "$data" \
-                "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts/${ACCOUNT_ID_INTERNAL}/feature/${FEATURE}"
-            echo ""
+                "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts/${ACCOUNT_ID_INTERNAL}/feature/${FEATURE}" | jq >> ${OUTPUT} 2>&1
+            echo "" >> ${OUTPUT} 2>&1
         done
 
     # enable CIEM
@@ -152,7 +147,7 @@ EOF
         "ciemEnabled": true
         }' \
         ${SECURE_API_ENDPOINT}/api/cloud/v2/accounts/${AWS_ACCOUNT_ID} \
-        | jq
+        | jq >> ${OUTPUT} 2>&1
 
 fi
 
