@@ -134,7 +134,6 @@ EOF
         done
 
     # enable CIEM
-
     curl -s -k -X PUT \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer ${SYSDIG_SECURE_API_TOKEN}" \
@@ -148,6 +147,22 @@ EOF
         }' \
         ${SECURE_API_ENDPOINT}/api/cloud/v2/accounts/${AWS_ACCOUNT_ID} \
         | jq >> ${OUTPUT} 2>&1
+
+    # retrigger CSPM + CIEM scan just in case it does not trigger automatically after scan
+    # no wait for finish
+    curl $PRODUCT_API_ENDPOINT/api/cspm/v1/tasks \
+        --header "Authorization: Bearer $API_TOKEN" \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "task": {
+                "name": "AWS Scan - Instruqt setup",
+                "type": 7,
+                "parameters": {
+                    "account": "'${AWS_ACCOUNT_ID}'",
+                    "providerType": "AWS"
+                }
+            }
+        }' -s
 
 fi
 
