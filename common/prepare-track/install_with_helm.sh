@@ -15,7 +15,7 @@ ACCESS_KEY=$2
 HELM_REGION_ID=$3
 SECURE_API_TOKEN=$4
 COLLECTOR=$5
-HELM_OPTS=""
+# HELM_OPTS="" Commenting this out to allow exporting extra opts outside of this script with `export HELM_OPTS=--set setting.param=value --set foo2=value`
 
 # new hostnames, to avoid duplicated names as much as possible
 function custom_hostnaming () {
