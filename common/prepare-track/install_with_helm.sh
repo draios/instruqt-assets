@@ -15,12 +15,10 @@ ACCESS_KEY=$2
 HELM_REGION_ID=$3
 SECURE_API_TOKEN=$4
 COLLECTOR=$5
-HELM_OPTS=""
+# HELM_OPTS=""
 
-HELM_OPTS='
---set agent.sysdig.settings.falcobaseline.report_interval=150000000000 \
---set agent.sysdig.settings.falcobaseline.randomize_start=false \
---set agent.sysdig.settings.falcobaseline.location: "/tmp/fingerprints"'
+HELM_OPTS="--set agent.sysdig.settings.falcobaseline.report_interval=150000000000 \
+--set agent.sysdig.settings.falcobaseline.randomize_start=false "
 
 
 # new hostnames, to avoid duplicated names as much as possible
