@@ -18,6 +18,10 @@ COLLECTOR=$5
 # HELM_OPTS=""
 
 HELM_OPTS="--set agent.sysdig.settings.falcobaseline.report_interval=150000000000 \
+--set agent.sysdig.settings.falcobaseline.max_drops_buffer_rate_percentage=0.99 \
+--set agent.sysdig.settings.falcobaseline.max_sampling_ratio=128 \
+--set agent.sysdig.settings.falcobaseline.debug_metadata=true \
+--set agent.sysdig.settings.falcobaseline.debug=true \
 --set agent.sysdig.settings.falcobaseline.randomize_start=false "
 
 
@@ -123,7 +127,7 @@ custom_hostnaming
 
 # echo "Deploying Sysdig Agent with Helm"
 kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
-helm upgrade --install sysdig-agent --namespace sysdig-agent \
+(set -x; helm upgrade --install sysdig-agent --namespace sysdig-agent \
     --set global.clusterConfig.name="${CLUSTER_NAME}" \
     --set global.sysdig.accessKey=${ACCESS_KEY} \
     --set global.sysdig.region=${HELM_REGION_ID} \
@@ -137,4 +141,4 @@ helm upgrade --install sysdig-agent --namespace sysdig-agent \
     --set agent.collectorSettings.collectorHost=${COLLECTOR} \
     -f ${AGENT_CONF_DIR}/values.yaml \
     ${HELM_OPTS} \
-sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &
+sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &)
