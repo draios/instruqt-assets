@@ -15,7 +15,13 @@ ACCESS_KEY=$2
 HELM_REGION_ID=$3
 SECURE_API_TOKEN=$4
 COLLECTOR=$5
-# HELM_OPTS="" Commenting this out to allow exporting extra opts outside of this script with `export HELM_OPTS=--set setting.param=value --set foo2=value`
+HELM_OPTS=""
+
+HELM_OPTS='
+--set agent.sysdig.settings.falcobaseline.report_interval=150000000000 \
+--set agent.sysdig.settings.falcobaseline.randomize_start=false \
+--set agent.sysdig.settings.falcobaseline.location: "/tmp/fingerprints"'
+
 
 # new hostnames, to avoid duplicated names as much as possible
 function custom_hostnaming () {
@@ -65,7 +71,11 @@ then
     HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=true \
     --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
     --set nodeAnalyzer.nodeAnalyzer.sslVerifyCertificate=false \
-    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.deploy=true $HELM_OPTS"
+    --set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=false \
+    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.deploy=true \
+    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.env.DEV_STARTUP_DELAY_DURATION_JITTER_DURATION=15s \
+    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.falcobaseline.randomize_start=false \
+    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.falcobaseline.report_interval=300000000000 $HELM_OPTS"
 
     if [ "$USE_RUNTIME_VM" = true ]
     then
