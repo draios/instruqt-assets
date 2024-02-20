@@ -24,7 +24,6 @@ HELM_OPTS="--set agent.sysdig.settings.falcobaseline.report_interval=15000000000
 --set agent.sysdig.settings.falcobaseline.debug=true \
 --set agent.sysdig.settings.falcobaseline.randomize_start=false $HELM_OPTS"
 
-
 # new hostnames, to avoid duplicated names as much as possible
 function custom_hostnaming () {
     # Fetch current node names dynamically using kubectl
