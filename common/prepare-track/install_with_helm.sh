@@ -17,6 +17,13 @@ SECURE_API_TOKEN=$4
 COLLECTOR=$5
 HELM_OPTS="${HELM_OPTS}"
 
+HELM_OPTS="--set agent.sysdig.settings.falcobaseline.report_interval=150000000000 \
+--set agent.sysdig.settings.falcobaseline.max_drops_buffer_rate_percentage=0.99 \
+--set agent.sysdig.settings.falcobaseline.max_sampling_ratio=128 \
+--set agent.sysdig.settings.falcobaseline.debug_metadata=true \
+--set agent.sysdig.settings.falcobaseline.debug=true \
+--set agent.sysdig.settings.falcobaseline.randomize_start=false $HELM_OPTS"
+
 # new hostnames, to avoid duplicated names as much as possible
 function custom_hostnaming () {
     # Fetch current node names dynamically using kubectl
@@ -65,7 +72,11 @@ then
     HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=true \
     --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
     --set nodeAnalyzer.nodeAnalyzer.sslVerifyCertificate=false \
-    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.deploy=true $HELM_OPTS"
+    --set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=false \
+    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.deploy=true \
+    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.env.DEV_STARTUP_DELAY_DURATION_JITTER_DURATION=15s \
+    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.falcobaseline.randomize_start=false \
+    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.falcobaseline.report_interval=300000000000 $HELM_OPTS"
 
     if [ "$USE_RUNTIME_VM" = true ]
     then
@@ -115,7 +126,7 @@ custom_hostnaming
 
 # echo "Deploying Sysdig Agent with Helm"
 kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
-helm upgrade --install sysdig-agent --namespace sysdig-agent \
+(set -x; helm upgrade --install sysdig-agent --namespace sysdig-agent \
     --set global.clusterConfig.name="${CLUSTER_NAME}" \
     --set global.sysdig.accessKey=${ACCESS_KEY} \
     --set global.sysdig.region=${HELM_REGION_ID} \
@@ -129,4 +140,4 @@ helm upgrade --install sysdig-agent --namespace sysdig-agent \
     --set agent.collectorSettings.collectorHost=${COLLECTOR} \
     -f ${AGENT_CONF_DIR}/values.yaml \
     ${HELM_OPTS} \
-sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &
+sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &)
