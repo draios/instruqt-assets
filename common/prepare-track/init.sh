@@ -48,6 +48,7 @@ USE_CLOUD_REGION=false
 USE_AGENT_REGION=false
 USE_RUNTIME_VM=false
 USE_CURSES=false
+USE_NO_CHECK=false
 
 ##############################    GLOBAL VARS    ##############################
 TEST_AGENT_ACCESS_KEY=ZTRlNDFiMGUtYTg5Yi00YWU4LWJlZjYtMzA4Y2FmZDIwMjAx
@@ -846,6 +847,7 @@ function help () {
     echo "  -8, --kube-adm              Customize installer for kubeadm k8s cluster"
     echo "  --on-prem <on_prem_endpoint>       In case an on-prem backend is used, set here the endpoint value."                     
     echo "      --runtime-vm            Enable VM Runtime Scanner. Use with --node-analyzer."
+    echo "      --no-check              Remove agent and cloud connector post install health check."
     echo
     echo
     echo "ENVIRONMENT VARIABLES:"
@@ -931,6 +933,9 @@ function check_flags () {
             --runtime-vm)
                 export USE_RUNTIME_VM=true
                 ;;
+            --no-check)
+                export USE_NO_CHECK=true
+                ;;                
             --help | -h)
                 help
                 exit 0
@@ -1017,7 +1022,10 @@ function setup () {
 
     if [ "$USE_AGENT" = true ]
     then
-        test_agent
+        if [ "$USE_NO_CHECK" = false ]
+        then
+            test_agent
+        fi
     fi
 
     if [ "$USE_CLOUD" = true ]
@@ -1026,7 +1034,10 @@ function setup () {
         # before `configure_API` because they use data set within `configure_API`
         track_has_cloud_account
         deploy_cloud_connector
-        test_cloud_connector
+        if [ "$USE_NO_CHECK" = false ]
+        then
+            test_cloud_connector
+        fi
     fi
     
     if [ "$SKIP_CLEANUP" = false ]
