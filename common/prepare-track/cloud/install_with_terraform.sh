@@ -120,7 +120,6 @@ EOF
                 --data "$data" \
                 "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts/${ACCOUNT_ID_INTERNAL}/components" | jq >> ${OUTPUT} 2>&1
             echo "" >> ${OUTPUT} 2>&1
-            sleep 3
         done
 
     # add features
@@ -134,7 +133,6 @@ EOF
                 --data "$data" \
                 "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts/${ACCOUNT_ID_INTERNAL}/feature/${FEATURE}" | jq >> ${OUTPUT} 2>&1
             echo "" >> ${OUTPUT} 2>&1
-            sleep 3
         done
 
     # enable CIEM
