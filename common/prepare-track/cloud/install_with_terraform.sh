@@ -97,7 +97,7 @@ EOF
     && echo "    Terraform apply completed! Check all TF deployment logs at: $OUTPUT"
 
     # onboard AWS account
-    ACCOUNT_ID_INTERNAL=$(curl -s -k -X POST \
+    ONBOARD_OUTPUT=$(curl -s -k -X POST \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer ${SYSDIG_SECURE_API_TOKEN}" \
         --data '{
@@ -105,7 +105,9 @@ EOF
             "provider": "PROVIDER_AWS",
             "providerId": "'${AWS_ACCOUNT_ID}'"
         }' \
-        "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts" | jq -r '.id')
+        "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts")
+
+    echo $ONBOARD_OUTPUT | grep -q id && ACCOUNT_ID_INTERNAL=$(echo $ONBOARD_OUTPUT | jq -r '.id') || ACCOUNT_ID_INTERNAL=$(echo $ONBOARD_OUTPUT | jq -r '.accountId')
 
     # enable components
     cat api_response.json | jq -c '.accountConfig.components[]' | while read -r data; 
