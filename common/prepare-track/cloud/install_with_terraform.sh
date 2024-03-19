@@ -28,7 +28,7 @@ then
     trail_name="trail-$bucket_name"
 
     # Create an S3 bucket
-    aws s3api create-bucket --bucket "$bucket_name" --region us-east-1 | jq '.' >> ${OUTPUT} 2>&1
+    aws s3api create-bucket --bucket "$bucket_name" --region ${CLOUD_REGION} | jq '.' >> ${OUTPUT} 2>&1
 
     # Generate a bucket policy JSON file
     cat <<EOF > bucket-policy.json
@@ -76,7 +76,7 @@ EOF
     # FEATURES=${FEATURES}"&feature=FEATURE_SECURE_IDENTITY_ENTITLEMENT"
     FEATURES=${FEATURES}"&feature=FEATURE_SECURE_THREAT_DETECTION"
     FEATURES=${FEATURES}"&feature=FEATURE_SECURE_CONFIG_POSTURE"
-    PARAMETERS="?accountType=single&region=us-east-1"
+    PARAMETERS="?accountType=single&region=${CLOUD_REGION}"
     PARAMETERS=${PARAMETERS}${FEATURES}
 
     curl -s -k -X GET \
