@@ -1,0 +1,49 @@
+agent:
+  enabled: true
+  resourceProfile: custom
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1536Mi
+  slim:
+    enabled: true
+    resources:
+      requests: 
+        cpu: 400m
+        memory: 350Mi
+      limits:
+        cpu: 750m
+        memory: 512Mi
+
+global:
+  kspm:
+    deploy: true
+nodeAnalyzer:
+  secure:
+    vulnerabilityManagement:
+      newEngineOnly: true
+  nodeAnalyzer:
+    benchmarkRunner:
+      deploy: false
+    hostScanner:
+      deploy: true
+    runtimeScanner:
+      deploy: true
+      eveConnector:
+        deploy: true
+      settings:
+        eveEnabled: true
+
+rapidResponse:
+  enabled: true
+
+admissionController:
+  enabled: true
+  features:
+    k8sAuditDetections: true
+    kspmAdmissionController: false
+  scanner:
+    enabled: false
