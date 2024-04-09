@@ -135,7 +135,7 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
     --set agent.resources.requests.memory=1024Mi \
     --set agent.resources.limits.cpu=2 \
     --set agent.resources.limits.memory=2048Mi \
-    --set agent.sysdig.settings.drift_killer.enabled=true \
+    --set agent.sysdig.settings.drift_control.enabled=true \
     --set agent.collectorSettings.sslVerifyCertificate=false \
     --set agent.collectorSettings.collectorHost=${COLLECTOR} \
     -f ${AGENT_CONF_DIR}/values.yaml \
