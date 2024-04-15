@@ -44,6 +44,7 @@ press_any_key() {
     echo -e "\e[42m+---------------+"
     echo -e "|  Press enter  |"
     echo -e "+---------------+\e[0m"
+    echo
     read
 
     # read -n 1 -s -r -p "Press any key to continue"; echo
