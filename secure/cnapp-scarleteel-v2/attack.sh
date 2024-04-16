@@ -475,6 +475,8 @@ EOF
 
 simulate_command 'aws kms list-keys' 1 1 1
 simulate_command 'aws s3api list-buckets --query "Buckets[].Name"' 1 1 1
+simulate_command 'aws ec2 describe-instances | jq'
+simulate_command 'aws ec2 describe-volumes | jq'
 simulate_command 'aws iam list-users | jq' 1 1 1
 simulate_command 'aws iam list-policies --only-attached | jq' 1 1 1
 
