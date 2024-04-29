@@ -698,51 +698,35 @@ function deploy_cloud_connector () {
 # Test if the Cloud account is connected successfully.
 ##
 function test_cloud_connector () {
-    echo "    Testing if the cloud account is connected..."
 
     attempt=0
     MAX_ATTEMPTS=36 # 6 minutes
     connected=false
 
+    # get internal id 
+    INTERNAL_CLOUD_ID=$(curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts" | jq -r '.accounts[] | select(.providerId == '"${CLOUD_ACCOUNT_ID}"') | .id')
+
+    echo "    Testing if the cloud account is connected... (ID=${CLOUD_ACCOUNT_ID})"
+
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
+
+        # validate cloud account
+        curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts/${INTERNAL_CLOUD_ID}/validate"   
+
         sleep 10
-        
-        # asks the sysdig secure API about cloud accounts (provider, account_id, date_last_seen)
-        # ordered by date_last_seen (more recent first)
-        # applies some filtering to use the output usable (date format, quotes, etc.)
-        # and writes it to .cloudProvidersLastSeen
-        curl -s --header "Content-Type: application/json"   \
-        -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
-        --request GET \
-        ${SECURE_API_ENDPOINT}/api/cloud/v2/dataSources/accounts\?limit\=5000\&offset\=0 \
-        | jq -r '[.[] | {provider: .provider, id: .id, alias: .alias, lastSeen: .cloudConnectorLastSeenAt}] | sort_by(.lastSeen) | reverse | .[] | "\(.provider) \(.id) \(.alias) \(.lastSeen)"' \
-        | cut -f1 -d"." \
-        | awk ' { t = $1; $1 = $(NF); $(NF) = t; print; } ' \
-        > .cloudProvidersLastSeen
 
-        CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH=$(date --date "$CLOUD_CONNECTOR_DEPLOY_QUERY" +%s)
+        # get status
+        STATUS=$(curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts" | jq -r '.accounts[] | select(.providerId == '"${CLOUD_ACCOUNT_ID}"') | .validation.result')
 
-        while read line; do # reading each cloud provider connected to the sysdig account
-            
-            if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID}" ]]
-            then 
-                # the account_id matches
-                #LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f1) # extract date
-                #[[ $LAST_SEEN_DATE == "null" ]] && LAST_SEEN_DATE_EPOCH=0 || LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
+        if [[ "${STATUS}" =~ "VALIDATION_RESULT_SUCCESS" ]]
+        then 
 
-                # is this account date_last_seen value greater than the deployment_date in this script?
-                # ^ this means, we want the cloud account to be active now
-                # Instruqt reuses the accounts, so we don't want a false positive for reusing an account
-                #if [[ "${LAST_SEEN_DATE_EPOCH}" > "${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}" ]]
-                #then
-                echo "    Found cloud account: $line"
-                connected=true
-                break
-                #fi
-            fi
-        done < .cloudProvidersLastSeen
-        
+            echo "    Found cloud account: $line"
+            connected=true
+            break
+        fi
+    
         attempt=$(( $attempt + 1 ))
     done
 
