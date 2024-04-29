@@ -717,9 +717,14 @@ function test_cloud_connector () {
         sleep 10
 
         # get status
-        STATUS=$(curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts" | jq -r '.accounts[] | select(.providerId == '"${CLOUD_ACCOUNT_ID}"') | .validation.result')
+        # STATUS=$(curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts" | jq -r '.accounts[] | select(.providerId == '"${CLOUD_ACCOUNT_ID}"') | .validation.result')
 
-        if [[ "${STATUS}" =~ "VALIDATION_RESULT_SUCCESS" ]]
+        # find account via alias
+        LAB_RANDOM_ID=$(cat /opt/sysdig/random_string_OK)
+        ACCOUNT_ALIAS=$(curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts" | jq -r '.accounts[] | select(.providerId == '"${CLOUD_ACCOUNT_ID}"') | .providerAlias')
+
+        # if [[ "${STATUS}" =~ "VALIDATION_RESULT_SUCCESS" ]]
+        if [[ "${LAB_RANDOM_ID}" =~ "${ACCOUNT_ALIAS}" ]]
         then 
 
             echo "    Found cloud account: $line"
