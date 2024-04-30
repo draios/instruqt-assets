@@ -716,7 +716,7 @@ function test_cloud_connector () {
 
         sleep 10
 
-        # get status
+        # get status, on hold until validation works quickly
         # STATUS=$(curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts" | jq -r '.accounts[] | select(.providerId == '"${CLOUD_ACCOUNT_ID}"') | .validation.result')
 
         # find account via alias
@@ -726,8 +726,6 @@ function test_cloud_connector () {
         # if [[ "${STATUS}" =~ "VALIDATION_RESULT_SUCCESS" ]]
         if [[ "${LAB_RANDOM_ID}" =~ "${ACCOUNT_ALIAS}" ]]
         then 
-
-            echo "    Found cloud account: $line"
             connected=true
             break
         fi
@@ -737,11 +735,11 @@ function test_cloud_connector () {
 
     if [ "$connected" = true ]
     then
-        echo "  Sysdig Vision successfully installed."
+        echo "  Cloud Account Integration configured."
         touch $WORK_DIR/user_data_CLOUDVISION_OK
     else
         echo "  FAIL"
-        echo "  Sysdig Vision installation went wrong. Use the provided channels to report this issue."
+        echo "  Cloud Account Integration installation went wrong. Use the provided channels to report this issue."
         panic_msg
     fi
 }
