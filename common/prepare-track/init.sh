@@ -199,7 +199,7 @@ function set_values () {
             SECURE_URL=$MONITOR_URL'/secure'
             AGENT_COLLECTOR='collector-staging.sysdigcloud.com'
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-#           HELM_REGION_ID=au1
+            HELM_REGION_ID=st
             HELM_OPTS='--set agent.collectorSettings.collectorHost=collector-staging.sysdigcloud.com \ 
             --set nodeAnalyzer.nodeAnalyzer.apiEndpoint=secure-staging.sysdig.com \ 
             --set kspmCollector.apiEndpoint=secure-staging.sysdig.com'
@@ -253,6 +253,7 @@ function select_region () {
         then
             echo "   6) On Premises - onprem"
         fi
+        echo "   7) Staging environment"
         echo
 
         if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
@@ -307,6 +308,10 @@ function select_region () {
                 select_region
             fi
             ;;
+        7)
+            REGION="Staging environment"
+            ;;
+
         *)
             echo "${REGION_N} is not a valid an option."
             select_region
