@@ -198,17 +198,18 @@ function set_values () {
             MONITOR_URL='https://'$DOMAIN
             SECURE_URL=$MONITOR_URL'/secure'
             AGENT_COLLECTOR='collector-staging.sysdigcloud.com'
-           NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-#            HELM_REGION_ID=au1
+            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+#           HELM_REGION_ID=au1
             HELM_OPTS='--set agent.collectorSettings.collectorHost=collector-staging.sysdigcloud.com \ 
             --set nodeAnalyzer.nodeAnalyzer.apiEndpoint=secure-staging.sysdig.com \ 
             --set kspmCollector.apiEndpoint=secure-staging.sysdig.com'
-#            MONITOR_API_ENDPOINT=$MONITOR_URL
-#            SECURE_API_ENDPOINT=$MONITOR_URL
-#            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
-#            ;;
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$MONITOR_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+            ;;
 
-        *) # default to us1 values
+        *) 
+        # default to us1 values
             # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-east-north-virginia
             MONITOR_URL='https://app.sysdigcloud.com'
             SECURE_URL='https://secure.sysdig.com'
