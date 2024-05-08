@@ -178,6 +178,7 @@ function set_values () {
             PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
 
+
         *"On Premises - onprem"*)
             if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ]; then
                 DOMAIN=$(cat $WORK_DIR/ON_PREM_ENDPOINT)
@@ -192,6 +193,20 @@ function set_values () {
                 PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             fi
             ;;
+        *"Staging environment"*)
+            DOMAIN='secure-staging.sysdig.com'
+            MONITOR_URL='https://'$DOMAIN
+            SECURE_URL=$MONITOR_URL'/secure'
+            AGENT_COLLECTOR='collector-staging.sysdigcloud.com'
+           NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+#            HELM_REGION_ID=au1
+            HELM_OPTS='--set agent.collectorSettings.collectorHost=collector-staging.sysdigcloud.com \ 
+            --set nodeAnalyzer.nodeAnalyzer.apiEndpoint=secure-staging.sysdig.com \ 
+            --set kspmCollector.apiEndpoint=secure-staging.sysdig.com'
+#            MONITOR_API_ENDPOINT=$MONITOR_URL
+#            SECURE_API_ENDPOINT=$MONITOR_URL
+#            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+#            ;;
 
         *) # default to us1 values
             # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-east-north-virginia
