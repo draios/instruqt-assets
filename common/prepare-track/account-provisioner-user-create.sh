@@ -68,8 +68,8 @@ curl -s -k -X POST \
 --data-binary '{
 "username": "'${SPA_USER}'",
 "password": "'${SPA_PASS}'",
-"firstName": "Training",
-"lastName": "Student",
+"firstName": "Id:",
+"lastName": "'${SPA_USER}'",
 "systemRole": "ROLE_USER"
 }' \
 ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/user/provisioning/ \
