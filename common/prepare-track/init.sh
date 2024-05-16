@@ -1033,6 +1033,7 @@ function setup () {
     then
         if [ "$USE_NO_CHECK" = false ]
         then
+            echo foo
             # test_agent
         fi
     fi
