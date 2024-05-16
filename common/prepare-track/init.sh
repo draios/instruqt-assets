@@ -578,7 +578,6 @@ function test_agent () {
         echo "  Testing if Sysdig Agent is running correctly..."
     fi
 
-
     attempt=0
     MAX_ATTEMPTS=10 # 0.5 minutes
     CONNECTED_MSG="Sending scraper version"
@@ -1033,8 +1032,7 @@ function setup () {
     then
         if [ "$USE_NO_CHECK" = false ]
         then
-            echo foo
-            # test_agent
+            test_agent
         fi
     fi
 
