@@ -1028,12 +1028,12 @@ function setup () {
     then
         configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
     fi
-    exit 0
+
     if [ "$USE_AGENT" = true ]
     then
         if [ "$USE_NO_CHECK" = false ]
         then
-            test_agent
+            # test_agent
         fi
     fi
 
