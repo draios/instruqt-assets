@@ -578,7 +578,6 @@ function test_agent () {
         echo "  Testing if Sysdig Agent is running correctly..."
     fi
 
-    exit 0
 
     attempt=0
     MAX_ATTEMPTS=10 # 0.5 minutes
@@ -1029,7 +1028,7 @@ function setup () {
     then
         configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
     fi
-
+    exit 0
     if [ "$USE_AGENT" = true ]
     then
         if [ "$USE_NO_CHECK" = false ]
