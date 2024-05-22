@@ -200,9 +200,9 @@ function set_values () {
             AGENT_COLLECTOR='collector-staging.sysdigcloud.com'
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
             HELM_REGION_ID=st
-            MONITOR_API_ENDPOINT=$MONITOR_URL
+            #MONITOR_API_ENDPOINT=$MONITOR_URL
             SECURE_API_ENDPOINT=$MONITOR_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+            #PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             HELM_OPTS="--set agent.collectorSettings.collectorHost=collector-staging.sysdigcloud.com \
 --set nodeAnalyzer.nodeAnalyzer.apiEndpoint=secure-staging.sysdig.com \
 --set kspmCollector.apiEndpoint=secure-staging.sysdig.com"
