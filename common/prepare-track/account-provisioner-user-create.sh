@@ -130,11 +130,11 @@ curl -s -k -X POST \
 MONITOR_OPS_TEAM_ID=10018845
 
 # get monitor operations team info
-curl -s -k -X GET \
--H "Content-Type: application/json" \
--H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
-${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
-| jq > $WORK_DIR/monitor-operations-team.json
+#curl -s -k -X GET \
+#-H "Content-Type: application/json" \
+#-H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
+#${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
+#| jq > $WORK_DIR/monitor-operations-team.json
 
 # edits
 #   remove team, get all other info
