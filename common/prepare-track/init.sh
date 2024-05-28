@@ -205,7 +205,12 @@ function set_values () {
             #PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             HELM_OPTS="--set agent.collectorSettings.collectorHost=collector-staging.sysdigcloud.com \
 --set nodeAnalyzer.nodeAnalyzer.apiEndpoint=secure-staging.sysdig.com \
---set kspmCollector.apiEndpoint=secure-staging.sysdig.com"
+--set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
+--set global.kspm.deploy=true \
+--set kspmCollector.apiEndpoint=secure-staging.sysdig.com \
+--set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=false \
+--set global.clusterConfig.name= "
+
             ;;
 
         *) 
