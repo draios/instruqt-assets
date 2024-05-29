@@ -89,7 +89,7 @@ function config_sysdig_tab_redirect () {
 
     if [ "$USE_AGENT_REGION" = true ]
     then
-        systemctl restart nginx
+        sudo systemctl restart nginx
     fi
 
     if [ "$USE_CLOUD_REGION" = true ]
