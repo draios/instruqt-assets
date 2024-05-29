@@ -208,9 +208,7 @@ function set_values () {
 --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
 --set global.kspm.deploy=true \
 --set kspmCollector.apiEndpoint=secure-staging.sysdig.com \
---set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=false \
---set global.clusterConfig.name= "
-
+--set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=false"
             ;;
 
         *) 
