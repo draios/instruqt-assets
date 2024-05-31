@@ -60,6 +60,8 @@ SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER)
 echo ${SPA_USER}
 agent variable set SPA_USER ${SPA_USER}
 agent variable set SPA_SECURE_API_TOKEN ${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}
+PROVISIONED_RANDOM_ID=$(cat $WORK_DIR/random_string_OK)
+agent variable set PROVISIONED_RANDOM_ID ${PROVISIONED_RANDOM_ID}
 
 # create user in parent account
 curl -s -k -X POST \
