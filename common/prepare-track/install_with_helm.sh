@@ -121,6 +121,11 @@ fi
 #     HELM_OPTS="--set agent.sysdig.settings.cri.socket_path=$SOCKET_PATH $HELM_OPTS"
 # fi
 
+if [ "$HELM_REGION_ID" != "st" ]
+then
+    HELM_OPTS="--set global.sysdig.region=${HELM_REGION_ID} $HELM_OPTS"
+fi
+
 # new hostnames, to avoid duplicated names as much as possible
 custom_hostnaming
 
@@ -129,7 +134,6 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
 (set -x; helm upgrade --install sysdig-agent --namespace sysdig-agent \
     --set global.clusterConfig.name="${CLUSTER_NAME}" \
     --set global.sysdig.accessKey=${ACCESS_KEY} \
-    --set global.sysdig.region=${HELM_REGION_ID} \
     --set agent.resourceProfile=custom \
     --set agent.resources.requests.cpu=1 \
     --set agent.resources.requests.memory=1024Mi \
