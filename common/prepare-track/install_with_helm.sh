@@ -61,46 +61,48 @@ helm repo add sysdig https://charts.sysdig.com >> ${OUTPUT} 2>&1
 helm repo update >> ${OUTPUT} 2>&1
 
 # ingest k8sAuditDetections via admission controller by default (with AC scanning disabled)
-HELM_OPTS="--set admissionController.enabled=true \
-	--set admissionController.verifySSL=false \
-	--set admissionController.features.k8sAuditDetections=true \
-	--set admissionController.scanner.enabled=false \
-	--set admissionController.sysdig.secureAPIToken=${SECURE_API_TOKEN} ${HELM_OPTS}"
+HELM_OPTS="--set admissionController.enabled=false \
+	--set clusterShield.cluster_shield.features.admission_control.enabled=true  ${HELM_OPTS}"
 
 if [ "$USE_NODE_ANALYZER" = true ]
 then
     HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=true \
     --set nodeAnalyzer.secure.vulnerabilityManagement.newEngineOnly=true \
     --set nodeAnalyzer.nodeAnalyzer.sslVerifyCertificate=false \
+    --set nodeAnalyzer.enabled=true \
     --set nodeAnalyzer.nodeAnalyzer.benchmarkRunner.deploy=false \
-    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.deploy=true \
-    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.env.DEV_STARTUP_DELAY_DURATION_JITTER_DURATION=15s \
-    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.falcobaseline.randomize_start=false \
-    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.falcobaseline.report_interval=300000000000 $HELM_OPTS"
+    --set nodeAnalyzer.nodeAnalyzer.hostAnalyzer.deploy=false \
+    --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.deploy=false \
+    --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.deploy=false \
+    --set clusterShield.cluster_shield.log_level=warn \
+    --set clusterShield.cluster_shield.features.audit.enabled=true \
+    --set clusterShield.cluster_shield.features.container_vulnerability_management.enabled=true $HELM_OPTS"
 
-    if [ "$USE_RUNTIME_VM" = true ]
-    then
-        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.runtimeScanner.settings.eveEnabled=true \
-	$HELM_OPTS"
-    fi
+ #    if [ "$USE_RUNTIME_VM" = true ]
+ #    then
+ #        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.runtimeScanner.settings.eveEnabled=true \
+	# $HELM_OPTS"
+ #    fi
 
-    if [ "$USE_K8S" = false ]
-    then
-        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.containerdSocketPath="unix://${SOCKET_PATH}" \
-	--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].name=socketpath \
-	--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].hostPath.path=${SOCKET_PATH} \
-        --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].name=socketpath \
-        --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].mountPath=${SOCKET_PATH} $HELM_OPTS"
-    fi
+ #    if [ "$USE_K8S" = false ]
+ #    then
+ #        HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.containerdSocketPath="unix://${SOCKET_PATH}" \
+	# --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].name=socketpath \
+	# --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.extraVolumes.volumes[0].hostPath.path=${SOCKET_PATH} \
+ #        --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].name=socketpath \
+ #        --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.extraMounts[0].mountPath=${SOCKET_PATH} $HELM_OPTS"
+ #    fi
 else
     HELM_OPTS="--set nodeAnalyzer.nodeAnalyzer.deploy=false $HELM_OPTS"
 fi
 
 if [ "$USE_KSPM" = true ]
 then
-    HELM_OPTS="--set global.kspm.deploy=true $HELM_OPTS"
+    HELM_OPTS="--set global.kspm.deploy=true \
+      --set clusterShield.cluster_shield.features.posture.enabled=true $HELM_OPTS"
 else
-    HELM_OPTS="--set global.kspm.deploy=false $HELM_OPTS"
+    HELM_OPTS="--set global.kspm.deploy=false \
+      --set clusterShield.cluster_shield.features.posture.enabled=false $HELM_OPTS"
 fi
 
 if [ "$USE_PROMETHEUS" = true ]
