@@ -132,6 +132,8 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
     --set global.clusterConfig.name="${CLUSTER_NAME}" \
     --set global.sysdig.accessKey=${ACCESS_KEY} \
     --set global.sysdig.region=${HELM_REGION_ID} \
+    --set clusterShield.cluster_shield.features.audit.enabled=true \
+    --set clusterShield.enabled=true \
     --set agent.resourceProfile=custom \
     --set agent.resources.requests.cpu=1 \
     --set agent.resources.requests.memory=1024Mi \
