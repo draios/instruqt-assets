@@ -143,6 +143,7 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
     --set agent.sysdig.settings.drift_control.enabled=true \
     --set agent.collectorSettings.sslVerifyCertificate=false \
     --set agent.collectorSettings.collectorHost=${COLLECTOR} \
+    --set agent.image.tag=13.0.1 \
     -f ${AGENT_CONF_DIR}/values.yaml \
     ${HELM_OPTS} \
 sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &)
