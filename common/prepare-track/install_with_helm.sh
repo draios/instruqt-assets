@@ -116,15 +116,15 @@ then
     --set rapidResponse.rapidResponse.passphrase=training_secret_passphrase $HELM_OPTS"
 fi
 
-# if [ "$USE_K8S" = false ]
-# then
-#     HELM_OPTS="--set agent.sysdig.settings.cri.socket_path=$SOCKET_PATH $HELM_OPTS"
-# fi
+ if [ "$USE_K8S" = false ]
+ then
+     HELM_OPTS="--set agent.sysdig.settings.cri.socket_path=$SOCKET_PATH $HELM_OPTS"
+ fi
 
-if [ "$HELM_REGION_ID" != "st" ]
-then
-    HELM_OPTS="--set global.sysdig.region=${HELM_REGION_ID} $HELM_OPTS"
-fi
+#if [ "$HELM_REGION_ID" != "st" ]
+#then
+#    HELM_OPTS="--set global.sysdig.region=${HELM_REGION_ID} $HELM_OPTS"
+#fi
 
 # new hostnames, to avoid duplicated names as much as possible
 custom_hostnaming
