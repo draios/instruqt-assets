@@ -193,19 +193,16 @@ function set_values () {
                 PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             fi
             ;;
-        *"Staging environment"*)
-            DOMAIN='secure-staging.sysdig.com'
+        *"Kube environment"*)
+            DOMAIN='app.sysdigcloud.com'
             MONITOR_URL='https://'$DOMAIN
             SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR='collector-staging.sysdigcloud.com'
+            AGENT_COLLECTOR='ingest-'$DOMAIN
             NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=st
+            HELM_REGION_ID=kb
             MONITOR_API_ENDPOINT=$MONITOR_URL
             SECURE_API_ENDPOINT=$MONITOR_URL
             PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
-            HELM_OPTS="--set agent.collectorSettings.collectorHost=collector-staging.sysdigcloud.com \
---set nodeAnalyzer.nodeAnalyzer.apiEndpoint=secure-staging.sysdig.com \
---set kspmCollector.apiEndpoint=secure-staging.sysdig.com"
             ;;
 
         *) 
@@ -253,7 +250,7 @@ function select_region () {
         then
             echo "   6) On Premises - onprem"
         fi
-        echo "   7) Staging environment"
+        echo "   7) Kube environment"
         echo
 
         if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
@@ -309,7 +306,7 @@ function select_region () {
             fi
             ;;
         7)
-            REGION="Staging environment"
+            REGION="Kube environment"
             ;;
 
         *)

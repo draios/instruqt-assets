@@ -121,7 +121,7 @@ fi
 #     HELM_OPTS="--set agent.sysdig.settings.cri.socket_path=$SOCKET_PATH $HELM_OPTS"
 # fi
 
-if [ "$HELM_REGION_ID" != "st" ]
+if [ "$HELM_REGION_ID" != "kb" ]
 then
     HELM_OPTS="--set global.sysdig.region=${HELM_REGION_ID} $HELM_OPTS"
 fi
