@@ -55,29 +55,29 @@ source $TRACK_DIR/lab_random_string_id.sh
 # define new user creds, and feed it to instruqt lab as an agent var
 WORK_DIR=/opt/sysdig
 SPA_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
-echo ${SPA_PASS}
+echo "${SPA_PASS}"
 echo "${SPA_PASS}" > $WORK_DIR/ACCOUNT_PROVISIONED_PASS
-agent variable set SPA_PASS ${SPA_PASS}
+agent variable set SPA_PASS "${SPA_PASS}"
 # we use the same two random dictionary words to set user_name and cluster_name 
 SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER)
-echo ${SPA_USER}
-agent variable set SPA_USER ${SPA_USER}
-agent variable set SPA_SECURE_API_TOKEN ${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}
+echo "${SPA_USER}"
+agent variable set SPA_USER "${SPA_USER}"
+agent variable set SPA_SECURE_API_TOKEN "${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}"
 PROVISIONED_RANDOM_ID=$(cat $WORK_DIR/random_string_OK)
-agent variable set PROVISIONED_RANDOM_ID ${PROVISIONED_RANDOM_ID}
+agent variable set PROVISIONED_RANDOM_ID "${PROVISIONED_RANDOM_ID}"
 
 # create user in parent account
 curl -s -k -X POST \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}" \
 --data-binary '{
-"username": "'${SPA_USER}'",
-"password": "'${SPA_PASS}'",
+"username": "'"${SPA_USER}"'",
+"password": "'"${SPA_PASS}"'",
 "firstName": "Id:",
-"lastName": "'${SPA_USER}'",
+"lastName": "'"${SPA_USER}"'",
 "systemRole": "ROLE_USER"
 }' \
-${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/user/provisioning/ \
+"${ACCOUNT_PROVISIONER_SECURE_API_URL}"/api/user/provisioning/ \
 | jq > $WORK_DIR/account.json
 # todo proceed only if successful
 
@@ -128,14 +128,14 @@ curl -s -k -X POST \
     "displayQuestion": "How do you want to be notified outside of Sysdig?",
     "choices": []
   }
-]' ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/userProfile/questionnaire \
+]' "${ACCOUNT_PROVISIONER_SECURE_API_URL}"/api/secure/onboarding/v2/userProfile/questionnaire \
 | jq > /dev/null
 
 # get monitor operations team info
 curl -s -k -X GET \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
-${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
+"${ACCOUNT_PROVISIONER_MONITOR_API_URL}"/api/teams/${MONITOR_OPS_TEAM_ID} \
 | jq > $WORK_DIR/monitor-operations-team.json
 
 # edits
@@ -192,8 +192,8 @@ jq '.userRoles[.userRoles| length] |= . + {
         "teamId": '${MONITOR_OPS_TEAM_ID}',
         "teamName": "Monitor Operations",
         "teamTheme": "#7BB0B2",
-        "userId": '${SPA_USER_ID}',
-        "userName": "'${SPA_USER}'",
+        "userId": '"${SPA_USER_ID}"',
+        "userName": "'"${SPA_USER}"'",
         "role": "ROLE_TEAM_STANDARD"
     }' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
 cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
@@ -205,5 +205,5 @@ curl -s -k -X PUT \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
 -d @$WORK_DIR/monitor-operations-team.json \
-${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/teams/${MONITOR_OPS_TEAM_ID} \
+"${ACCOUNT_PROVISIONER_MONITOR_API_URL}"/api/teams/${MONITOR_OPS_TEAM_ID} \
 | jq > /dev/null
