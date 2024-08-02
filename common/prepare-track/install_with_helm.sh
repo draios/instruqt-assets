@@ -22,8 +22,10 @@ HELM_OPTS="--set agent.sysdig.settings.falcobaseline.report_interval=15000000000
 --set agent.sysdig.settings.falcobaseline.max_sampling_ratio=128 \
 --set agent.sysdig.settings.falcobaseline.debug_metadata=true \
 --set agent.sysdig.settings.falcobaseline.debug=true \
---set agent.sysdig.settings.falcobaseline.randomize_start=false
---set kspmCollector.enabled=false $HELM_OPTS"
+--set agent.sysdig.settings.falcobaseline.randomize_start=false \
+--set kspmCollector.enabled=false \
+--version=1.61.4 \
+$HELM_OPTS"
 
 # new hostnames, to avoid duplicated names as much as possible
 function custom_hostnaming () {
