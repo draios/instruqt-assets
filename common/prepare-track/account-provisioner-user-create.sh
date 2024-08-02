@@ -34,6 +34,9 @@ else
     ACCOUNT_PROVISIONER_REGION_NUMBER=$6
 fi
 
+# TODO: get monitor operations team ID
+MONITOR_OPS_TEAM_ID=10018845
+
 WORK_DIR=/opt/sysdig
 TRACK_DIR=/tmp/instruqt-assets/common/prepare-track
 mkdir -p $WORK_DIR
@@ -127,9 +130,6 @@ curl -s -k -X POST \
   }
 ]' ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/userProfile/questionnaire \
 | jq > /dev/null
-
-# TODO: get monitor operations team ID
-MONITOR_OPS_TEAM_ID=10018845
 
 # get monitor operations team info
 curl -s -k -X GET \
