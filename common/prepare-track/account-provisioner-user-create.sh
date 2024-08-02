@@ -107,7 +107,9 @@ SPA_USER_API_TOKEN=$(cat  $WORK_DIR/account.json | jq -r  .token.key)
 curl -s -k -X POST \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer ${SPA_USER_API_TOKEN}" \
---data-binary '[
+--data-binary @- \
+"${ACCOUNT_PROVISIONER_SECURE_API_URL}"/api/secure/onboarding/v2/userProfile/questionnaire <<EOF > /dev/null
+[
   {
     "id": "additionalEnvironments",
     "displayQuestion": "What are all the environments your company has?",
@@ -128,8 +130,8 @@ curl -s -k -X POST \
     "displayQuestion": "How do you want to be notified outside of Sysdig?",
     "choices": []
   }
-]' "${ACCOUNT_PROVISIONER_SECURE_API_URL}"/api/secure/onboarding/v2/userProfile/questionnaire \
-| jq > /dev/null
+]
+EOF
 
 # get monitor operations team info
 curl -s -k -X GET \
