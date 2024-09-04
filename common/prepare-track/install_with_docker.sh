@@ -13,7 +13,7 @@ COLLECTOR=$3
 
 if [ "$USE_NODE_ANALYZER" = true ]
 then
-    if [ -n "$NIA_ENDPOINT"]
+    if [ -n "$NIA_ENDPOINT" ]
     then
         docker run -d --name sysdig-node-image-analyzer \
             --privileged \
@@ -30,7 +30,7 @@ fi
 
 if [ "$USE_NODE_IMAGE_ANALYZER" = true ]
 then
-    if [ -n "$NIA_ENDPOINT"]
+    if [ -n "$NIA_ENDPOINT" ]
     then
         docker run -d --name sysdig-node-image-analyzer \
             --privileged \
