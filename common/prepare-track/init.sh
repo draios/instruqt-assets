@@ -581,6 +581,7 @@ function test_agent () {
                 ### Todo: docker should check the existence of /opt/draios/logs/running <- leveraged by our kubernetes health check and is only created when the agent is officially connected to the backend
                 docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}" && connected=true
                 FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
+                sleep 10     # Installation through docker takes more time
                 ;;
             host)
                 ### Todo: systemctl status sysdig-agent; if its running its connected and healthy.
