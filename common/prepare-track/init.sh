@@ -209,7 +209,10 @@ function set_values () {
     echo "${MONITOR_API_ENDPOINT}" > $WORK_DIR/MONITOR_API_ENDPOINT
     echo "${SECURE_API_ENDPOINT}" > $WORK_DIR/SECURE_API_ENDPOINT
 
-    config_sysdig_tab_redirect
+    # If nginx is installed
+    if command -v nginx >/dev/null; then
+        config_sysdig_tab_redirect
+    fi
 }
 
 ##
