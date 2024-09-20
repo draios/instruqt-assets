@@ -28,20 +28,17 @@ then
     fi
 fi
 
-if [ "$USE_NODE_IMAGE_ANALYZER" = true ]
+if [ -n "$NIA_ENDPOINT" ]
 then
-    if [ -n "$NIA_ENDPOINT" ]
-    then
-        docker run -d --name sysdig-node-image-analyzer \
-            --privileged \
-            --network host \
-            -e AM_COLLECTOR_ENDPOINT=${NIA_ENDPOINT} \
-            -e ACCESS_KEY=${ACCESS_KEY} \
-            -v /var/run:/var/run  \
-            quay.io/sysdig/node-image-analyzer:latest >> ${OUTPUT} 2>&1 &
-    else
-        echo "ERROR: Cannot deploy Node Image Analyzer. No valid endpoint."
-    fi
+    docker run -d --name sysdig-node-image-analyzer \
+        --privileged \
+        --network host \
+        -e AM_COLLECTOR_ENDPOINT=${NIA_ENDPOINT} \
+        -e ACCESS_KEY=${ACCESS_KEY} \
+        -v /var/run:/var/run  \
+        quay.io/sysdig/node-image-analyzer:latest >> ${OUTPUT} 2>&1 &
+else
+    echo "ERROR: Cannot deploy Node Image Analyzer. No valid endpoint."
 fi
 
 if [ "$USE_PROMETHEUS" = true ]
