@@ -36,6 +36,7 @@ then
          -e SYSDIG_ACCESS_KEY=${ACCESS_KEY} \
          -e SYSDIG_API_URL=${NIA_ENDPOINT} \
          -e SCAN_ON_START=true \
+         -e DOCKER_SOCKET_PATHS=unix:///host/var/run/docker.sock \
          -v /:/host:ro \
          -v /var/run:/host/var/run:ro \
          --uts=host \
