@@ -30,6 +30,18 @@ fi
 
 if [ -n "$NIA_ENDPOINT" ]
 then
+
+    docker run --detach --name sysdig-host-scanner \
+         -e HOST_FS_MOUNT_PATH=/host \
+         -e SYSDIG_ACCESS_KEY=${ACCESS_KEY} \
+         -e SYSDIG_API_URL=${NIA_ENDPOINT} \
+         -e SCAN_ON_START=true \
+         -v /:/host:ro \
+         -v /var/run:/host/var/run:ro \
+         --uts=host \
+         --net=host \
+         quay.io/sysdig/vuln-host-scanner:$(curl -L -s https://download.sysdig.com/scanning/sysdig-host-scanner/latest_version.txt) >> ${OUTPUT} 2>&1 &
+         
     docker run -d --name sysdig-node-image-analyzer \
         --privileged \
         --network host \
