@@ -15,7 +15,7 @@ if [ "$USE_NODE_ANALYZER" = true ]
 then
     if [ -n "$NIA_ENDPOINT" ]
     then
-        docker run -d --name sysdig-node-image-analyzer \
+        docker run -d --name sysdig-host-analyzer \
             --privileged \
             --network host \
             -e AM_COLLECTOR_ENDPOINT=${NIA_ENDPOINT} \
