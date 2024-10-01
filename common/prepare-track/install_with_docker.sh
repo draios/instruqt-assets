@@ -75,4 +75,4 @@ docker run -d --name sysdig-agent \
     -v ${AGENT_CONF_DIR}/values.yaml:/opt/draios/etc/dragent.yaml:rw \
     ${DOCKER_OPTS} \
     --shm-size=512m \
-    quay.io/sysdig/agent-slim >> ${OUTPUT} 2>&1 &
+    quay.io/sysdig/agent >> ${OUTPUT} 2>&1 &
