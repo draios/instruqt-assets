@@ -441,31 +441,51 @@ def process_api_response(response):
 
 
 def delete_default_team_memberships(_args, _userid):
-    get_url = f"https://api.{_args.region}.sysdig.com/platform/v1/teams"
+    base_url = f"https://api.{_args.region}.sysdig.com/platform/v1/teams"
+    all_teams = []
 
-    response = sysdig_request(method="GET",
-                              url=get_url,
-                              verify_ssl=False,
-                              headers=_args.auth_header,
-                              max_retries=1)
+    # Pagination loop to handle more than the initial 200 teams
+    next_page = None
+    while True:
+        get_url = base_url if not next_page else f"{base_url}?offset={next_page}"
+        response = sysdig_request(method="GET",
+                                  url=get_url,
+                                  verify_ssl=False,
+                                  headers=_args.auth_header,
+                                  max_retries=1)
 
-    response_json = process_api_response(response)
+        response_json = process_api_response(response)
 
-    if response.status_code == 200 and response_json is not None:
-        length = len(response_json['data'])-1
-        for index, item in enumerate(response_json['data']):
-            logging.debug(f"delete_default_team_memberships:: Processing team {index}/{length}: {item['name']}")
-            if item['isDefaultTeam']:
-                logging.info(f"delete_default_team_memberships:: Deleting userid {_userid} from team {item['name']}")
-                delete_url = f"https://api.{_args.region}.sysdig.com/platform/v1/teams/{item['id']}/users/{_userid}"
-                response = sysdig_request(method="DELETE",
-                                          url=delete_url,
-                                          verify_ssl=False,
-                                          headers=_args.auth_header,
-                                          max_retries=1,
-                                          allowed_errors="Not Found")
-                if response.status_code == 204:
-                    logging.info(f"delete_default_team_memberships:: Membership Deleted")
+        if response.status_code == 200 and response_json is not None:
+            # Append current page's data to all_teams
+            all_teams.extend(response_json['data'])
+
+            # Check for next page
+            next_page = response_json['page']['next'] if 'page' in response_json and response_json['page'] else None
+            if not next_page:
+                break
+        else:
+            logging.error(f"delete_default_team_memberships:: Failed to retrieve teams: {response.status_code}")
+            return
+
+    # Process each team in all_teams
+    length = len(all_teams) - 1
+    for index, item in enumerate(all_teams):
+        logging.debug(f"delete_default_team_memberships:: Processing team {index}/{length}: {item['name']}")
+        if item['isDefaultTeam']:
+            logging.info(f"delete_default_team_memberships:: Deleting userid {_userid} from team {item['name']}")
+            delete_url = f"https://api.{_args.region}.sysdig.com/platform/v1/teams/{item['id']}/users/{_userid}"
+            response = sysdig_request(method="DELETE",
+                                      url=delete_url,
+                                      verify_ssl=False,
+                                      headers=_args.auth_header,
+                                      max_retries=1,
+                                      allowed_errors="Not Found")
+            if response.status_code == 204:
+                logging.info(f"delete_default_team_memberships:: Membership Deleted")
+            else:
+                logging.warning(
+                    f"delete_default_team_memberships:: Failed to delete user from {item['name']}: {response.status_code}")
 
 
 def main():
