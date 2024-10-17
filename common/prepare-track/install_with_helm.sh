@@ -77,7 +77,7 @@ then
     --set nodeAnalyzer.nodeAnalyzer.hostAnalyzer.deploy=false \
     --set nodeAnalyzer.nodeAnalyzer.runtimeScanner.deploy=false \
     --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.deploy=false \
-    --set clusterShield.cluster_shield.log_level=warn \
+    --set clusterShield.cluster_shield.log_level=info \
     --set clusterShield.cluster_shield.features.audit.enabled=true \
     --set clusterShield.cluster_shield.features.container_vulnerability_management.enabled=true $HELM_OPTS"
 
