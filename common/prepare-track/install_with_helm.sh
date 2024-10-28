@@ -146,5 +146,5 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
     --set agent.collectorSettings.sslVerifyCertificate=false \
     --set agent.collectorSettings.collectorHost="${COLLECTOR}" \
     -f "${AGENT_CONF_DIR}"/values.yaml \
-    "${HELM_OPTS}" \
+    ${HELM_OPTS} \
 sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &)
