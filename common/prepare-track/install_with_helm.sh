@@ -24,6 +24,7 @@ HELM_OPTS="--set agent.sysdig.settings.falcobaseline.report_interval=15000000000
 --set agent.sysdig.settings.falcobaseline.debug=true \
 --set agent.sysdig.settings.falcobaseline.randomize_start=false \
 --set kspmCollector.enabled=false \
+--version=1.61.10 \
 $HELM_OPTS"
 
 # new hostnames, to avoid duplicated names as much as possible
@@ -132,8 +133,8 @@ custom_hostnaming
 kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
 (set -x; helm upgrade --install sysdig-agent --namespace sysdig-agent \
     --set global.clusterConfig.name="${CLUSTER_NAME}" \
-    --set global.sysdig.accessKey=${ACCESS_KEY} \
-    --set global.sysdig.region=${HELM_REGION_ID} \
+    --set global.sysdig.accessKey="${ACCESS_KEY}" \
+    --set global.sysdig.region="${HELM_REGION_ID}" \
     --set clusterShield.cluster_shield.features.audit.enabled=true \
     --set clusterShield.enabled=true \
     --set agent.resourceProfile=custom \
@@ -143,8 +144,7 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
     --set agent.resources.limits.memory=2048Mi \
     --set agent.sysdig.settings.drift_control.enabled=true \
     --set agent.collectorSettings.sslVerifyCertificate=false \
-    --set agent.collectorSettings.collectorHost=${COLLECTOR} \
-    --set agent.image.tag=13.0.1 \
-    -f ${AGENT_CONF_DIR}/values.yaml \
-    ${HELM_OPTS} \
+    --set agent.collectorSettings.collectorHost="${COLLECTOR}" \
+    -f "${AGENT_CONF_DIR}"/values.yaml \
+    "${HELM_OPTS}" \
 sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &)
