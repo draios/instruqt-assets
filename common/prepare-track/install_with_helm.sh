@@ -79,6 +79,7 @@ then
     --set nodeAnalyzer.nodeAnalyzer.imageAnalyzer.deploy=false \
     --set clusterShield.cluster_shield.log_level=info \
     --set clusterShield.cluster_shield.features.audit.enabled=true \
+    --set clusterShield.cluster_shield.features.container_vulnerability_management.registry_ssl.verify=false \
     --set clusterShield.cluster_shield.features.container_vulnerability_management.enabled=true $HELM_OPTS"
 
  #    if [ "$USE_RUNTIME_VM" = true ]
