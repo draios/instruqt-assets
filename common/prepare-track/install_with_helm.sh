@@ -15,6 +15,7 @@ ACCESS_KEY=$2
 HELM_REGION_ID=$3
 SECURE_API_TOKEN=$4
 COLLECTOR=$5
+SECURE_API_ENDPOINT=$(echo "$6" | sed 's|https://||')
 HELM_OPTS="${HELM_OPTS}"
 
 HELM_OPTS="--set agent.sysdig.settings.falcobaseline.report_interval=150000000000 \
@@ -24,7 +25,7 @@ HELM_OPTS="--set agent.sysdig.settings.falcobaseline.report_interval=15000000000
 --set agent.sysdig.settings.falcobaseline.debug=true \
 --set agent.sysdig.settings.falcobaseline.randomize_start=false \
 --set kspmCollector.enabled=false \
---version=1.65.4 \
+--version=1.72.8 \
 $HELM_OPTS"
 
 # new hostnames, to avoid duplicated names as much as possible
@@ -146,6 +147,8 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
     --set agent.sysdig.settings.drift_control.enabled=true \
     --set agent.collectorSettings.sslVerifyCertificate=false \
     --set agent.collectorSettings.collectorHost="${COLLECTOR}" \
+    --set agent.sysdig.settings.responder_alpha.enabled=true \
+    --set agent.sysdig.settings.sysdig_api_endpoint="${SECURE_API_ENDPOINT}" \
     -f "${AGENT_CONF_DIR}"/values.yaml \
     ${HELM_OPTS} \
 sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &)
