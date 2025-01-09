@@ -15,7 +15,9 @@ ACCESS_KEY=$2
 HELM_REGION_ID=$3
 SECURE_API_TOKEN=$4
 COLLECTOR=$5
-SECURE_API_ENDPOINT=$6
+SECURE_API_ENDPOINT=$(echo "$6" | sed 's|https://||')
+
+
 HELM_OPTS="${HELM_OPTS}"
 
 HELM_OPTS="--set agent.sysdig.settings.falcobaseline.report_interval=150000000000 \
