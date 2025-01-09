@@ -547,7 +547,7 @@ function deploy_agent () {
     echo -e "  The agent is being installed in the background.\n"
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
-    install_agent ${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID} ${SYSDIG_SECURE_API_TOKEN} ${SYSDIG_SECURE_API_ENDPOINT}
+    install_agent ${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID} ${SYSDIG_SECURE_API_TOKEN} ${SECURE_API_ENDPOINT}
 }
 
 ##
