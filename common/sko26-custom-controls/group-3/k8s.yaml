@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sko-2025-docker-secret-group-1
+  namespace: group-1
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: ewogICAgImF1dGhzIjogewogICAgICAgICJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOiB7CiAgICAgICAgICAgICJhdXRoIjogImRYTmxjbTVoYldVNmNHRnpjM2R2Y21RPSIKICAgICAgICB9LAogICAgICAgICJodHRwczovL215LXByaXZhdGUtcmVnaXN0cnkuY29tIjogewogICAgICAgICAgICAiYXV0aCI6ICJjSEpwZG1GMFpYVnpaWEk2YzJWamNtVjAiCiAgICAgICAgfQogICAgfQp9

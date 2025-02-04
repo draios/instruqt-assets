@@ -1,0 +1,10 @@
+{
+    "auths": {
+        "https://index.docker.io/v1/": {
+            "auth": "dXNlcm5hbWU6cGFzc3dvcmQ="
+        },
+        "https://my-private-registry.com": {
+            "auth": "cHJpdmF0ZXVzZXI6c2VjcmV0"
+        }
+    }
+}
