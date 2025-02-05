@@ -3,8 +3,13 @@ variable "group_id" {
   description = "value of the group id, used to create different resources for each group and different k8s namespaces"
 }
 
-variable "region" {
+variable "api_url" {
+  description = "value of the api url"
   type        = string
-  description = "value of the region"
-  default     = "us-east-1"
+}
+
+variable "sysdig_token" {
+  description = "value of the sysdig token"
+  type        = string
+  sensitive   = true
 }

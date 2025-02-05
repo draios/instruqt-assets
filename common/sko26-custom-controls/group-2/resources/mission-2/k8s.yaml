@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sko-2026-service-group-2
+  namespace: group-2
+spec:
+  selector:
+    app: main
+  ports:
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer
