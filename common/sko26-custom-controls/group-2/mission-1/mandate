@@ -1,0 +1,6 @@
+Craft a custom control that verifies if a Security Group has SSH TCP open to 
+the world (0.0.0.0/0)
+
+Security is critical—misconfigurations can expose vital infrastructure! 
+
+Secure your environment!
