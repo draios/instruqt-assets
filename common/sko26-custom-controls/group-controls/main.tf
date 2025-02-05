@@ -69,7 +69,7 @@ resource "sysdig_secure_posture_control" "security_group_open_to_world_ssh" {
 resource "sysdig_secure_posture_control" "internet_facing_application_load_balancer" {
   name                = "Custom - LoadBalancer - Check for presence of internet facing load balancer - ${var.group_id}"
   description         = "Custom - LoadBalancer - Check for presence of internet facing load balancer"
-  resource_kind       = "AWS_ELB_LOAD_BALANCER"
+  resource_kind       = "AWS_ELBV2_LOAD_BALANCER"
   severity            = "High"
   rego                = <<-EOF
         package sysdig
