@@ -1,5 +1,5 @@
 resource "aws_lb" "this" {
-  name               = "sko-2025-load-balancer-${var.group_id}"
+  name               = "sko-2026-load-balancer-${var.group_id}"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.this.id]
@@ -10,7 +10,7 @@ resource "aws_lb" "this" {
 }
 
 resource "aws_security_group" "this" {
-  name        = "sko-2025-security-group-${var.group_id}"
+  name        = "sko-2026-security-group-${var.group_id}"
   description = "Allow all traffic"
   vpc_id      = module.vpc.vpc_id
 
