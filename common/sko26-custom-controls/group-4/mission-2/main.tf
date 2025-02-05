@@ -1,9 +1,9 @@
 ## Enter your Terraform code for your custom control
 
-resource "sysdig_secure_posture_control" "kubernetes_secret_is_docker_cfg" {
-  name                = "Custom - Kubernetes Secret - Secret type is dockerconfig or dockerconfigjson - ${var.group_id}"
-  description         = "Custom - Kubernetes Secret - Secret type is dockerconfig or dockerconfigjson"
-  resource_kind       = "SECRET"
+resource "sysdig_secure_posture_control" "kubernetes_namespace_contain_argocd_hook_set_presync" {
+  name                = "Custom - Kubernetes Namespace - Namespace is configured to use ArgoCD Hook with PreSync mode - ${var.group_id}"
+  description         = "Custom - Kubernetes Namespace - Namespace is configured to use ArgoCD Hook with PreSync mode"
+  resource_kind       = "NAMESPACE"
   severity            = "High"
   rego                = # Enter the right REGO code to comply with your mandate
   remediation_details = <<-EOF
