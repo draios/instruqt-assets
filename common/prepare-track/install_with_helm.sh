@@ -152,3 +152,6 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
     -f "${AGENT_CONF_DIR}"/values.yaml \
     ${HELM_OPTS} \
 sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &)
+
+# set the cluster name as an Instruqt Env Var
+echo $CLUSTER_NAME >> /tmp/CLUSTER_NAME
