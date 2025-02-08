@@ -2,8 +2,8 @@
 ######## AWS ##########
 #######################
 resource "sysdig_secure_posture_control" "lambda_approved_runtimes" {
-  name                = "Custom - Lambda - Lambda runtime in list of approved runtimes - ${var.group_id}"
-  description         = "Custom - Lambda - Lambda runtime in list of approved runtimes"
+  name                = "Custom - SKO26 - Lambda - Lambda runtime in list of approved runtimes - ${var.group_id}"
+  description         = "Custom - SKO26 - Lambda - Lambda runtime in list of approved runtimes"
   resource_kind       = "AWS_LAMBDA_FUNCTION"
   severity            = "High"
   rego                = <<-EOF
@@ -25,8 +25,8 @@ resource "sysdig_secure_posture_control" "lambda_approved_runtimes" {
 }
 
 resource "sysdig_secure_posture_control" "sqs_queue_delay_seconds" {
-  name                = "Custom - SQS - SQS queue delay seconds should not be above zero - ${var.group_id}"
-  description         = "Custom - SQS - SQS queue delay seconds should not be above zero"
+  name                = "Custom - SKO26 - SQS - SQS queue delay seconds should not be above zero - ${var.group_id}"
+  description         = "Custom - SKO26 - SQS - SQS queue delay seconds should not be above zero"
   resource_kind       = "AWS_SQS_QUEUE"
   severity            = "High"
   rego                = <<-EOF
@@ -44,8 +44,8 @@ resource "sysdig_secure_posture_control" "sqs_queue_delay_seconds" {
 }
 
 resource "sysdig_secure_posture_control" "security_group_open_to_world_ssh" {
-  name                = "Custom - SecurityGroup - Verify if SG has SSH TCP open to 0.0.0.0/0 - ${var.group_id}"
-  description         = "Custom - SecurityGroup - Verify if SG has SSH TCP open to 0.0.0.0/0"
+  name                = "Custom - SKO26 - SecurityGroup - Verify if SG has SSH TCP open to 0.0.0.0/0 - ${var.group_id}"
+  description         = "Custom - SKO26 - SecurityGroup - Verify if SG has SSH TCP open to 0.0.0.0/0"
   resource_kind       = "AWS_SECURITY_GROUP"
   severity            = "High"
   rego                = <<-EOF
@@ -67,8 +67,8 @@ resource "sysdig_secure_posture_control" "security_group_open_to_world_ssh" {
 }
 
 resource "sysdig_secure_posture_control" "internet_facing_application_load_balancer" {
-  name                = "Custom - LoadBalancer - Check for presence of internet facing load balancer - ${var.group_id}"
-  description         = "Custom - LoadBalancer - Check for presence of internet facing load balancer"
+  name                = "Custom - SKO26 - LoadBalancer - Check for presence of internet facing load balancer - ${var.group_id}"
+  description         = "Custom - SKO26 - LoadBalancer - Check for presence of internet facing load balancer"
   resource_kind       = "AWS_ELBV2_LOAD_BALANCER"
   severity            = "High"
   rego                = <<-EOF
@@ -88,8 +88,8 @@ resource "sysdig_secure_posture_control" "internet_facing_application_load_balan
 ######## K8S ##########
 #######################
 resource "sysdig_secure_posture_control" "kubernetes_service_type_loadbalancer" {
-  name                = "Custom - Kubernetes Service - Check if service type is load balancer - ${var.group_id}"
-  description         = "Custom - Kubernetes Service - Check if service type is load balancer"
+  name                = "Custom - SKO26 - Kubernetes Service - Check if service type is load balancer - ${var.group_id}"
+  description         = "Custom - SKO26 - Kubernetes Service - Check if service type is load balancer"
   resource_kind       = "SERVICE"
   severity            = "High"
   rego                = <<-EOF
@@ -107,8 +107,8 @@ resource "sysdig_secure_posture_control" "kubernetes_service_type_loadbalancer" 
 }
 
 resource "sysdig_secure_posture_control" "kubernetes_deployment_with_single_replica" {
-  name                = "Custom - Kubernetes Deployment - Check if deployment has a single replica - ${var.group_id}"
-  description         = "Custom - Kubernetes Deployment - Check if deployment has a single replica"
+  name                = "Custom - SKO26 - Kubernetes Deployment - Check if deployment has a single replica - ${var.group_id}"
+  description         = "Custom - SKO26 - Kubernetes Deployment - Check if deployment has a single replica"
   resource_kind       = "DEPLOYMENT"
   severity            = "High"
   rego                = <<-EOF
@@ -128,8 +128,8 @@ resource "sysdig_secure_posture_control" "kubernetes_deployment_with_single_repl
 }
 
 resource "sysdig_secure_posture_control" "kubernetes_secret_is_docker_cfg" {
-  name                = "Custom - Kubernetes Secret - Secret type is dockerconfig or dockerconfigjson - ${var.group_id}"
-  description         = "Custom - Kubernetes Secret - Secret type is dockerconfig or dockerconfigjson"
+  name                = "Custom - SKO26 - Kubernetes Secret - Secret type is dockerconfig or dockerconfigjson - ${var.group_id}"
+  description         = "Custom - SKO26 - Kubernetes Secret - Secret type is dockerconfig or dockerconfigjson"
   resource_kind       = "SECRET"
   severity            = "High"
   rego                = <<-EOF
@@ -150,8 +150,8 @@ resource "sysdig_secure_posture_control" "kubernetes_secret_is_docker_cfg" {
 }
 
 resource "sysdig_secure_posture_control" "kubernetes_namespace_contain_argocd_hook_set_presync" {
-  name                = "Custom - Kubernetes Namespace - Namespace is configured to use ArgoCD Hook with PreSync mode - ${var.group_id}"
-  description         = "Custom - Kubernetes Namespace - Namespace is configured to use ArgoCD Hook with PreSync mode"
+  name                = "Custom - SKO26 - Kubernetes Namespace - Namespace is configured to use ArgoCD Hook with PreSync mode - ${var.group_id}"
+  description         = "Custom - SKO26 - Kubernetes Namespace - Namespace is configured to use ArgoCD Hook with PreSync mode"
   resource_kind       = "NAMESPACE"
   severity            = "High"
   rego                = <<-EOF
