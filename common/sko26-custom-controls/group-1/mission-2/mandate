@@ -1,4 +1,4 @@
-Craft a custom control that scans `Kubernetes Deployments` across connected 
+Craft a custom control that scans 'Kubernetes Deployments' across connected 
 K8s clusters, identifying any with a **single replica. High availability** 
 **isn’t a recommendation—it’s a necessity!** 
 
@@ -7,3 +7,5 @@ Deploy with precision. ⚡💻
 Tips:
 If you are unfamiliar with the object structure, check your inventory to 
 look for your object's manifesto.
+
+**REMEMBER** to use your help token wisely!!

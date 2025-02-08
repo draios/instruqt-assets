@@ -14,3 +14,5 @@ Terraform files.
 If you have identified the latest version of this resource kind make sure you use 'v2'
 (notice the lowercase) instead of the provided value 'V2' (capital 'V' is a type and
 should be lowercase instead).
+
+**REMEMBER** to use your help token wisely!!
