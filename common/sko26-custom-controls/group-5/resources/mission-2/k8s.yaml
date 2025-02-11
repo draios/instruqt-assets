@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sko-2026-deployment-with-root-group-1
-  namespace: group-1
+  name: sko-2026-deployment-with-root-group-5
+  namespace: group-5
 spec:
   replicas: 1
   selector:

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sko-2026-docker-secret-group-3
-  namespace: group-3
+  name: sko-2026-docker-secret-group-7
+  namespace: group-7
 type: kubernetes.io/dockerconfigjson
 data:  .dockerconfigjson: [REDACTED]
