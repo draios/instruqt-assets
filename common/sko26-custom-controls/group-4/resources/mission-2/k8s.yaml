@@ -1,6 +1,6 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: example-namespace
+  name: example-namespace-group-4
   annotations:
     argocd.argoproj.io/hook: PreSync

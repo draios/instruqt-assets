@@ -1,8 +1,8 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: sko-2026-service-group-2
-  namespace: group-2
+  name: sko-2026-service-group-6
+  namespace: group-6
 spec:
   selector:
     app: main
