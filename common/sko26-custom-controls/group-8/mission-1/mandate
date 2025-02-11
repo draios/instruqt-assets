@@ -1,0 +1,18 @@
+Craft a custom control that scans for AWS Elastic Load Balancer resources across
+your connected cloud accounts, detecting any that are "internet-facing".
+
+Precision is critical—misconfigurations can expose vital infrastructure! 
+
+Secure your environment!
+
+Tips:
+When looking for your resources kind find the latest version of your required 
+AWS Elastic Load Balancer resource kind in Sysdig and apply it correctly in your
+Terraform files.
+
+**BEWARE**: There is a typo in the value returned by the API for this resource kind. 
+If you have identified the latest version of this resource kind make sure you use 'v2'
+(notice the lowercase) instead of the provided value 'V2' (capital 'V' is a type and
+should be lowercase instead).
+
+**REMEMBER** to use your help token wisely!!
