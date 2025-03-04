@@ -16,7 +16,7 @@ HELM_REGION_ID=$3
 SECURE_API_TOKEN=$4
 COLLECTOR=$5
 SECURE_API_ENDPOINT=$(echo "$6" | sed 's|https://||')
-HELM_OPTS="${HELM_OPTS}"
+HELM_OPTS="${HELM_OPTS:-}"
 
 HELM_OPTS="--set agent.sysdig.settings.falcobaseline.report_interval=150000000000 \
 --set agent.sysdig.settings.falcobaseline.max_drops_buffer_rate_percentage=0.99 \
@@ -59,7 +59,12 @@ function custom_hostnaming () {
 }
 
 mkdir -p /var/run/containerd
-ln -s /var/run/k3s/containerd/containerd.sock ${SOCKET_PATH}
+if [ -e ${SOCKET_PATH} ]; then
+  echo "File ${SOCKET_PATH} already exists."
+else
+  echo "File does not exist. Creating symlink."
+  ln -s /var/run/k3s/containerd/containerd.sock ${SOCKET_PATH}
+fi
 
 helm repo add sysdig https://charts.sysdig.com >> ${OUTPUT} 2>&1
 helm repo update >> ${OUTPUT} 2>&1
