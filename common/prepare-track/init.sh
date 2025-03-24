@@ -576,25 +576,24 @@ function test_agent () {
 
     while [ -z ${FOUND_COLLECTOR} ] && [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
-        sleep 3
+        sleep 5
         case "$INSTALL_WITH" in
             helm)
                 ## These checks aren't consistent
                 #kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 | grep "cm_collector" | grep -q "Processing messages" && connected=true
                 kubectl rollout status daemonset -l app=sysdig-agent -n sysdig-agent -w --timeout=600s && connected=true
-                FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | awk '/collector at host=/ {print $NF; exit}'`
-                
+                FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
                 ;;
             docker)
                 ### Todo: docker should check the existence of /opt/draios/logs/running <- leveraged by our kubernetes health check and is only created when the agent is officially connected to the backend
                 docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}" && connected=true
-                FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | awk '/collector at host=/ {print $NF; exit}'`
+                FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
                 sleep 10     # Installation through docker takes more time
                 ;;
             host)
                 ### Todo: systemctl status sysdig-agent; if its running its connected and healthy.
                 grep -q "${CONNECTED_MSG}" /opt/draios/logs/draios.log && connected=true
-                FOUND_COLLECTOR=`grep -m1 -iE "collector at host=.*" /opt/draios/logs/draios.log | awk '/collector at host=/ {print $NF; exit}'`
+                FOUND_COLLECTOR=`cat /opt/draios/logs/draios.log | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
                 ;;
         esac
         
