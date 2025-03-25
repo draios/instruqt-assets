@@ -156,4 +156,6 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
     --set agent.sysdig.settings.sysdig_api_endpoint="${SECURE_API_ENDPOINT}" \
     -f "${AGENT_CONF_DIR}"/values.yaml \
     ${HELM_OPTS} \
-sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &)
+sysdig/sysdig-deploy >> ${OUTPUT} 2>&1)
+
+# kubectl wait --for=condition=Ready daemonset/sysdig-agent -n sysdig-agent --timeout=300s

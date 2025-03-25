@@ -581,7 +581,8 @@ function test_agent () {
             helm)
                 ## These checks aren't consistent
                 #kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 | grep "cm_collector" | grep -q "Processing messages" && connected=true
-                kubectl rollout status daemonset -l app=sysdig-agent -n sysdig-agent -w --timeout=600s && connected=true
+                # The -l selector is not available in the current kubectl version installed
+                kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=600s && connected=true
                 FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
                 ;;
             docker)
