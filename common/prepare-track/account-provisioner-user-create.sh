@@ -25,6 +25,7 @@ if [ $# -ne 6 ]
     ACCOUNT_PROVISIONER_SECURE_API_URL=https://us2.app.sysdig.com
     ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY="${DYNAMIC_AGENT_ACCESS_KEY:-$TEST_AGENT_ACCESS_KEY}"
     ACCOUNT_PROVISIONER_REGION_NUMBER=2
+    DYNAMIC_PROVISIONER_MONITOR_ONLY="${DYNAMIC_PROVISIONER_MONITOR_ONLY:-false}"
 else
     ACCOUNT_PROVISIONER_MONITOR_API_TOKEN=$1
     ACCOUNT_PROVISIONER_MONITOR_API_URL=$2
@@ -32,10 +33,8 @@ else
     ACCOUNT_PROVISIONER_SECURE_API_URL=$4
     ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY=$5
     ACCOUNT_PROVISIONER_REGION_NUMBER=$6
+    DYNAMIC_PROVISIONER_MONITOR_ONLY="${DYNAMIC_PROVISIONER_MONITOR_ONLY:-false}"
 fi
-
-# TODO: get monitor operations team ID
-MONITOR_OPS_TEAM_ID=10018845
 
 WORK_DIR=/opt/sysdig
 TRACK_DIR=/tmp/instruqt-assets/common/prepare-track
@@ -57,6 +56,34 @@ echo "${ACCOUNT_PROVISIONER_REGION_NUMBER}" > $WORK_DIR/ACCOUNT_PROVISIONER_REGI
 
 source $TRACK_DIR/lab_random_string_id.sh
 
+function provsion_user(){
+  # create user in parent account
+  curl -s -k -X POST \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $1" \
+  --data-binary '{
+  "username": "'"${SPA_USER}"'",
+  "password": "'"${SPA_PASS}"'",
+  "firstName": "Id:",
+  "lastName": "'"${SPA_USER}"'",
+  "systemRole": "ROLE_USER"
+  }' \
+  "${ACCOUNT_PROVISIONER_SECURE_API_URL}"/api/user/provisioning/ \
+  | jq > $WORK_DIR/account.json
+}
+
+# Get monitor operations team ID
+MONITOR_OPS_TEAM_ID=$(curl -s -k -X GET \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer ${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}" \
+"${ACCOUNT_PROVISIONER_MONITOR_API_URL}/api/v3/teams?filter=product:SDC&offset=0&orderBy=name:asc" | jq -r '.data[] | select(.name == "Monitor Operations") | .id')
+if [ -z "$MONITOR_OPS_TEAM_ID" ]; then
+    echo "Monitor Operations team not found"
+    exit 1
+fi
+# Get the account ID
+echo "Monitor Operations team ID: $MONITOR_OPS_TEAM_ID"
+
 # define new user creds, and feed it to instruqt lab as an agent var
 WORK_DIR=/opt/sysdig
 SPA_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
@@ -67,24 +94,26 @@ agent variable set SPA_PASS "${SPA_PASS}"
 SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER)
 echo "${SPA_USER}"
 agent variable set SPA_USER "${SPA_USER}"
-agent variable set SPA_SECURE_API_TOKEN "${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}"
+if [ $DYNAMIC_PROVISIONER_MONITOR_ONLY == "true" ]; then
+  agent variable set SPA_MONITOR_API_TOKEN "${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}"
+  agent variable set SPA_MONITOR_API_URL "${ACCOUNT_PROVISIONER_MONITOR_API_URL}"
+else
+  agent variable set SPA_SECURE_API_TOKEN "${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}"
+  agent variable set SPA_MONITOR_API_TOKEN "${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}"
+  agent variable set SPA_SECURE_API_URL "${ACCOUNT_PROVISIONER_SECURE_API_URL}"
+  agent variable set SPA_MONITOR_API_URL "${ACCOUNT_PROVISIONER_MONITOR_API_URL}"
+fi
 PROVISIONED_RANDOM_ID=$(cat $WORK_DIR/random_string_OK)
 agent variable set PROVISIONED_RANDOM_ID "${PROVISIONED_RANDOM_ID}"
 
 # create user in parent account
-curl -s -k -X POST \
--H "Content-Type: application/json" \
--H "Authorization: Bearer ${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}" \
---data-binary '{
-"username": "'"${SPA_USER}"'",
-"password": "'"${SPA_PASS}"'",
-"firstName": "Id:",
-"lastName": "'"${SPA_USER}"'",
-"systemRole": "ROLE_USER"
-}' \
-"${ACCOUNT_PROVISIONER_SECURE_API_URL}"/api/user/provisioning/ \
-| jq > $WORK_DIR/account.json
-# todo proceed only if successful
+if [ $DYNAMIC_PROVISIONER_MONITOR_ONLY == "true" ]; then
+    echo "Monitor provisioning only"
+    provsion_user "${ACCOUNT_PROVISIONER_MONITOR_API_TOKEN}"
+else
+    echo "Secure and Monitor provisioning"
+    provsion_user "${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}"
+fi
 
 # set flag user provisioned, all OK
 touch $WORK_DIR/user_provisioned_COMPLETED
