@@ -15,6 +15,7 @@ ACCESS_KEY=$2
 HELM_REGION_ID=$3
 SECURE_API_TOKEN=$4
 COLLECTOR=$5
+SSH_OPTS="-o StrictHostKeyChecking=no"
 SECURE_API_ENDPOINT=$(echo "$6" | sed 's|https://||')
 HELM_OPTS="${HELM_OPTS:-}"
 
@@ -44,8 +45,8 @@ function custom_hostnaming () {
         #  - Add new entry to /etc/hosts with the new name
         if [[ $(hostname) != $current_hostname ]]; #it's a different host
         then
-            ssh root@$current_hostname "hostnamectl set-hostname $new_hostname"
-            ssh root@$current_hostname 'echo "127.0.0.1 '$new_hostname'" >> /etc/hosts'
+            ssh $SSH_OPTS root@$current_hostname "hostnamectl set-hostname $new_hostname"
+            ssh $SSH_OPTS root@$current_hostname "echo '127.0.0.1 $new_hostname' >> /etc/hosts"
 
         else # it's me
             hostnamectl set-hostname $new_hostname
