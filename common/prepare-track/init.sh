@@ -32,6 +32,7 @@ SECURE_URL=''
 AGENT_COLLECTOR=''
 NIA_ENDPOINT=''
 SKIP_CLEANUP=false
+DYNAMIC_SETUP="${DYNAMIC_SETUP:-false}"
 
 USE_USER_PROVISIONER=false
 USE_AGENT=false
@@ -51,10 +52,10 @@ USE_CURSES=false
 USE_NO_CHECK=false
 
 ##############################    GLOBAL VARS    ##############################
-TEST_AGENT_ACCESS_KEY=[REDACTED]
-TEST_MONITOR_API=[REDACTED]
-TEST_SECURE_API=[REDACTED]
-TEST_REGION=2
+TEST_AGENT_ACCESS_KEY="${DYNAMIC_AGENT_ACCESS_KEY:-$TEST_AGENT_ACCESS_KEY}"
+TEST_MONITOR_API="${DYNAMIC_MONITOR_API:-$TEST_MONITOR_API}"
+TEST_SECURE_API="${DYNAMIC_SECURE_API:-$TEST_SECURE_API}"
+TEST_REGION="${TEST_REGION:-2}"
 
 ###############################    FUNCTIONS    ###############################
 ##
@@ -79,6 +80,7 @@ function panic_msg () {
 #   - container for cloud account (nginx process alone, no systemctl)
 ##
 function config_sysdig_tab_redirect () {
+    echo "Setting up Instruqt tab redirect to Sysdig Dashboard"
     OLD_STRING="http {"
     NEW_STRING="http {     server {         listen 8997;         server_name localhost;         rewrite ^/(.*)$ $MONITOR_URL/\$1 redirect;     }     server {         listen 8998;         server_name localhost;         rewrite ^/(.*)$ $SECURE_URL/\$1 redirect;     } "
 
@@ -219,7 +221,7 @@ function set_values () {
 # Prompt user to select agent collector (region).
 ##
 function select_region () {
-    if [ "${USE_CURSES}" = false ]
+    if [[ "${USE_CURSES}" == false ]] || [[ "${DYNAMIC_SETUP}" == true ]];
     then
         echo
         echo "Sysdig SaaS Region"
@@ -242,9 +244,10 @@ function select_region () {
         fi
         echo
 
-        if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
+        if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]];
         then
             REGION_N=${TEST_REGION}
+            echo "Region number to use $REGION_N"
             echo "   Instruqt test or provided Sysdig SaaS region will be used."
         else
             read -p "   Select Region (type number): "  REGION_N; 
@@ -340,7 +343,7 @@ function configure_API () {
     do
         attempt=$(( $attempt + 1 ))
 
-        if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
+        if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]];
         then
             if [[ ${PRODUCT} == "MONITOR" ]];
             then
@@ -498,6 +501,10 @@ function intro () {
       echo "    - Deploy Runtime Scanner. Requires --node-analyzer."
     fi
 
+    if [ "$DYNAMIC_SETUP" == true ]; then
+      echo "    - Dynamic setup enabled."
+    fi
+
     echo "  Follow the instructions below."
     echo
     echo "----------------------------------------------------------"
@@ -526,7 +533,7 @@ function deploy_agent () {
         echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
     fi
 
-    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
+    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]];
     then
         AGENT_ACCESS_KEY=$(echo -n ${TEST_AGENT_ACCESS_KEY} | base64 --decode)
     elif [ "$USE_CURSES" = false ]
@@ -569,25 +576,25 @@ function test_agent () {
 
     while [ -z ${FOUND_COLLECTOR} ] && [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
-        sleep 3
+        sleep 5
         case "$INSTALL_WITH" in
             helm)
                 ## These checks aren't consistent
                 #kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 | grep "cm_collector" | grep -q "Processing messages" && connected=true
+                # The -l selector is not available in the current kubectl version installed
                 kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=600s && connected=true
-                FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
-                
+                FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
                 ;;
             docker)
                 ### Todo: docker should check the existence of /opt/draios/logs/running <- leveraged by our kubernetes health check and is only created when the agent is officially connected to the backend
                 docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}" && connected=true
-                FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
+                FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
                 sleep 10     # Installation through docker takes more time
                 ;;
             host)
                 ### Todo: systemctl status sysdig-agent; if its running its connected and healthy.
                 grep -q "${CONNECTED_MSG}" /opt/draios/logs/draios.log && connected=true
-                FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
+                FOUND_COLLECTOR=`cat /opt/draios/logs/draios.log | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
                 ;;
         esac
         
@@ -823,6 +830,7 @@ function help () {
 
     echo "  --skip-cleanup              Skip script setup clean-up actions."
     echo "  --provision-user            Creates user in Sysdig Saas Training account for use in this lab."
+    echo "  --dynamic-setup             Do not use the user provisioner, use the runtime parameters."
     echo "  -a, --agent                 Deploy a Sysdig Agent."
     echo "  -b, --rapid-response        Enable Rapid Response"
     echo "  -c, --cloud                 Set up environment for Sysdig Secure for Cloud."
@@ -879,6 +887,9 @@ function check_flags () {
                 ;;
             --provision-user)
                 USE_USER_PROVISIONER=true
+                ;;
+            --dynamic-setup)
+                DYNAMIC_SETUP=true
                 ;;
             --agent | -a)
                 USE_AGENT=true
