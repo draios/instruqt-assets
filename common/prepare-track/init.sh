@@ -180,6 +180,18 @@ function set_values () {
             PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
 
+        *"AP Cybereason (Sydney) - au1"*)
+            DOMAIN='cybereason.app.au1.sysdig.com'
+            MONITOR_URL='https://'$DOMAIN
+            SECURE_URL=$MONITOR_URL'/'
+            AGENT_COLLECTOR='ingest.au1.sysdig.com'
+            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=au1
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$MONITOR_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+            ;;
+
         *"On Premises - onprem"*)
             if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ]; then
                 DOMAIN=$(cat $WORK_DIR/ON_PREM_ENDPOINT)
@@ -238,9 +250,10 @@ function select_region () {
         echo "   3) US West GCP (Dallas) - us4"
         echo "   4) European Union (Frankfurt) - eu1"
         echo "   5) AP Australia (Sydney) - au1"
+        echo "   6) AP Cybereason (Sydney) - au1"
         if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ];
         then
-            echo "   6) On Premises - onprem"
+            echo "   7) On Premises - onprem"
         fi
         echo
 
@@ -260,6 +273,7 @@ function select_region () {
                           3 'US West GCP (Dallas) - us4' \
                           4 'European Union (Frankfurt) - eu1' \
                           5 'AP Australia (Sydney) - au1' \
+                          6 'AP Cybereason (Sydney) - au1' \
                           3>&1 1>&2 2>&3 3>&-
                   )
         if [ $? -ne 0 ]
@@ -289,6 +303,9 @@ function select_region () {
             REGION="AP Australia (Sydney) - au1"
             ;;
         6)
+            REGION="AP Cybereason (Sydney) - au1"
+            ;;
+        7)
             if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ];
             then
                 REGION="On Premises - onprem"
@@ -665,6 +682,8 @@ function track_has_cloud_account () {
     then
         CLOUD_PROVIDER=azure
         cloudvarname=INSTRUQT_AZURE_SUBSCRIPTION_${INSTRUQT_AZURE_SUBSCRIPTIONS}_SUBSCRIPTION_ID
+        azure_tenant_id_var_name=INSTRUQT_AZURE_SUBSCRIPTION_${INSTRUQT_AZURE_SUBSCRIPTIONS}_TENANT_ID
+        AZURE_TENANT_ID=${!azure_tenant_id_var_name}
         CLOUD_ACCOUNT_ID=${!cloudvarname}
     fi
 
