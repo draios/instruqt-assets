@@ -257,7 +257,7 @@ function select_region () {
         fi
         echo
 
-        if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]];
+        if [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]] || [[ ${INSTRUQT_USER_ID} == "testuser-"* ]];
         then
             REGION_N=${TEST_REGION}
             echo "Region number to use $REGION_N"
@@ -360,7 +360,7 @@ function configure_API () {
     do
         attempt=$(( $attempt + 1 ))
 
-        if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]];
+        if [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]] || [[ ${INSTRUQT_USER_ID} == "testuser-"* ]];
         then
             if [[ ${PRODUCT} == "MONITOR" ]];
             then
@@ -550,7 +550,7 @@ function deploy_agent () {
         echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
     fi
 
-    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]];
+    if [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]] || [[ ${INSTRUQT_USER_ID} == "testuser-"* ]];
     then
         AGENT_ACCESS_KEY=$(echo -n ${TEST_AGENT_ACCESS_KEY} | base64 --decode)
     elif [ "$USE_CURSES" = false ]
