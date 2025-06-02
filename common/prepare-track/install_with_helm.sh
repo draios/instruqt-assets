@@ -15,8 +15,9 @@ ACCESS_KEY=$2
 HELM_REGION_ID=$3
 SECURE_API_TOKEN=$4
 COLLECTOR=$5
+SSH_OPTS="-o StrictHostKeyChecking=no"
 SECURE_API_ENDPOINT=$(echo "$6" | sed 's|https://||')
-HELM_OPTS="${HELM_OPTS}"
+HELM_OPTS="${HELM_OPTS:-}"
 
 HELM_OPTS="--set agent.sysdig.settings.falcobaseline.report_interval=150000000000 \
 --set agent.sysdig.settings.falcobaseline.max_drops_buffer_rate_percentage=0.99 \
@@ -25,7 +26,7 @@ HELM_OPTS="--set agent.sysdig.settings.falcobaseline.report_interval=15000000000
 --set agent.sysdig.settings.falcobaseline.debug=true \
 --set agent.sysdig.settings.falcobaseline.randomize_start=false \
 --set kspmCollector.enabled=false \
---version=1.72.8 \
+--version=1.77.4 \
 $HELM_OPTS"
 
 # new hostnames, to avoid duplicated names as much as possible
@@ -44,8 +45,8 @@ function custom_hostnaming () {
         #  - Add new entry to /etc/hosts with the new name
         if [[ $(hostname) != $current_hostname ]]; #it's a different host
         then
-            ssh root@$current_hostname "hostnamectl set-hostname $new_hostname"
-            ssh root@$current_hostname 'echo "127.0.0.1 '$new_hostname'" >> /etc/hosts'
+            ssh $SSH_OPTS root@$current_hostname "hostnamectl set-hostname $new_hostname"
+            ssh $SSH_OPTS root@$current_hostname "echo '127.0.0.1 $new_hostname' >> /etc/hosts"
 
         else # it's me
             hostnamectl set-hostname $new_hostname
@@ -59,7 +60,12 @@ function custom_hostnaming () {
 }
 
 mkdir -p /var/run/containerd
-ln -s /var/run/k3s/containerd/containerd.sock ${SOCKET_PATH}
+if [ -e ${SOCKET_PATH} ]; then
+  echo "File ${SOCKET_PATH} already exists."
+else
+  echo "File does not exist. Creating symlink."
+  ln -s /var/run/k3s/containerd/containerd.sock ${SOCKET_PATH}
+fi
 
 helm repo add sysdig https://charts.sysdig.com >> ${OUTPUT} 2>&1
 helm repo update >> ${OUTPUT} 2>&1
@@ -151,4 +157,6 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
     --set agent.sysdig.settings.sysdig_api_endpoint="${SECURE_API_ENDPOINT}" \
     -f "${AGENT_CONF_DIR}"/values.yaml \
     ${HELM_OPTS} \
-sysdig/sysdig-deploy >> ${OUTPUT} 2>&1 &)
+sysdig/sysdig-deploy >> ${OUTPUT} 2>&1)
+
+# kubectl wait --for=condition=Ready daemonset/sysdig-agent -n sysdig-agent --timeout=300s
