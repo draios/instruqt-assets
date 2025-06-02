@@ -2,6 +2,7 @@ terraform {
   required_providers {
       sysdig = {
         source  = "sysdiglabs/sysdig"
+        version = "~>1.52.0"
       }
   }
 }
@@ -9,6 +10,7 @@ terraform {
 variable "training_secure_api_token" {
   type        = string
   description = "The Sysdig API token"
+  sensitive   = true
 }
 
 variable "training_secure_url" {
@@ -29,11 +31,7 @@ variable "training_gcp_project" {
 variable "gcp_creds" {
   type        = string
   description = "Auth credentials for the GCP SA from Instruqt"
-}
-
-variable "deploy_scanner" {
-  type        = bool
-  description = "If true, deploys the Sysdig Scanner for ECR and Fargate"
+  sensitive   = true
 }
 
 provider "sysdig" {
@@ -53,8 +51,12 @@ provider "google-beta" {
   credentials = var.gcp_creds
 }
 
-module "secure-for-cloud_example_single-project" {
-  source = "sysdiglabs/secure-for-cloud/google//examples/single-project"
-  
-  deploy_scanning = var.deploy_scanner
+module "sysdig-cloud-connector" {
+  source                      = "git::https://github.com/sysdiglabs/demoenv-scenarios//terraform/modules/sysdig/cloud-connector-gcp?ref=v1.2.11"
+  providers = {
+    google-beta = google-beta
+    sysdig      = sysdig
+    google      = google
+  }
+  secure_for_cloud_gcp_project = var.training_gcp_project
 }
