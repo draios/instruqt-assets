@@ -26,7 +26,7 @@ HELM_OPTS="--set agent.sysdig.settings.falcobaseline.report_interval=15000000000
 --set agent.sysdig.settings.falcobaseline.debug=true \
 --set agent.sysdig.settings.falcobaseline.randomize_start=false \
 --set kspmCollector.enabled=false \
---version=1.77.4 \
+--version=1.84.3 \
 $HELM_OPTS"
 
 # new hostnames, to avoid duplicated names as much as possible
