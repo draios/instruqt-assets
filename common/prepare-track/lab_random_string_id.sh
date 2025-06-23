@@ -24,6 +24,7 @@ function generate_random_id () {
         #create flag
         echo "$random_id" > $WORK_DIR/random_string_OK
     fi
+        random_id=$(cat $WORK_DIR/random_string_OK)
         echo "Random user string from dictionary: $random_id"
 }
 

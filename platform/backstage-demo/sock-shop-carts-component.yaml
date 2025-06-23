@@ -1,0 +1,27 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: sock-shop-carts
+  annotations:
+    # VM Runtime
+    sysdigcloud.com/kubernetes-cluster-name: demo-kube-gke
+    sysdigcloud.com/kubernetes-namespace-name: sock-shop
+    sysdigcloud.com/kubernetes-workload-name: sock-shop-carts
+    sysdigcloud.com/kubernetes-workload-type: deployment
+
+    # VM Registry
+    sysdigcloud.com/registry-vendor: harbor
+    sysdigcloud.com/registry-name: registry-harbor-registry.registry.svc.cluster.local:5443
+
+    # VM Pipeline
+    sysdigcloud.com/image-freetext: ghcr.io/sysdiglabs
+    
+    # Posture
+    sysdigcloud.com/resource-name: sock-shop-carts
+    sysdigcloud.com/resource-type: "Deployment"
+  description: |
+    This is the Sock shop service that keeps track of socks pairs to be purchased.
+spec:
+  type: service
+  lifecycle: experimental
+  owner: team-c
