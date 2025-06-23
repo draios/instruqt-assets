@@ -4,7 +4,7 @@
 cp /etc/nginx/nginx.conf /root/nginx.conf
 
 # remove last closing brackets
-sed -i '$ d' /etc/nginx/nginx.conf
+awk '{lines[NR]=$0} /^}$/ {last=NR} END {for(i=1;i<last;i++) print lines[i]}' /etc/nginx/nginx.conf > tmp && mv tmp /etc/nginx/nginx.conf
 
 # add new configuration and add last closing brackets
 cat <<EOF >> /etc/nginx/nginx.conf

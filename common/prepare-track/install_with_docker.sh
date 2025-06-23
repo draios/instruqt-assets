@@ -13,9 +13,9 @@ COLLECTOR=$3
 
 if [ "$USE_NODE_ANALYZER" = true ]
 then
-    if [ -n "$NIA_ENDPOINT"]
+    if [ -n "$NIA_ENDPOINT" ]
     then
-        docker run -d --name sysdig-node-image-analyzer \
+        docker run -d --name sysdig-host-analyzer \
             --privileged \
             --network host \
             -e AM_COLLECTOR_ENDPOINT=${NIA_ENDPOINT} \
@@ -28,20 +28,30 @@ then
     fi
 fi
 
-if [ "$USE_NODE_IMAGE_ANALYZER" = true ]
+if [ -n "$NIA_ENDPOINT" ]
 then
-    if [ -n "$NIA_ENDPOINT"]
-    then
-        docker run -d --name sysdig-node-image-analyzer \
-            --privileged \
-            --network host \
-            -e AM_COLLECTOR_ENDPOINT=${NIA_ENDPOINT} \
-            -e ACCESS_KEY=${ACCESS_KEY} \
-            -v /var/run:/var/run  \
-            quay.io/sysdig/node-image-analyzer:latest >> ${OUTPUT} 2>&1 &
-    else
-        echo "ERROR: Cannot deploy Node Image Analyzer. No valid endpoint."
-    fi
+
+    docker run --detach --name sysdig-host-scanner \
+         -e HOST_FS_MOUNT_PATH=/host \
+         -e SYSDIG_ACCESS_KEY=${ACCESS_KEY} \
+         -e SYSDIG_API_URL=${NIA_ENDPOINT} \
+         -e SCAN_ON_START=true \
+         -e DOCKER_SOCKET_PATHS=unix:///host/var/run/docker.sock \
+         -v /:/host:ro \
+         -v /var/run:/host/var/run:ro \
+         --uts=host \
+         --net=host \
+         quay.io/sysdig/vuln-host-scanner:$(curl -L -s https://download.sysdig.com/scanning/sysdig-host-scanner/latest_version.txt) >> ${OUTPUT} 2>&1 &
+         
+    docker run -d --name sysdig-node-image-analyzer \
+        --privileged \
+        --network host \
+        -e AM_COLLECTOR_ENDPOINT=${NIA_ENDPOINT} \
+        -e ACCESS_KEY=${ACCESS_KEY} \
+        -v /var/run:/var/run  \
+        quay.io/sysdig/node-image-analyzer:latest >> ${OUTPUT} 2>&1 &
+else
+    echo "ERROR: Cannot deploy Node Image Analyzer. No valid endpoint."
 fi
 
 if [ "$USE_PROMETHEUS" = true ]
@@ -65,4 +75,4 @@ docker run -d --name sysdig-agent \
     -v ${AGENT_CONF_DIR}/values.yaml:/opt/draios/etc/dragent.yaml:rw \
     ${DOCKER_OPTS} \
     --shm-size=512m \
-    sysdig/agent >> ${OUTPUT} 2>&1 &
+    quay.io/sysdig/agent >> ${OUTPUT} 2>&1 &

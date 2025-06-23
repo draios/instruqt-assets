@@ -32,6 +32,7 @@ SECURE_URL=''
 AGENT_COLLECTOR=''
 NIA_ENDPOINT=''
 SKIP_CLEANUP=false
+DYNAMIC_SETUP="${DYNAMIC_SETUP:-false}"
 
 USE_USER_PROVISIONER=false
 USE_AGENT=false
@@ -41,6 +42,7 @@ USE_NODE_ANALYZER=false
 USE_KSPM=false
 USE_PROMETHEUS=false
 USE_RAPID_RESPONSE=false
+USE_RESPONSE_ACTIONS=false
 USE_K8S=false
 USE_CLOUD=false
 USE_CLOUD_SCAN_ENGINE=false
@@ -48,12 +50,13 @@ USE_CLOUD_REGION=false
 USE_AGENT_REGION=false
 USE_RUNTIME_VM=false
 USE_CURSES=false
+USE_NO_CHECK=false
 
 ##############################    GLOBAL VARS    ##############################
-TEST_AGENT_ACCESS_KEY=ZTRlNDFiMGUtYTg5Yi00YWU4LWJlZjYtMzA4Y2FmZDIwMjAx
-TEST_MONITOR_API=MzI1NGFhODktYTcyZi00ZDlkLWJkMWEtMGYzZjQyZjc2ZTgw
-TEST_SECURE_API=ZDg2NGY1YmUtNThiNi00OTUyLWI0ODItY2I1OWJkMTMzZjZj
-TEST_REGION=2
+TEST_AGENT_ACCESS_KEY="${DYNAMIC_AGENT_ACCESS_KEY:-$TEST_AGENT_ACCESS_KEY}"
+TEST_MONITOR_API="${DYNAMIC_MONITOR_API:-$TEST_MONITOR_API}"
+TEST_SECURE_API="${DYNAMIC_SECURE_API:-$TEST_SECURE_API}"
+TEST_REGION="${TEST_REGION:-2}"
 
 ###############################    FUNCTIONS    ###############################
 ##
@@ -78,6 +81,7 @@ function panic_msg () {
 #   - container for cloud account (nginx process alone, no systemctl)
 ##
 function config_sysdig_tab_redirect () {
+    echo "Setting up Instruqt tab redirect to Sysdig Dashboard"
     OLD_STRING="http {"
     NEW_STRING="http {     server {         listen 8997;         server_name localhost;         rewrite ^/(.*)$ $MONITOR_URL/\$1 redirect;     }     server {         listen 8998;         server_name localhost;         rewrite ^/(.*)$ $SECURE_URL/\$1 redirect;     } "
 
@@ -177,6 +181,18 @@ function set_values () {
             PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
 
+        *"AP Cybereason (Sydney) - au1"*)
+            DOMAIN='cybereason.app.au1.sysdig.com'
+            MONITOR_URL='https://'$DOMAIN
+            SECURE_URL=$MONITOR_URL'/'
+            AGENT_COLLECTOR='ingest.au1.sysdig.com'
+            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
+            HELM_REGION_ID=au1
+            MONITOR_API_ENDPOINT=$MONITOR_URL
+            SECURE_API_ENDPOINT=$MONITOR_URL
+            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+            ;;
+
         *"On Premises - onprem"*)
             if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ]; then
                 DOMAIN=$(cat $WORK_DIR/ON_PREM_ENDPOINT)
@@ -208,14 +224,17 @@ function set_values () {
     echo "${MONITOR_API_ENDPOINT}" > $WORK_DIR/MONITOR_API_ENDPOINT
     echo "${SECURE_API_ENDPOINT}" > $WORK_DIR/SECURE_API_ENDPOINT
 
-    config_sysdig_tab_redirect
+    # If nginx is installed
+    if command -v nginx >/dev/null; then
+        config_sysdig_tab_redirect
+    fi
 }
 
 ##
 # Prompt user to select agent collector (region).
 ##
 function select_region () {
-    if [ "${USE_CURSES}" = false ]
+    if [[ "${USE_CURSES}" == false ]] || [[ "${DYNAMIC_SETUP}" == true ]];
     then
         echo
         echo "Sysdig SaaS Region"
@@ -232,15 +251,17 @@ function select_region () {
         echo "   3) US West GCP (Dallas) - us4"
         echo "   4) European Union (Frankfurt) - eu1"
         echo "   5) AP Australia (Sydney) - au1"
+        echo "   6) AP Cybereason (Sydney) - au1"
         if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ];
         then
-            echo "   6) On Premises - onprem"
+            echo "   7) On Premises - onprem"
         fi
         echo
 
-        if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
+        if [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]] || [[ ${INSTRUQT_USER_ID} == "testuser-"* ]];
         then
             REGION_N=${TEST_REGION}
+            echo "Region number to use $REGION_N"
             echo "   Instruqt test or provided Sysdig SaaS region will be used."
         else
             read -p "   Select Region (type number): "  REGION_N; 
@@ -253,6 +274,7 @@ function select_region () {
                           3 'US West GCP (Dallas) - us4' \
                           4 'European Union (Frankfurt) - eu1' \
                           5 'AP Australia (Sydney) - au1' \
+                          6 'AP Cybereason (Sydney) - au1' \
                           3>&1 1>&2 2>&3 3>&-
                   )
         if [ $? -ne 0 ]
@@ -282,6 +304,9 @@ function select_region () {
             REGION="AP Australia (Sydney) - au1"
             ;;
         6)
+            REGION="AP Cybereason (Sydney) - au1"
+            ;;
+        7)
             if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ];
             then
                 REGION="On Premises - onprem"
@@ -336,7 +361,7 @@ function configure_API () {
     do
         attempt=$(( $attempt + 1 ))
 
-        if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
+        if [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]] || [[ ${INSTRUQT_USER_ID} == "testuser-"* ]];
         then
             if [[ ${PRODUCT} == "MONITOR" ]];
             then
@@ -357,7 +382,7 @@ function configure_API () {
 
         # Test connection
         echo -n "  Testing connection to API on endpoint ${PRODUCT_API_ENDPOINT}... "
-        curl --insecure -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep '200 OK' &> /dev/null
+        curl --insecure -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep '200' &> /dev/null
         
         if [ $? -eq 0 ]
         then
@@ -411,12 +436,13 @@ function install_agent () {
     COLLECTOR=$3
     HELM_REGION_ID=$4
     SECURE_API_TOKEN=$5
+    SECURE_API_ENDPOINT=$6
 
     installation_method
 
     if [[ "$INSTALL_WITH" == "helm" ]]
     then
-        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID $SECURE_API_TOKEN $COLLECTOR
+        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID $SECURE_API_TOKEN $COLLECTOR $SECURE_API_ENDPOINT
     else
         source $TRACK_DIR/install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
     fi
@@ -472,6 +498,10 @@ function intro () {
       echo "    - Enable Rapid Response."
     fi
 
+    if [ "$USE_RESPONSE_ACTIONS" == true ]; then
+      echo "    - Enable Response Actions."
+    fi
+
     if [ "$USE_PROMETHEUS" == true ]; then
       echo "    - Enable the Agent Prometheus collector."
     fi
@@ -491,6 +521,10 @@ function intro () {
 
     if [ "$USE_RUNTIME_VM" == true ]; then
       echo "    - Deploy Runtime Scanner. Requires --node-analyzer."
+    fi
+
+    if [ "$DYNAMIC_SETUP" == true ]; then
+      echo "    - Dynamic setup enabled."
     fi
 
     echo "  Follow the instructions below."
@@ -521,7 +555,7 @@ function deploy_agent () {
         echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
     fi
 
-    if [[ ${INSTRUQT_USER_ID} == "testuser-"* ]] || [[ ${USE_USER_PROVISIONER} == true ]];
+    if [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]] || [[ ${INSTRUQT_USER_ID} == "testuser-"* ]];
     then
         AGENT_ACCESS_KEY=$(echo -n ${TEST_AGENT_ACCESS_KEY} | base64 --decode)
     elif [ "$USE_CURSES" = false ]
@@ -542,7 +576,7 @@ function deploy_agent () {
     echo -e "  The agent is being installed in the background.\n"
     ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
 
-    install_agent ${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID} ${SYSDIG_SECURE_API_TOKEN}
+    install_agent ${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID} ${SYSDIG_SECURE_API_TOKEN} ${SECURE_API_ENDPOINT}
 }
 
 ##
@@ -564,24 +598,25 @@ function test_agent () {
 
     while [ -z ${FOUND_COLLECTOR} ] && [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
-        sleep 3
+        sleep 5
         case "$INSTALL_WITH" in
             helm)
                 ## These checks aren't consistent
                 #kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 | grep "cm_collector" | grep -q "Processing messages" && connected=true
-                kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=300s && connected=true
-                FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 2> /dev/null | grep "collector:" | head -n1 | awk '{print $NF}'`
-                
+                # The -l selector is not available in the current kubectl version installed
+                kubectl rollout status daemonset/sysdig-agent-shield-host -n sysdig-agent -w --timeout=600s && connected=true
+                FOUND_COLLECTOR=`kubectl logs -l sysdig/component=host -n sysdig-agent | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
                 ;;
             docker)
                 ### Todo: docker should check the existence of /opt/draios/logs/running <- leveraged by our kubernetes health check and is only created when the agent is officially connected to the backend
                 docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}" && connected=true
-                FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | grep "collector:" | head -n1 | awk '{print $NF}'`
+                FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
+                sleep 10     # Installation through docker takes more time
                 ;;
             host)
                 ### Todo: systemctl status sysdig-agent; if its running its connected and healthy.
                 grep -q "${CONNECTED_MSG}" /opt/draios/logs/draios.log && connected=true
-                FOUND_COLLECTOR=`grep "collector:" /opt/draios/logs/draios.log | head -n1 | awk '{print $NF}'`
+                FOUND_COLLECTOR=`cat /opt/draios/logs/draios.log | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
                 ;;
         esac
         
@@ -652,6 +687,8 @@ function track_has_cloud_account () {
     then
         CLOUD_PROVIDER=azure
         cloudvarname=INSTRUQT_AZURE_SUBSCRIPTION_${INSTRUQT_AZURE_SUBSCRIPTIONS}_SUBSCRIPTION_ID
+        azure_tenant_id_var_name=INSTRUQT_AZURE_SUBSCRIPTION_${INSTRUQT_AZURE_SUBSCRIPTIONS}_TENANT_ID
+        AZURE_TENANT_ID=${!azure_tenant_id_var_name}
         CLOUD_ACCOUNT_ID=${!cloudvarname}
     fi
 
@@ -697,61 +734,48 @@ function deploy_cloud_connector () {
 # Test if the Cloud account is connected successfully.
 ##
 function test_cloud_connector () {
-    echo "    Testing if the cloud account is connected..."
 
     attempt=0
     MAX_ATTEMPTS=36 # 6 minutes
     connected=false
 
+    # get internal id 
+    INTERNAL_CLOUD_ID=$(curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts" | jq -r '.accounts[] | select(.providerId == '"${CLOUD_ACCOUNT_ID}"') | .id')
+
+    echo "    Testing if the cloud account is connected... (ID=${CLOUD_ACCOUNT_ID})"
+
     while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
     do
+
+        # validate cloud account
+        curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts/${INTERNAL_CLOUD_ID}/validate"   
+
         sleep 10
-        
-        # asks the sysdig secure API about cloud accounts (provider, account_id, date_last_seen)
-        # ordered by date_last_seen (more recent first)
-        # applies some filtering to use the output usable (date format, quotes, etc.)
-        # and writes it to .cloudProvidersLastSeen
-        curl -s --header "Content-Type: application/json"   \
-        -H 'Authorization: Bearer '"${SYSDIG_SECURE_API_TOKEN}" \
-        --request GET \
-        ${SECURE_API_ENDPOINT}/api/cloud/v2/dataSources/accounts\?limit\=5000\&offset\=0 \
-        | jq -r '[.[] | {provider: .provider, id: .id, alias: .alias, lastSeen: .cloudConnectorLastSeenAt}] | sort_by(.lastSeen) | reverse | .[] | "\(.provider) \(.id) \(.alias) \(.lastSeen)"' \
-        | cut -f1 -d"." \
-        | awk ' { t = $1; $1 = $(NF); $(NF) = t; print; } ' \
-        > .cloudProvidersLastSeen
 
-        CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH=$(date --date "$CLOUD_CONNECTOR_DEPLOY_QUERY" +%s)
+        # get status, on hold until validation works quickly
+        # STATUS=$(curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts" | jq -r '.accounts[] | select(.providerId == '"${CLOUD_ACCOUNT_ID}"') | .validation.result')
 
-        while read line; do # reading each cloud provider connected to the sysdig account
-            
-            if [[ "${line}" =~ "${CLOUD_ACCOUNT_ID}" ]]
-            then 
-                # the account_id matches
-                #LAST_SEEN_DATE=$(echo "$line" | cut -d' ' -f1) # extract date
-                #[[ $LAST_SEEN_DATE == "null" ]] && LAST_SEEN_DATE_EPOCH=0 || LAST_SEEN_DATE_EPOCH=$(date --date "$LAST_SEEN_DATE" +%s)
+        # find account via alias
+        LAB_RANDOM_ID=$(cat /opt/sysdig/random_string_OK)
+        ACCOUNT_ALIAS=$(curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts" | jq -r '.accounts[] | select(.providerId == '"${CLOUD_ACCOUNT_ID}"') | .providerAlias')
 
-                # is this account date_last_seen value greater than the deployment_date in this script?
-                # ^ this means, we want the cloud account to be active now
-                # Instruqt reuses the accounts, so we don't want a false positive for reusing an account
-                #if [[ "${LAST_SEEN_DATE_EPOCH}" > "${CLOUD_CONNECTOR_DEPLOY_QUERY_EPOCH}" ]]
-                #then
-                echo "    Found cloud account: $line"
-                connected=true
-                break
-                #fi
-            fi
-        done < .cloudProvidersLastSeen
-        
+        # if [[ "${STATUS}" =~ "VALIDATION_RESULT_SUCCESS" ]]
+        if [[ "${LAB_RANDOM_ID}" =~ "${ACCOUNT_ALIAS}" ]]
+        then 
+            connected=true
+            break
+        fi
+    
         attempt=$(( $attempt + 1 ))
     done
 
     if [ "$connected" = true ]
     then
-        echo "  Sysdig Vision successfully installed."
+        echo "  Cloud Account Integration configured."
         touch $WORK_DIR/user_data_CLOUDVISION_OK
     else
         echo "  FAIL"
-        echo "  Sysdig Vision installation went wrong. Use the provided channels to report this issue."
+        echo "  Cloud Account Integration installation went wrong. Use the provided channels to report this issue."
         panic_msg
     fi
 }
@@ -830,6 +854,7 @@ function help () {
 
     echo "  --skip-cleanup              Skip script setup clean-up actions."
     echo "  --provision-user            Creates user in Sysdig Saas Training account for use in this lab."
+    echo "  --dynamic-setup             Do not use the user provisioner, use the runtime parameters."
     echo "  -a, --agent                 Deploy a Sysdig Agent."
     echo "  -b, --rapid-response        Enable Rapid Response"
     echo "  -c, --cloud                 Set up environment for Sysdig Secure for Cloud."
@@ -846,6 +871,7 @@ function help () {
     echo "  -8, --kube-adm              Customize installer for kubeadm k8s cluster"
     echo "  --on-prem <on_prem_endpoint>       In case an on-prem backend is used, set here the endpoint value."                     
     echo "      --runtime-vm            Enable VM Runtime Scanner. Use with --node-analyzer."
+    echo "      --no-check              Remove agent and cloud connector post install health check."
     echo
     echo
     echo "ENVIRONMENT VARIABLES:"
@@ -874,6 +900,9 @@ function check_flags () {
     while [ ! $# -eq 0 ]
     do
         case "$1" in
+            --wait)
+                export WAIT_ENABLED=true
+                ;;
             --on-prem) # on-prem backend
                 shift
                 ON_PREM_ENDPOINT=$1
@@ -885,6 +914,9 @@ function check_flags () {
                 ;;
             --provision-user)
                 USE_USER_PROVISIONER=true
+                ;;
+            --dynamic-setup)
+                DYNAMIC_SETUP=true
                 ;;
             --agent | -a)
                 USE_AGENT=true
@@ -919,6 +951,9 @@ function check_flags () {
             --rapid-response | -b)
                 export USE_RAPID_RESPONSE=true
                 ;;
+            --response-actions)
+                export USE_RESPONSE_ACTIONS=true
+                ;;
             --vuln-management | -v)
                 export USE_CLOUD_SCAN_ENGINE=true
                 ;;
@@ -931,6 +966,9 @@ function check_flags () {
             --runtime-vm)
                 export USE_RUNTIME_VM=true
                 ;;
+            --no-check)
+                export USE_NO_CHECK=true
+                ;;                
             --help | -h)
                 help
                 exit 0
@@ -1017,7 +1055,10 @@ function setup () {
 
     if [ "$USE_AGENT" = true ]
     then
-        test_agent
+        if [ "$USE_NO_CHECK" = false ]
+        then
+            test_agent
+        fi
     fi
 
     if [ "$USE_CLOUD" = true ]
@@ -1026,7 +1067,10 @@ function setup () {
         # before `configure_API` because they use data set within `configure_API`
         track_has_cloud_account
         deploy_cloud_connector
-        test_cloud_connector
+        if [ "$USE_NO_CHECK" = false ]
+        then
+            test_cloud_connector
+        fi
     fi
     
     if [ "$SKIP_CLEANUP" = false ]

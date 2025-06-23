@@ -16,8 +16,14 @@ SYSDIG_SECURE_API_TOKEN=$2
 SECURE_API_ENDPOINT=$3
 CLOUD_REGION=$4
 CLOUD_ACCOUNT_ID=$5
+RANDOM_ID=$(cat /opt/sysdig/random_string_OK)
 
 cd /root/prepare-track/cloud
+
+# Config git to use the PAT for access to the terraform modules in our private repo
+# This is needed to avoid the need for a password when cloning the repo
+# The PAT is stored in the environment variable Terraform_Modules_PAT coming from the Instruqt environment
+git config --global url."https://sysdiglabs:$Terraform_Modules_PAT@github.com".insteadOf https://github.com
 
 if [ "$PROVIDER" == "aws" ]
 then
@@ -25,13 +31,12 @@ then
     echo "  Initializing Terraform modules, backend and provider plugins" \
     && terraform init >> ${OUTPUT} 2>&1 \
     && echo "    Terraform has been successfully initialized. Applying... (this will take a few minutes)" \
-    && terraform apply -auto-approve \
+    && terraform apply -auto-approve -var="training_aws_region=$CLOUD_REGION" \
+        -var="scanning_account_id=878070807337" \
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
-        -var="training_secure_url=$SECURE_API_ENDPOINT" \
-        -var="training_aws_region=$CLOUD_REGION" \
-        -var="deploy_scanner=$USE_CLOUD_SCAN_ENGINE" \
-        >> ${OUTPUT} 2>&1 \
+        -var="training_secure_url=$SECURE_API_ENDPOINT" >> ${OUTPUT} 2>&1 \
     && echo "    Terraform apply completed! Check all TF deployment logs at: $OUTPUT"
+
 fi
 
 if [ "$PROVIDER" == "gcp" ]
@@ -46,7 +51,6 @@ then
         -var="training_gcp_region=$CLOUD_REGION" \
         -var="training_gcp_project=$CLOUD_ACCOUNT_ID" \
         -var="gcp_creds=$GOOGLE_CREDENTIALS" \
-        -var="deploy_scanner=$USE_CLOUD_SCAN_ENGINE" \
         >> ${OUTPUT} 2>&1 \
     && echo "    Terraform apply completed! Check all TF deployment logs at: $OUTPUT"
 fi
@@ -54,9 +58,14 @@ fi
 if [ "$PROVIDER" == "azure" ]
 then
     cd azure
-    terraform init && terraform apply -auto-approve \
+    echo "  Initializing Terraform modules, backend and provider plugins" \
+    && terraform init >> ${OUTPUT} 2>&1 \
+    && echo "    Terraform has been successfully initialized. Applying... (this will take a few minutes)" \
+    && terraform apply -auto-approve \
         -var="training_secure_api_token=$SYSDIG_SECURE_API_TOKEN" \
         -var="training_secure_url=$SECURE_API_ENDPOINT" \
-        -var="training_azure_subscription=$CLOUD_ACCOUNT_ID" #\
-        #-y >> ${OUTPUT} 2>&1
+        -var="training_azure_subscription=$CLOUD_ACCOUNT_ID" \
+        -var="training_azure_tenant_id=$AZURE_TENANT_ID" \
+        >> ${OUTPUT} 2>&1 \
+    && echo "    Terraform apply completed! Check all TF deployment logs at: $OUTPUT"
 fi
