@@ -38,11 +38,13 @@ USE_USER_PROVISIONER=false
 USE_AGENT=false
 USE_MONITOR_API=false
 USE_SECURE_API=false
-USE_NODE_ANALYZER=false
-USE_KSPM=false
-USE_PROMETHEUS=false
-USE_RAPID_RESPONSE=false
-USE_RESPONSE_ACTIONS=false
+USE_PROMETHEUS="${USE_PROMETHEUS:-false}"
+USE_KSPM="${USE_KSPM:-true}"
+USE_NODE_ANALYZER="${USE_NODE_ANALYZER:-true}"
+USE_RAPID_RESPONSE="${USE_RAPID_RESPONSE:-false}"
+USE_RESPONSE_ACTIONS="${USE_RESPONSE_ACTIONS:-true}"
+USE_INVESTIGATIONS="${USE_INVESTIGATIONS:-true}"
+USE_ADMISSION_CONTROL="${USE_ADMISSION_CONTROL:-true}"
 USE_K8S=false
 USE_CLOUD=false
 USE_CLOUD_SCAN_ENGINE=false
@@ -953,6 +955,12 @@ function check_flags () {
                 ;;
             --response-actions)
                 export USE_RESPONSE_ACTIONS=true
+                ;;
+            --admission-controller | -j)
+                export USE_ADMISSION_CONTROLLER=true
+                ;;
+            --investigations | -i)
+                export USE_INVESTIGATIONS=true
                 ;;
             --vuln-management | -v)
                 export USE_CLOUD_SCAN_ENGINE=true
