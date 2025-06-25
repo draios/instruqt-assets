@@ -38,10 +38,13 @@ USE_USER_PROVISIONER=false
 USE_AGENT=false
 USE_MONITOR_API=false
 USE_SECURE_API=false
-USE_NODE_ANALYZER=false
-USE_KSPM=false
-USE_PROMETHEUS=false
-USE_RAPID_RESPONSE=false
+USE_PROMETHEUS="${USE_PROMETHEUS:-false}"
+USE_KSPM="${USE_KSPM:-true}"
+USE_NODE_ANALYZER="${USE_NODE_ANALYZER:-true}"
+USE_RAPID_RESPONSE="${USE_RAPID_RESPONSE:-false}"
+USE_RESPONSE_ACTIONS="${USE_RESPONSE_ACTIONS:-true}"
+USE_INVESTIGATIONS="${USE_INVESTIGATIONS:-true}"
+USE_ADMISSION_CONTROL="${USE_ADMISSION_CONTROL:-true}"
 USE_K8S=false
 USE_CLOUD=false
 USE_CLOUD_SCAN_ENGINE=false
@@ -497,6 +500,10 @@ function intro () {
       echo "    - Enable Rapid Response."
     fi
 
+    if [ "$USE_RESPONSE_ACTIONS" == true ]; then
+      echo "    - Enable Response Actions."
+    fi
+
     if [ "$USE_PROMETHEUS" == true ]; then
       echo "    - Enable the Agent Prometheus collector."
     fi
@@ -599,8 +606,8 @@ function test_agent () {
                 ## These checks aren't consistent
                 #kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 | grep "cm_collector" | grep -q "Processing messages" && connected=true
                 # The -l selector is not available in the current kubectl version installed
-                kubectl rollout status daemonset/sysdig-agent -n sysdig-agent -w --timeout=600s && connected=true
-                FOUND_COLLECTOR=`kubectl logs -l app=sysdig-agent -n sysdig-agent | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
+                kubectl rollout status daemonset/sysdig-agent-shield-host -n sysdig-agent -w --timeout=600s && connected=true
+                FOUND_COLLECTOR=`kubectl logs -l sysdig/component=host -n sysdig-agent | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
                 ;;
             docker)
                 ### Todo: docker should check the existence of /opt/draios/logs/running <- leveraged by our kubernetes health check and is only created when the agent is officially connected to the backend
@@ -895,6 +902,9 @@ function check_flags () {
     while [ ! $# -eq 0 ]
     do
         case "$1" in
+            --wait)
+                export WAIT_ENABLED=true
+                ;;
             --on-prem) # on-prem backend
                 shift
                 ON_PREM_ENDPOINT=$1
@@ -942,6 +952,15 @@ function check_flags () {
                 ;;
             --rapid-response | -b)
                 export USE_RAPID_RESPONSE=true
+                ;;
+            --response-actions)
+                export USE_RESPONSE_ACTIONS=true
+                ;;
+            --admission-controller | -j)
+                export USE_ADMISSION_CONTROLLER=true
+                ;;
+            --investigations | -i)
+                export USE_INVESTIGATIONS=true
                 ;;
             --vuln-management | -v)
                 export USE_CLOUD_SCAN_ENGINE=true
