@@ -53,6 +53,7 @@ USE_AGENT_REGION=false
 USE_RUNTIME_VM=false
 USE_CURSES=false
 USE_NO_CHECK=false
+WAIT_ENABLED=false
 
 ##############################    GLOBAL VARS    ##############################
 TEST_AGENT_ACCESS_KEY="${DYNAMIC_AGENT_ACCESS_KEY:-$TEST_AGENT_ACCESS_KEY}"
