@@ -136,6 +136,7 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
     --set features.detections.drift_control.enabled=true \
     --set features.detections.malware_control.enabled=true \
     --set features.detections.ml_policies.enabled=true \
+    --set features.investigations.network_security.enabled=true \
     --set ssl.verify=false \
     --set sysdig_endpoint.collector.host="${COLLECTOR}" ${HELM_OPTS} \
 sysdig/shield >> ${OUTPUT} 2>&1)
