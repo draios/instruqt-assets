@@ -107,12 +107,6 @@ then
     --set features.admission_control.posture.enabled=true $HELM_OPTS"
 fi
 
-if [ "$USE_INVESTIGATIONS" = true ]
-then
-    HELM_OPTS="--set features.investigations.network_security.enabled=true \
-    --set features.investigations.captures.enabled=true $HELM_OPTS"
-fi
-
 if [ "$USE_RESPONSE_ACTIONS" = true ]
 then
     HELM_OPTS="--set features.respond.response_actions.enabled=true $HELM_OPTS"
@@ -137,6 +131,7 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
     --set features.detections.malware_control.enabled=true \
     --set features.detections.ml_policies.enabled=true \
     --set features.investigations.network_security.enabled=true \
+    --set features.investigations.captures.enabled=true \
     --set ssl.verify=false \
     --set sysdig_endpoint.collector.host="${COLLECTOR}" ${HELM_OPTS} \
 sysdig/shield >> ${OUTPUT} 2>&1)
