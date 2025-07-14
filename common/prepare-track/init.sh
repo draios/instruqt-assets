@@ -44,7 +44,6 @@ USE_KSPM="${USE_KSPM:-false}"
 USE_NODE_ANALYZER="${USE_NODE_ANALYZER:-false}"
 USE_RAPID_RESPONSE="${USE_RAPID_RESPONSE:-false}"
 USE_RESPONSE_ACTIONS="${USE_RESPONSE_ACTIONS:-false}"
-USE_INVESTIGATIONS="${USE_INVESTIGATIONS:-false}"
 USE_ADMISSION_CONTROL="${USE_ADMISSION_CONTROL:-false}"
 USE_K8S=false
 USE_CLOUD=false
@@ -960,9 +959,6 @@ function check_flags () {
                 ;;
             --admission-controller | -j)
                 export USE_ADMISSION_CONTROLLER=true
-                ;;
-            --investigations | -i)
-                export USE_INVESTIGATIONS=true
                 ;;
             --vuln-management | -v)
                 export USE_CLOUD_SCAN_ENGINE=true
