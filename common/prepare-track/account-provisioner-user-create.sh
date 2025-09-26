@@ -75,7 +75,7 @@ function provsion_user(){
 
 # define new user creds, and feed it to instruqt lab as an agent var
 WORK_DIR=/opt/sysdig
-SPA_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
+SPA_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 16 ; echo '')
 echo "${SPA_PASS}"
 echo "${SPA_PASS}" > $WORK_DIR/ACCOUNT_PROVISIONED_PASS
 agent variable set SPA_PASS "${SPA_PASS}"
