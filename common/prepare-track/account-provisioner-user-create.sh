@@ -95,6 +95,17 @@ fi
 PROVISIONED_RANDOM_ID=$(cat $WORK_DIR/random_string_OK)
 agent variable set PROVISIONED_RANDOM_ID "${PROVISIONED_RANDOM_ID}"
 
+# Make PROVISIONED_RANDOM_ID available to all future login shells
+if [ -n "${PROVISIONED_RANDOM_ID:-}" ]; then
+  # Export for the current shell (just in case)
+  export PROVISIONED_RANDOM_ID
+
+  # Persist it for all future login shells
+  cat <<EOF >/etc/profile.d/provisioned_random_id.sh
+export PROVISIONED_RANDOM_ID=$(printf '%q\n' "${PROVISIONED_RANDOM_ID}")
+EOF
+fi
+
 # create user in parent account
 if [ $DYNAMIC_PROVISIONER_MONITOR_ONLY == "true" ]; then
     echo "Monitor provisioning only"
