@@ -25,7 +25,7 @@ HELM_OPTS="--set host.additional_settings.falcobaseline.report_interval=15000000
 --set host.additional_settings.falcobaseline.debug_metadata=true \
 --set host.additional_settings.falcobaseline.debug=true \
 --set host.additional_settings.falcobaseline.randomize_start=false \
---version=1.11.0 \
+--version=1.31.1 \
 $HELM_OPTS"
 
 # new hostnames, to avoid duplicated names as much as possible
