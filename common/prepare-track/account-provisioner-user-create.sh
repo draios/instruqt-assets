@@ -53,18 +53,22 @@ echo "${ACCOUNT_PROVISIONER_REGION_NUMBER}" > "$WORK_DIR/ACCOUNT_PROVISIONER_REG
 source "$TRACK_DIR/lab_random_string_id.sh"
 
 function provsion_user(){
-  # create user in parent account
+  # create user in parent account using platform v1 API
   curl -s -k -X POST \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $1" \
   --data-binary '{
-  "username": "'"${SPA_USER}"'",
-  "password": "'"${SPA_PASS}"'",
+  "email": "'"${SPA_USER}"'",
   "firstName": "Id:",
   "lastName": "'"${SPA_USER}"'",
-  "systemRole": "ROLE_USER"
+  "isAdmin": false,
+  "bypassSsoEnforcement": false,
+  "products": [
+    "secure",
+    "monitor"
+  ]
   }' \
-  "${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/user/provisioning/" \
+  "${PLATFORM_API_URL}/platform/v1/users" \
   | jq > "$WORK_DIR/account.json"
 }
 
@@ -107,15 +111,16 @@ fi
 touch "$WORK_DIR/user_provisioned_COMPLETED"
 
 # Get user info
-SPA_USER_ID=$(jq '.user.id' "$WORK_DIR/account.json")
-SPA_USER_API_TOKEN=$(jq -r '.token.key' "$WORK_DIR/account.json")
+# Note: The platform API returns the user object directly, not wrapped in a 'user' key
+SPA_USER_ID=$(jq '.id' "$WORK_DIR/account.json")
 
 # Disable onboarding questionnaire
+# (Left as is using the old endpoint as requested)
 curl -s -k -X POST \
 -H "Content-Type: application/json" \
--H "Authorization: Bearer ${SPA_USER_API_TOKEN}" \
+-H "Authorization: Bearer ${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}" \
 --data-binary @- \
-"${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/userProfile/questionnaire" <<EOF > /dev/null
+"${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/secure/onboarding/v2/userProfile/questionnaire?userId=${SPA_USER_ID}" <<EOF > /dev/null
 [
   {"id": "additionalEnvironments", "displayQuestion": "Q", "choices": []},
   {"id": "iacManifests", "displayQuestion": "Q", "choices": []},
