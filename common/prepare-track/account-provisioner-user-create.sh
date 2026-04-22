@@ -243,7 +243,7 @@ if [ $DYNAMIC_PROVISIONER_SECURE_ONLY != "true" ]; then
           "teamTheme": "#7BB0B2",
           "userId": '"${SPA_USER_ID}"',
           "userName": "'"${SPA_USER}"'",
-          "role": "ROLE_TEAM_ADVANCED"
+          "role": "ROLE_TEAM_EDIT"
       }' "$WORK_DIR/monitor-operations-team.json" > "$WORK_DIR/monitor-operations-team.json.tmp"
   cp "$WORK_DIR/monitor-operations-team.json.tmp" "$WORK_DIR/monitor-operations-team.json"
   rm "$WORK_DIR/monitor-operations-team.json.tmp"
