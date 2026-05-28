@@ -20,7 +20,7 @@ function generate_random_id () {
         salt="$(shuf -i 1-99999 -n 1)"
         random_id="$adjective"_"$noun"_"$salt"
 
-        echo "${random_id}_student@sysdigtraining.com" > $WORK_DIR/ACCOUNT_PROVISIONED_USER
+        echo "${random_id}_student@sysdig.com" > $WORK_DIR/ACCOUNT_PROVISIONED_USER
         #create flag
         echo "$random_id" > $WORK_DIR/random_string_OK
     fi
