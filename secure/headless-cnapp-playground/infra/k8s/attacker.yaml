@@ -1,0 +1,17 @@
+---
+# Attacker-controlled box INSIDE the cluster: acts as the C2 / reverse-shell
+# listener and as the host the operator drives the kill chain from.
+# Kept fully self-contained so the lab needs no external infrastructure.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: attacker
+  namespace: attack-demo
+  labels:
+    app: attacker
+spec:
+  containers:
+    - name: c2
+      image: nicolaka/netshoot:latest
+      command: ["sleep", "infinity"]
+  restartPolicy: Always
