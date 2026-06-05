@@ -3,9 +3,9 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: attack-demo
+  name: payments
   labels:
-    app.kubernetes.io/part-of: sysdig-attack-lab
+    app.kubernetes.io/part-of: acme-platform
 ---
 # The "vulnerable" application code: a tiny HTTP server with a command-exec
 # endpoint. This emulates a classic Tomcat-style webshell (tomcatwar.jsp?cmd=)
@@ -13,8 +13,8 @@ metadata:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: vuln-app-code
-  namespace: attack-demo
+  name: orders-api-code
+  namespace: payments
 data:
   server.py: |
     import subprocess
@@ -59,19 +59,19 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vuln-app
-  namespace: attack-demo
+  name: orders-api
+  namespace: payments
   labels:
-    app: vuln-app
+    app: orders-api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: vuln-app
+      app: orders-api
   template:
     metadata:
       labels:
-        app: vuln-app
+        app: orders-api
     spec:
       # SA token is mounted (default) on purpose: credential-access demo
       automountServiceAccountToken: true
@@ -93,16 +93,16 @@ spec:
       volumes:
         - name: code
           configMap:
-            name: vuln-app-code
+            name: orders-api-code
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: vuln-app
-  namespace: attack-demo
+  name: orders-api
+  namespace: payments
 spec:
   selector:
-    app: vuln-app
+    app: orders-api
   ports:
     - port: 8080
       targetPort: 8080
