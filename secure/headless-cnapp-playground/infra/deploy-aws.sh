@@ -24,6 +24,9 @@ aws s3api put-public-access-block --bucket "$LOOT" \
   BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true >/dev/null
 printf 'db_password=Sup3rS3cret!\napi_key=AKIA-FAKE-EXAMPLE-KEY\ncustomers=12873\n' \
   | aws s3 cp - "s3://$LOOT/secrets/customer-db.txt" >/dev/null
+# Fake customer PII (obviously synthetic) — the data the attacker exfiltrates.
+printf 'id,name,email,ssn,credit_card\n1,Ada Lovelace,ada@example.com,000-00-0001,4111111111111111\n2,Alan Turing,alan@example.com,000-00-0002,4111111111111112\n3,Grace Hopper,grace@example.com,000-00-0003,4111111111111113\n' \
+  | aws s3 cp - "s3://$LOOT/pii/customers.csv" >/dev/null
 echo "LOOT_BUCKET=$LOOT" >> "$STATE"
 
 # --- Dedicated CloudTrail trail (attacker will StopLogging on this one) ---
@@ -48,6 +51,10 @@ echo "TRAIL_LOG_BUCKET=$TLOGS" >> "$STATE"
 echo "[infra/aws] creating + starting trail $TRAIL ..."
 aws cloudtrail create-trail --name "$TRAIL" --s3-bucket-name "$TLOGS" >/dev/null 2>&1 || true
 aws cloudtrail start-logging --name "$TRAIL" >/dev/null
+# Enable S3 object-level (data) events for the loot bucket so the attacker's
+# GetObject exfil is captured in CloudTrail — management events alone miss it.
+aws cloudtrail put-event-selectors --trail-name "$TRAIL" \
+  --event-selectors "[{\"ReadWriteType\":\"All\",\"IncludeManagementEvents\":true,\"DataResources\":[{\"Type\":\"AWS::S3::Object\",\"Values\":[\"arn:aws:s3:::$LOOT/\"]}]}]" >/dev/null 2>&1 || true
 echo "TRAIL=$TRAIL" >> "$STATE"
 
 echo "[infra/aws] done. State recorded in $STATE:"
