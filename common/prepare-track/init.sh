@@ -61,12 +61,14 @@ TEST_MONITOR_API="${DYNAMIC_MONITOR_API:-$TEST_MONITOR_API}"
 TEST_SECURE_API="${DYNAMIC_SECURE_API:-$TEST_SECURE_API}"
 TEST_REGION="${TEST_REGION:-2}"
 
-# On-prem API URL overrides (used when TEST_REGION=7).
-# Set DYNAMIC_MONITOR_API_URL to the base URL of the on-prem backend (e.g. https://sysdig.corp.example.com).
-# DYNAMIC_SECURE_API_URL is used as a fallback if DYNAMIC_MONITOR_API_URL is not set.
-# Both values are provided via Instruqt invite environment variable overrides.
+# On-prem overrides (used when TEST_REGION=7).
+# All values can be set via Instruqt invite environment variable overrides.
+# DYNAMIC_MONITOR_API_URL takes precedence over DYNAMIC_SECURE_API_URL for the backend URL.
 DYNAMIC_MONITOR_API_URL="${DYNAMIC_MONITOR_API_URL:-}"
 DYNAMIC_SECURE_API_URL="${DYNAMIC_SECURE_API_URL:-}"
+# Collector port for on-prem backends. Defaults to 6443 (standard Sysdig on-prem port).
+DYNAMIC_COLLECTOR_PORT="${DYNAMIC_COLLECTOR_PORT:-6443}"
+export DYNAMIC_COLLECTOR_PORT
 
 ###############################    FUNCTIONS    ###############################
 ##
@@ -937,6 +939,10 @@ function help () {
     echo
     echo "  DYNAMIC_SECURE_API_URL      Base URL of the on-prem Sysdig Secure backend."
     echo "                              Fallback for DYNAMIC_MONITOR_API_URL when TEST_REGION=7."
+    echo
+    echo "  DYNAMIC_COLLECTOR_PORT      Collector port for the on-prem backend."
+    echo "                              Defaults to 6443 (standard Sysdig on-prem port)."
+    echo "                              Only used when TEST_REGION=7."
     echo
 
 

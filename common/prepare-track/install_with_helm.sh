@@ -23,7 +23,7 @@ HELM_OPTS="${HELM_OPTS:-}"
 # For custom regions (on-prem), the chart cannot derive the API URL from the region name.
 # We must pass it explicitly so the agent knows where to reach the backend.
 if [[ "${HELM_REGION_ID}" == "custom" ]]; then
-    HELM_OPTS="--set sysdig_endpoint.api_url=${SECURE_API_ENDPOINT_URL} $HELM_OPTS"
+    HELM_OPTS="--set sysdig_endpoint.api_url=${SECURE_API_ENDPOINT_URL} --set sysdig_endpoint.collector.port=${DYNAMIC_COLLECTOR_PORT:-6443} $HELM_OPTS"
 fi
 
 HELM_OPTS="--set host.additional_settings.falcobaseline.report_interval=150000000000 \
