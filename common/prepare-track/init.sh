@@ -1103,33 +1103,32 @@ function setup () {
             echo "ERROR: TEST_REGION=7 (on-prem) requires DYNAMIC_MONITOR_API_URL or DYNAMIC_SECURE_API_URL to be set."
             panic_msg
         fi
-        # Strip protocol and path — ON_PREM_ENDPOINT stores only the hostname/domain.
-        ONPREM_HOSTPORT=$(echo "${ONPREM_URL}" | sed 's|^https\?://||' | sed 's|/.*||')
-        ONPREM_DOMAIN=$(echo "${ONPREM_HOSTPORT}" | cut -d: -f1)
-
-        # Determine collector port: use the port from the URL if explicit (e.g. https://host:6443),
-        # otherwise probe known on-prem ports (6443, then 443) and warn when falling back.
-        if echo "${ONPREM_HOSTPORT}" | grep -q ':'; then
-            export DYNAMIC_COLLECTOR_PORT=$(echo "${ONPREM_HOSTPORT}" | cut -d: -f2)
-            echo "On-prem collector port from URL: ${DYNAMIC_COLLECTOR_PORT}"
-        else
-            export DYNAMIC_COLLECTOR_PORT=6443
-            for try_port in 6443 443; do
-                if curl --insecure -s --connect-timeout 3 -o /dev/null \
-                        "https://${ONPREM_DOMAIN}:${try_port}/api/ping" 2>/dev/null; then
-                    export DYNAMIC_COLLECTOR_PORT=${try_port}
-                    break
-                fi
-            done
-            if [[ "${DYNAMIC_COLLECTOR_PORT}" != "6443" ]]; then
-                echo "WARNING: port 6443 unreachable on ${ONPREM_DOMAIN}, using collector port ${DYNAMIC_COLLECTOR_PORT}."
-            else
-                echo "On-prem collector port: 6443 (default)"
-            fi
-        fi
-
-        echo "On-prem endpoint: ${ONPREM_DOMAIN}:${DYNAMIC_COLLECTOR_PORT}"
+        # Extract clean hostname (strip protocol, any explicit port, and path).
+        # ON_PREM_ENDPOINT stores only the hostname so set_values() builds the API URL
+        # as https://<domain> (port 443). API calls and agent collector use different ports.
+        ONPREM_DOMAIN=$(echo "${ONPREM_URL}" | sed 's|^https\?://||' | cut -d: -f1 | cut -d/ -f1)
+        echo "On-prem domain: ${ONPREM_DOMAIN}"
         echo "${ONPREM_DOMAIN}" > $WORK_DIR/ON_PREM_ENDPOINT
+
+        # Probe the collector port independently — 6443 is the standard on-prem collector
+        # port; fall back to 443 if unreachable. The probe is non-fatal: we capture the
+        # HTTP status code and treat anything other than "000" (no connection) as success.
+        DYNAMIC_COLLECTOR_PORT=6443
+        for try_port in 6443 443; do
+            HTTP_CODE=$(curl --insecure -s --connect-timeout 3 -o /dev/null \
+                -w "%{http_code}" "https://${ONPREM_DOMAIN}:${try_port}/" 2>/dev/null) || true
+            if [[ -n "${HTTP_CODE}" ]] && [[ "${HTTP_CODE}" != "000" ]]; then
+                DYNAMIC_COLLECTOR_PORT=${try_port}
+                break
+            fi
+        done
+        export DYNAMIC_COLLECTOR_PORT
+
+        if [[ "${DYNAMIC_COLLECTOR_PORT}" != "6443" ]]; then
+            echo "WARNING: collector port 6443 unreachable on ${ONPREM_DOMAIN}, falling back to port ${DYNAMIC_COLLECTOR_PORT}."
+        else
+            echo "On-prem collector port: ${DYNAMIC_COLLECTOR_PORT}"
+        fi
     fi
 
     if [ "$USE_AGENT_REGION" = true ] || [ "$USE_CLOUD_REGION" = true ]
