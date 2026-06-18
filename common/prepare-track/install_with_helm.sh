@@ -141,6 +141,6 @@ kubectl create ns sysdig-agent >> ${OUTPUT} 2>&1
     --set features.investigations.captures.enabled=true \
     --set ssl.verify=false \
     --set sysdig_endpoint.collector.host="${COLLECTOR}" ${HELM_OPTS} \
-sysdig/shield >> ${OUTPUT} 2>&1)
+sysdig/shield 2>&1 | tee ${OUTPUT})
 
 # kubectl wait --for=condition=Ready daemonset/sysdig-agent -n sysdig-agent --timeout=300s
