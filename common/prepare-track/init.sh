@@ -61,10 +61,11 @@ TEST_MONITOR_API="${DYNAMIC_MONITOR_API:-$TEST_MONITOR_API}"
 TEST_SECURE_API="${DYNAMIC_SECURE_API:-$TEST_SECURE_API}"
 TEST_REGION="${TEST_REGION:-2}"
 
-# On-prem API URL overrides (used when TEST_REGION=7).
-# Set DYNAMIC_MONITOR_API_URL to the base URL of the on-prem backend (e.g. https://sysdig.corp.example.com).
-# DYNAMIC_SECURE_API_URL is used as a fallback if DYNAMIC_MONITOR_API_URL is not set.
-# Both values are provided via Instruqt invite environment variable overrides.
+# On-prem overrides (used when TEST_REGION=7).
+# All values can be set via Instruqt invite environment variable overrides.
+# DYNAMIC_MONITOR_API_URL takes precedence over DYNAMIC_SECURE_API_URL for the backend URL.
+# Include the collector port in the URL if it differs from the default (e.g. https://host:6443).
+# If no port is given, the script probes 6443 then 443 and warns when falling back.
 DYNAMIC_MONITOR_API_URL="${DYNAMIC_MONITOR_API_URL:-}"
 DYNAMIC_SECURE_API_URL="${DYNAMIC_SECURE_API_URL:-}"
 
@@ -937,6 +938,9 @@ function help () {
     echo
     echo "  DYNAMIC_SECURE_API_URL      Base URL of the on-prem Sysdig Secure backend."
     echo "                              Fallback for DYNAMIC_MONITOR_API_URL when TEST_REGION=7."
+    echo "                              Include the collector port in the URL to set it explicitly"
+    echo "                              (e.g. https://sysdig.corp.example.com:6443). If no port is"
+    echo "                              given, the script probes 6443 then 443 and warns on fallback."
     echo
 
 
@@ -1099,10 +1103,32 @@ function setup () {
             echo "ERROR: TEST_REGION=7 (on-prem) requires DYNAMIC_MONITOR_API_URL or DYNAMIC_SECURE_API_URL to be set."
             panic_msg
         fi
-        # Strip protocol prefix — ON_PREM_ENDPOINT stores only the hostname/domain.
-        ONPREM_DOMAIN=$(echo "${ONPREM_URL}" | sed 's|^https\?://||' | sed 's|/.*||')
-        echo "On-prem endpoint derived from environment: ${ONPREM_DOMAIN}"
+        # Extract clean hostname (strip protocol, any explicit port, and path).
+        # ON_PREM_ENDPOINT stores only the hostname so set_values() builds the API URL
+        # as https://<domain> (port 443). API calls and agent collector use different ports.
+        ONPREM_DOMAIN=$(echo "${ONPREM_URL}" | sed 's|^https\?://||' | cut -d: -f1 | cut -d/ -f1)
+        echo "On-prem domain: ${ONPREM_DOMAIN}"
         echo "${ONPREM_DOMAIN}" > $WORK_DIR/ON_PREM_ENDPOINT
+
+        # Probe the collector port independently — 6443 is the standard on-prem collector
+        # port; fall back to 443 if unreachable. The probe is non-fatal: we capture the
+        # HTTP status code and treat anything other than "000" (no connection) as success.
+        DYNAMIC_COLLECTOR_PORT=6443
+        for try_port in 6443 443; do
+            HTTP_CODE=$(curl --insecure -s --connect-timeout 3 -o /dev/null \
+                -w "%{http_code}" "https://${ONPREM_DOMAIN}:${try_port}/" 2>/dev/null) || true
+            if [[ -n "${HTTP_CODE}" ]] && [[ "${HTTP_CODE}" != "000" ]]; then
+                DYNAMIC_COLLECTOR_PORT=${try_port}
+                break
+            fi
+        done
+        export DYNAMIC_COLLECTOR_PORT
+
+        if [[ "${DYNAMIC_COLLECTOR_PORT}" != "6443" ]]; then
+            echo "WARNING: collector port 6443 unreachable on ${ONPREM_DOMAIN}, falling back to port ${DYNAMIC_COLLECTOR_PORT}."
+        else
+            echo "On-prem collector port: ${DYNAMIC_COLLECTOR_PORT}"
+        fi
     fi
 
     if [ "$USE_AGENT_REGION" = true ] || [ "$USE_CLOUD_REGION" = true ]
