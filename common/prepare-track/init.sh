@@ -643,6 +643,13 @@ function test_agent () {
     else
         echo "  FAIL"
         echo "  Agent failed to connect to back-end. Check your Agent Key."
+        # Dump install logs to help diagnose failures
+        for log in /opt/sysdig/helm_install.out /opt/sysdig/docker_install.out; do
+            if [ -f "$log" ]; then
+                echo "--- $log ---"
+                cat "$log"
+            fi
+        done
         panic_msg
     fi
 }
