@@ -61,6 +61,13 @@ TEST_MONITOR_API="${DYNAMIC_MONITOR_API:-$TEST_MONITOR_API}"
 TEST_SECURE_API="${DYNAMIC_SECURE_API:-$TEST_SECURE_API}"
 TEST_REGION="${TEST_REGION:-2}"
 
+# On-prem API URL overrides (used when TEST_REGION=7).
+# Set DYNAMIC_MONITOR_API_URL to the base URL of the on-prem backend (e.g. https://sysdig.corp.example.com).
+# DYNAMIC_SECURE_API_URL is used as a fallback if DYNAMIC_MONITOR_API_URL is not set.
+# Both values are provided via Instruqt invite environment variable overrides.
+DYNAMIC_MONITOR_API_URL="${DYNAMIC_MONITOR_API_URL:-}"
+DYNAMIC_SECURE_API_URL="${DYNAMIC_SECURE_API_URL:-}"
+
 ###############################    FUNCTIONS    ###############################
 ##
 # Message to display when ran into an issue
@@ -891,6 +898,38 @@ function help () {
     echo
     echo "  HOST_OPTS                   Additional options for Host installation."
     echo
+    echo "  DYNAMIC_SETUP               Set to 'true' to skip interactive prompts and use"
+    echo "                              the TEST_* / DYNAMIC_* env vars below instead."
+    echo "                              Can be set via Instruqt invite env-var overrides."
+    echo
+    echo "  DYNAMIC_AGENT_ACCESS_KEY    Base64-encoded Sysdig Agent access key."
+    echo "                              Overrides TEST_AGENT_ACCESS_KEY."
+    echo
+    echo "  DYNAMIC_MONITOR_API         Base64-encoded Sysdig Monitor API token."
+    echo "                              Overrides TEST_MONITOR_API."
+    echo
+    echo "  DYNAMIC_SECURE_API          Base64-encoded Sysdig Secure API token."
+    echo "                              Overrides TEST_SECURE_API."
+    echo
+    echo "  TEST_REGION                 Region number used in non-interactive/dynamic mode."
+    echo "                              Defaults to 2 (US West AWS - us2). Values:"
+    echo "                                1  US East (Virginia) - us1"
+    echo "                                2  US West AWS (Oregon) - us2"
+    echo "                                3  US West GCP (Dallas) - us4"
+    echo "                                4  European Union (Frankfurt) - eu1"
+    echo "                                5  AP Australia (Sydney) - au1"
+    echo "                                6  AP Cybereason (Sydney) - au1"
+    echo "                                7  On Premises (requires DYNAMIC_MONITOR_API_URL"
+    echo "                                   or DYNAMIC_SECURE_API_URL)"
+    echo
+    echo "  DYNAMIC_MONITOR_API_URL     Base URL of the on-prem Sysdig backend"
+    echo "                              (e.g. https://sysdig.corp.example.com)."
+    echo "                              Required when TEST_REGION=7 in dynamic/test mode."
+    echo "                              Takes precedence over DYNAMIC_SECURE_API_URL."
+    echo
+    echo "  DYNAMIC_SECURE_API_URL      Base URL of the on-prem Sysdig Secure backend."
+    echo "                              Fallback for DYNAMIC_MONITOR_API_URL when TEST_REGION=7."
+    echo
 
 
 }
@@ -1037,6 +1076,25 @@ function setup () {
     if [ "${USE_USER_PROVISIONER}" = true ]
     then
         overwrite_test_creds
+    fi
+
+    # When TEST_REGION=7 (on-prem) is selected via dynamic setup, write the on-prem
+    # endpoint to the file that set_values() expects. The domain is derived from
+    # DYNAMIC_MONITOR_API_URL (preferred) or DYNAMIC_SECURE_API_URL as fallback.
+    # This allows customising the Sysdig backend endpoint entirely through Instruqt
+    # invite env-var overrides without touching lab scripts.
+    if [[ "${TEST_REGION}" == "7" ]] && ([[ "${DYNAMIC_SETUP}" == "true" ]] || [[ "${USE_USER_PROVISIONER}" == "true" ]] || [[ "${INSTRUQT_USER_ID}" == "testuser-"* ]]);
+    then
+        ONPREM_URL="${DYNAMIC_MONITOR_API_URL:-$DYNAMIC_SECURE_API_URL}"
+        if [[ -z "${ONPREM_URL}" ]];
+        then
+            echo "ERROR: TEST_REGION=7 (on-prem) requires DYNAMIC_MONITOR_API_URL or DYNAMIC_SECURE_API_URL to be set."
+            panic_msg
+        fi
+        # Strip protocol prefix — ON_PREM_ENDPOINT stores only the hostname/domain.
+        ONPREM_DOMAIN=$(echo "${ONPREM_URL}" | sed 's|^https\?://||' | sed 's|/.*||')
+        echo "On-prem endpoint derived from environment: ${ONPREM_DOMAIN}"
+        echo "${ONPREM_DOMAIN}" > $WORK_DIR/ON_PREM_ENDPOINT
     fi
 
     if [ "$USE_AGENT_REGION" = true ] || [ "$USE_CLOUD_REGION" = true ]
