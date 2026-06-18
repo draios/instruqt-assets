@@ -390,9 +390,10 @@ function configure_API () {
                        )
         fi
 
-        # Test connection
+        # Test connection using /api/users/me — works for all roles including non-admin.
+        # /api/alerts returns 403 for restricted roles even with a valid token.
         echo -n "  Testing connection to API on endpoint ${PRODUCT_API_ENDPOINT}... "
-        curl --insecure -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/alerts" | grep '200' &> /dev/null
+        curl --insecure -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/users/me" | grep '200' &> /dev/null
         
         if [ $? -eq 0 ]
         then
