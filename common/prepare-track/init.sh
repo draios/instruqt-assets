@@ -1115,7 +1115,7 @@ function setup () {
         # required: --connect-timeout alone does not bound SYN-drop (firewalled) ports
         # because the TCP stack keeps retrying; --max-time enforces a hard wall-clock cap.
         # The probe is non-fatal (|| true). Skip if already set by invite env-var override.
-        if [[ -z "${DYNAMIC_COLLECTOR_PORT}" ]]; then
+        if [[ -z "${DYNAMIC_COLLECTOR_PORT:-}" ]]; then
             DYNAMIC_COLLECTOR_PORT=6443
             for try_port in 6443 443; do
                 HTTP_CODE=$(curl --insecure -s --connect-timeout 3 --max-time 4 -o /dev/null \
