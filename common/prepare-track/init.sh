@@ -1111,17 +1111,21 @@ function setup () {
         echo "${ONPREM_DOMAIN}" > $WORK_DIR/ON_PREM_ENDPOINT
 
         # Probe the collector port independently — 6443 is the standard on-prem collector
-        # port; fall back to 443 if unreachable. The probe is non-fatal: we capture the
-        # HTTP status code and treat anything other than "000" (no connection) as success.
-        DYNAMIC_COLLECTOR_PORT=6443
-        for try_port in 6443 443; do
-            HTTP_CODE=$(curl --insecure -s --connect-timeout 3 -o /dev/null \
-                -w "%{http_code}" "https://${ONPREM_DOMAIN}:${try_port}/" 2>/dev/null) || true
-            if [[ -n "${HTTP_CODE}" ]] && [[ "${HTTP_CODE}" != "000" ]]; then
-                DYNAMIC_COLLECTOR_PORT=${try_port}
-                break
-            fi
-        done
+        # port; fall back to 443 if unreachable. Both --connect-timeout AND --max-time are
+        # required: --connect-timeout alone does not bound SYN-drop (firewalled) ports
+        # because the TCP stack keeps retrying; --max-time enforces a hard wall-clock cap.
+        # The probe is non-fatal (|| true). Skip if already set by invite env-var override.
+        if [[ -z "${DYNAMIC_COLLECTOR_PORT}" ]]; then
+            DYNAMIC_COLLECTOR_PORT=6443
+            for try_port in 6443 443; do
+                HTTP_CODE=$(curl --insecure -s --connect-timeout 3 --max-time 4 -o /dev/null \
+                    -w "%{http_code}" "https://${ONPREM_DOMAIN}:${try_port}/" 2>/dev/null) || true
+                if [[ -n "${HTTP_CODE}" ]] && [[ "${HTTP_CODE}" != "000" ]]; then
+                    DYNAMIC_COLLECTOR_PORT=${try_port}
+                    break
+                fi
+            done
+        fi
         export DYNAMIC_COLLECTOR_PORT
 
         if [[ "${DYNAMIC_COLLECTOR_PORT}" != "6443" ]]; then
