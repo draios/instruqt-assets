@@ -1110,29 +1110,13 @@ function setup () {
         echo "On-prem domain: ${ONPREM_DOMAIN}"
         echo "${ONPREM_DOMAIN}" > $WORK_DIR/ON_PREM_ENDPOINT
 
-        # Probe the collector port independently — 6443 is the standard on-prem collector
-        # port; fall back to 443 if unreachable. Both --connect-timeout AND --max-time are
-        # required: --connect-timeout alone does not bound SYN-drop (firewalled) ports
-        # because the TCP stack keeps retrying; --max-time enforces a hard wall-clock cap.
-        # The probe is non-fatal (|| true). Skip if already set by invite env-var override.
-        if [[ -z "${DYNAMIC_COLLECTOR_PORT:-}" ]]; then
-            DYNAMIC_COLLECTOR_PORT=6443
-            for try_port in 6443 443; do
-                HTTP_CODE=$(curl --insecure -s --connect-timeout 3 --max-time 4 -o /dev/null \
-                    -w "%{http_code}" "https://${ONPREM_DOMAIN}:${try_port}/" 2>/dev/null) || true
-                if [[ -n "${HTTP_CODE}" ]] && [[ "${HTTP_CODE}" != "000" ]]; then
-                    DYNAMIC_COLLECTOR_PORT=${try_port}
-                    break
-                fi
-            done
-        fi
+        # Default collector port for on-prem is 6443. The probe cannot reliably determine
+        # whether a port is "truly closed" vs "firewalled from the probe host but reachable
+        # from inside the cluster", so we only honour an explicit DYNAMIC_COLLECTOR_PORT
+        # env-var override (set via Instruqt invite) rather than falling back automatically.
+        DYNAMIC_COLLECTOR_PORT="${DYNAMIC_COLLECTOR_PORT:-6443}"
         export DYNAMIC_COLLECTOR_PORT
-
-        if [[ "${DYNAMIC_COLLECTOR_PORT}" != "6443" ]]; then
-            echo "WARNING: collector port 6443 unreachable on ${ONPREM_DOMAIN}, falling back to port ${DYNAMIC_COLLECTOR_PORT}."
-        else
-            echo "On-prem collector port: ${DYNAMIC_COLLECTOR_PORT}"
-        fi
+        echo "On-prem collector port: ${DYNAMIC_COLLECTOR_PORT}"
     fi
 
     if [ "$USE_AGENT_REGION" = true ] || [ "$USE_CLOUD_REGION" = true ]
