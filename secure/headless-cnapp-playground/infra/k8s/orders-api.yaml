@@ -87,6 +87,17 @@ spec:
             - secretRef:
                 name: app-cloud-creds
                 optional: true
+          # Limits scope xmrig OOM kills to this container's cgroup
+          # (CONSTRAINT_MEMCG) instead of triggering a global node OOM that
+          # takes down the apiserver. 512 Mi is enough for xmrig to exec and
+          # be detected by Sysdig before being killed; Python survives (~50 Mi).
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
           volumeMounts:
             - name: code
               mountPath: /app
