@@ -22,7 +22,14 @@ echo \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 apt update -y
-apt install -y containerd.io
+# Pin containerd to the latest 1.7.x and hold it. The Docker apt repo now ships
+# containerd 2.x, which crashes the Sysdig agent's falcosecurity container plugin
+# (CRI engine SIGSEGV), so the host-shield never becomes Ready and no runtime
+# events reach the backend. 1.7.x is also the natural pairing for Kubernetes 1.28.
+# Stopgap until the Sysdig agent ships a plugin compatible with containerd 2.x.
+CONTAINERD_VER=$(apt-cache madison containerd.io | awk '/1\.7\./{print $3; exit}')
+apt install -y containerd.io="${CONTAINERD_VER}"
+apt-mark hold containerd.io
 
 tee /etc/apt/sources.list.d/kubernetes.list<<EOL
 deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /
