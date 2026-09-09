@@ -1,11 +1,10 @@
 repos:
-  - repo: local
+  - repo: https://github.com/gitguardian/ggshield
+    rev: v1.50.4
     hooks:
-      - id: trufflehog
-        name: TruffleHog
-        description: Detect secrets in your data.
-        entry: bash -c 'trufflehog git file://. --since-commit HEAD --results=verified --fail'
-        # For running trufflehog in docker, use the following entry instead:
-        # entry: bash -c 'docker run --rm -v "$(pwd):/workdir" -i --rm trufflesecurity/trufflehog:latest git file:///workdir --since-commit HEAD --results=verified,unknown --fail'
-        language: system
-        stages: ["commit", "push"]
+      - id: ggshield
+        language_version: python3
+        stages: [commit]
+      - id: ggshield-push
+        language_version: python3
+        stages: [push]
