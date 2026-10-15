@@ -5,69 +5,127 @@
 # AUTHORS:
 #   Sysdig Education Team <team-training@sysdig.com>
 #
-#   Current SaaS regions: https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges/
+#   Current SaaS regions: https://docs.sysdig.com/en/administration/saas-regions-and-ip-ranges/
+#
+# NAMING CONVENTIONS:
+#   - Variables shared with the install_with_*.sh scripts, the env-var
+#     interface (DYNAMIC_*, TEST_*, USE_*) and the files in $WORK_DIR keep
+#     their historical UPPER_CASE names.
+#   - USE_*  : feature flags (true/false).
+#   - SKIP_* : opt-out flags (true/false).
+#   - Variables private to a function are `local` and lower_case.
 ###
 
 trap '' 2 # Signal capture quit with Ctrl+C
 
 
 ###########################    GLOBAL CONSTANTS    ############################
-F_BOLD='\e[1m'
-F_RED='\x1B[31m'
-F_CYAN='\e[36m'
-F_CLEAR='\e[0m'
+BOLD='\e[1m'
+CYAN='\e[36m'
+RESET='\e[0m'
 
-WORK_DIR=/opt/sysdig
-TRACK_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd -P )
-AGENT_CONF_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")"; cd ../sysdig-agent; pwd -P )
+WORK_DIR="${WORK_DIR:-/opt/sysdig}"
+TRACK_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
+AGENT_CONF_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")"; cd ../sysdig-agent; pwd -P)
 echo "TRACK_DIR: ${TRACK_DIR}"
 echo "AGENT_CONF_DIR: ${AGENT_CONF_DIR}"
 
 TITLE="Sysdig Agent installation"
 
+# Region number shown in the menu (and used by TEST_REGION). Numbers are a
+# contract with the account provisioner and the Instruqt invites: never renumber,
+# only append.
+REGION_LABELS=(
+    [1]="US East (Virginia) - us1"
+    [2]="US West AWS (Oregon) - us2"
+    [3]="US West GCP (Dallas) - us4"
+    [4]="European Union (Frankfurt) - eu1"
+    [5]="AP Australia (Sydney) - au1"
+    [6]="AP Cybereason (Sydney) - au1"
+    [7]="On Premises - onprem"
+    [8]="European Union (Stockholm) - eu2"
+    [9]="Middle East (Dammam) - me2"
+    [10]="AP South (Mumbai) - in1"
+    [11]="AP Japan (Tokyo) - jp1"
+)
+REGION_MAX=11
+REGION_ONPREM=7
+
+# <app domain> <agent collector> <helm region id> <Secure UI path>
+# us1 (legacy domains) and onprem (user provided) are handled in set_values().
+# Helm region IDs must exist in the sysdig/shield chart (pinned in install_with_helm.sh);
+# jp1 is not in that chart yet, so it is installed as 'custom'.
+REGION_DATA=(
+    [2]="us2.app.sysdig.com ingest-us2.app.sysdig.com us2 /secure"
+    [3]="app.us4.sysdig.com ingest.us4.sysdig.com us4 /secure"
+    [4]="eu1.app.sysdig.com ingest-eu1.app.sysdig.com eu1 /secure"
+    [5]="app.au1.sysdig.com ingest.au1.sysdig.com au1 /secure"
+    [6]="cybereason.app.au1.sysdig.com ingest.au1.sysdig.com au1 /"
+    [8]="app.eu2.sysdig.com ingest.eu2.sysdig.com eu2 /secure"
+    [9]="app.me2.sysdig.com ingest.me2.sysdig.com me2 /secure"
+    [10]="app.in1.sysdig.com ingest.in1.sysdig.com in1 /secure"
+    [11]="app.jp1.sysdig.com ingest.jp1.sysdig.com custom /secure"
+)
+
 ##############################    GLOBAL VARS    ##############################
-WAIT_ENABLED=true
-INSTALL_WITH=''
+# Set by set_values()
 MONITOR_URL=''
 SECURE_URL=''
-AGENT_COLLECTOR=''
+COLLECTOR_HOST=''
 NIA_ENDPOINT=''
-SKIP_CLEANUP=false
-DYNAMIC_SETUP="${DYNAMIC_SETUP:-false}"
+HELM_REGION_ID=''
+MONITOR_API_ENDPOINT=''
+SECURE_API_ENDPOINT=''
+REGION_NAME=''
 
-USE_USER_PROVISIONER=false
+# On-prem backend (region 7), see resolve_onprem()
+ONPREM_URL="${ONPREM_URL:-}"            # --on-prem <url>
+ONPREM_COLLECTOR="${ONPREM_COLLECTOR:-}"  # --collector <host[:port]>
+
+# Read by install_with_*.sh
+WAIT_ENABLED=false
+INSTALL_WITH="${INSTALL_WITH:-}"
+
+# Flags set from the command line
+SKIP_CLEANUP=false
+SKIP_CHECKS=false
+USE_PROVISIONER=false
 USE_AGENT=false
 USE_MONITOR_API=false
 USE_SECURE_API=false
+USE_CLOUD=false
+USE_CLOUD_SCANNER=false
+USE_KUBEADM=false
+USE_RUNTIME_VM=false
+USE_CURSES=false
+USE_REGION_HOST=false   # track with a host (nginx managed by systemctl)
+USE_REGION_CLOUD=false  # track with a cloud account container (nginx alone)
+
+# Flags that can also be set from the environment (and are read by install_with_*.sh)
+DYNAMIC_SETUP="${DYNAMIC_SETUP:-false}"
 USE_PROMETHEUS="${USE_PROMETHEUS:-false}"
 USE_KSPM="${USE_KSPM:-false}"
 USE_NODE_ANALYZER="${USE_NODE_ANALYZER:-false}"
 USE_RAPID_RESPONSE="${USE_RAPID_RESPONSE:-false}"
 USE_RESPONSE_ACTIONS="${USE_RESPONSE_ACTIONS:-false}"
 USE_ADMISSION_CONTROL="${USE_ADMISSION_CONTROL:-false}"
-USE_K8S=false
-USE_CLOUD=false
-USE_CLOUD_SCAN_ENGINE=false
-USE_CLOUD_REGION=false
-USE_AGENT_REGION=false
-USE_RUNTIME_VM=false
-USE_CURSES=false
-USE_NO_CHECK=false
-WAIT_ENABLED=false
+USE_ALL_FEATURES="${USE_ALL_FEATURES:-false}"
 
-##############################    GLOBAL VARS    ##############################
-TEST_AGENT_ACCESS_KEY="${DYNAMIC_AGENT_ACCESS_KEY:-$TEST_AGENT_ACCESS_KEY}"
-TEST_MONITOR_API="${DYNAMIC_MONITOR_API:-$TEST_MONITOR_API}"
-TEST_SECURE_API="${DYNAMIC_SECURE_API:-$TEST_SECURE_API}"
+# Credentials for non-interactive runs (base64 encoded).
+TEST_AGENT_ACCESS_KEY="${DYNAMIC_AGENT_ACCESS_KEY:-${TEST_AGENT_ACCESS_KEY:-}}"
+TEST_MONITOR_API="${DYNAMIC_MONITOR_API:-${TEST_MONITOR_API:-}}"
+TEST_SECURE_API="${DYNAMIC_SECURE_API:-${TEST_SECURE_API:-}}"
 TEST_REGION="${TEST_REGION:-2}"
 
-# On-prem overrides (used when TEST_REGION=7).
-# All values can be set via Instruqt invite environment variable overrides.
-# DYNAMIC_MONITOR_API_URL takes precedence over DYNAMIC_SECURE_API_URL for the backend URL.
-# Include the collector port in the URL if it differs from the default (e.g. https://host:6443).
-# If no port is given, the script probes 6443 then 443 and warns when falling back.
+# On-prem overrides (region 7). All can be set via Instruqt invite env-var overrides.
+#   DYNAMIC_MONITOR_API_URL / DYNAMIC_SECURE_API_URL  backend URL (the first one wins)
+#   DYNAMIC_COLLECTOR_HOST                            collector, "host" or "host:port"
+#                                                     (defaults to the backend host)
+#   DYNAMIC_COLLECTOR_PORT                            collector port (defaults to 6443)
 DYNAMIC_MONITOR_API_URL="${DYNAMIC_MONITOR_API_URL:-}"
 DYNAMIC_SECURE_API_URL="${DYNAMIC_SECURE_API_URL:-}"
+DYNAMIC_COLLECTOR_HOST="${DYNAMIC_COLLECTOR_HOST:-}"
+DYNAMIC_COLLECTOR_PORT="${DYNAMIC_COLLECTOR_PORT:-6443}"
 
 ###############################    FUNCTIONS    ###############################
 ##
@@ -83,161 +141,157 @@ function panic_msg () {
 }
 
 ##
+# True when no human is typing: provisioned user, dynamic setup or Instruqt test user.
+##
+function is_noninteractive () {
+    [[ ${USE_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]] || [[ ${INSTRUQT_USER_ID:-} == "testuser-"* ]]
+}
+
+##
 # Define nginx.conf values to enable redirect
 # to the Sysdig Region selected by the user
-# 
+#
 # This function applies different changes depending
 # on the type of resources attached to a track:
 #   - hosts for an agent installation (nginx managed by systemctl)
 #   - container for cloud account (nginx process alone, no systemctl)
 ##
-function config_sysdig_tab_redirect () {
+function configure_tab_redirect () {
     echo "Setting up Instruqt tab redirect to Sysdig Dashboard"
-    OLD_STRING="http {"
-    NEW_STRING="http {     server {         listen 8997;         server_name localhost;         rewrite ^/(.*)$ $MONITOR_URL/\$1 redirect;     }     server {         listen 8998;         server_name localhost;         rewrite ^/(.*)$ $SECURE_URL/\$1 redirect;     } "
+    local servers="http { "
+    servers+="server { listen 8997; server_name localhost; rewrite ^/(.*)\$ ${MONITOR_URL}/\$1 redirect; } "
+    servers+="server { listen 8998; server_name localhost; rewrite ^/(.*)\$ ${SECURE_URL}/\$1 redirect; } "
 
-    #backup
     cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
-    
-    sed -i -e "s@${OLD_STRING}@${NEW_STRING}@g" /etc/nginx/nginx.conf
+    sed -i -e "s@http {@${servers}@g" /etc/nginx/nginx.conf
 
-    if [ "$USE_AGENT_REGION" = true ]
+    if [ "$USE_REGION_HOST" = true ]
     then
         systemctl restart nginx
     fi
 
-    if [ "$USE_CLOUD_REGION" = true ]
+    if [ "$USE_REGION_CLOUD" = true ]
     then
         pkill -f nginx
         nginx
     fi
-    
-    touch $WORK_DIR/region_setup_OK
+
+    touch "$WORK_DIR/region_setup_OK"
 }
 
 ##
-# Define URL and endpoints for the selected region.
+# Hostname of a URL or host[:port] value (protocol, port and path stripped).
+##
+function host_of () {
+    local value=${1#*://}
+    value=${value%%/*}
+    echo "${value%%:*}"
+}
+
+##
+# Port of a host[:port] value, or $2 when it has none.
+##
+function port_of () {
+    local value=${1#*://}
+    value=${value%%/*}
+    if [[ $value == *:* ]]
+    then
+        echo "${value##*:}"
+    else
+        echo "$2"
+    fi
+}
+
+##
+# Ask for (or read from the environment) the on-prem backend URL and collector.
+# Sets ONPREM_DOMAIN and ONPREM_COLLECTOR_HOST, and DYNAMIC_COLLECTOR_PORT.
+#
+#   URL:       --on-prem, DYNAMIC_MONITOR_API_URL, DYNAMIC_SECURE_API_URL or a prompt.
+#   Collector: --collector, DYNAMIC_COLLECTOR_HOST or a prompt. Defaults to the URL host.
+#   Port:      the one in the collector value, DYNAMIC_COLLECTOR_PORT or 6443.
+#
+# The API/UI URL is always https://<host> (443): a port in the URL is ignored,
+# as it was historically used to carry the collector port.
+##
+function resolve_onprem () {
+    local url=${ONPREM_URL:-${DYNAMIC_MONITOR_API_URL:-$DYNAMIC_SECURE_API_URL}}
+    local collector=${ONPREM_COLLECTOR:-$DYNAMIC_COLLECTOR_HOST}
+
+    if [[ -z $url ]]
+    then
+        if is_noninteractive
+        then
+            echo "ERROR: On-prem region requires --on-prem, DYNAMIC_MONITOR_API_URL or DYNAMIC_SECURE_API_URL."
+            panic_msg
+        fi
+        read -p "   Sysdig on-prem URL (e.g. https://sysdig.example.com): " url
+        [[ -n $url ]] || panic_msg
+    fi
+    ONPREM_DOMAIN=$(host_of "$url")
+
+    if [[ -z $collector ]] && ! is_noninteractive
+    then
+        read -p "   Collector host[:port] (empty = ${ONPREM_DOMAIN}:${DYNAMIC_COLLECTOR_PORT}): " collector
+    fi
+    collector=${collector:-$ONPREM_DOMAIN}
+    ONPREM_COLLECTOR_HOST=$(host_of "$collector")
+    DYNAMIC_COLLECTOR_PORT=$(port_of "$collector" "$DYNAMIC_COLLECTOR_PORT")
+
+    echo "On-prem domain: ${ONPREM_DOMAIN}"
+    echo "On-prem collector: ${ONPREM_COLLECTOR_HOST}:${DYNAMIC_COLLECTOR_PORT}"
+    # kept for tracks reading it (written by older versions of this script)
+    echo "${ONPREM_DOMAIN}" > "$WORK_DIR/ON_PREM_ENDPOINT"
+}
+
+##
+# Define URL and endpoints for the region number received.
 #
 # This is used to define the URL of the track-TABS, for API queries and define
-# agent parameters like
-#        ${HELM_REGION_ID} values:
-#                    - "us1", "us2", "us4", "eu1" and "au1"
-#                    - not included yet "us3" (listed in helm chart but not in docs)
-# 
-# Update when a new region is created.
+# agent parameters like ${HELM_REGION_ID} (see REGION_DATA).
+#
+# Update REGION_LABELS/REGION_DATA when a new region is created.
+# Docs: https://docs.sysdig.com/en/administration/saas-regions-and-ip-ranges
 ##
 function set_values () {
-    REGION=$1
+    local region_number=$1
+    local domain='' secure_path='/secure'
 
-    case $REGION in
-        *"US East (Virginia) - us1"*)
-            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-east-north-virginia
+    case $region_number in
+        "$REGION_ONPREM")
+            resolve_onprem
+            domain=$ONPREM_DOMAIN
+            COLLECTOR_HOST=$ONPREM_COLLECTOR_HOST
+            HELM_REGION_ID=custom
+            ;;
+        1)
+            # us1 uses the legacy domains
             MONITOR_URL='https://app.sysdigcloud.com'
             SECURE_URL='https://secure.sysdig.com'
-            AGENT_COLLECTOR='collector.sysdigcloud.com'
+            COLLECTOR_HOST='collector.sysdigcloud.com'
             NIA_ENDPOINT='https://collector-static.sysdigcloud.com/internal/scanning/scanning-analysis-collector'
             HELM_REGION_ID=us1
-            MONITOR_API_ENDPOINT=$MONITOR_URL
             SECURE_API_ENDPOINT=$SECURE_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
             ;;
-
-        *"US West AWS (Oregon) - us2"*)
-            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-west-oregon
-            DOMAIN='us2.app.sysdig.com'
-            MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR='ingest-'$DOMAIN
-            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=us2
-            MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$MONITOR_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
-            ;;
-
-        *"US West GCP (Dallas) - us4"*)
-            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-west-gcp
-            DOMAIN='app.us4.sysdig.com'
-            MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR='ingest.us4.sysdig.com'
-            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=us4
-            MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$MONITOR_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
-            ;;
-
-        *"European Union (Frankfurt) - eu1"*)
-            DOMAIN='eu1.app.sysdig.com'
-            MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR='ingest-'$DOMAIN
-            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=eu1
-            MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$MONITOR_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
-            ;;
-
-        *"AP Australia (Sydney) - au1"*)
-            DOMAIN='app.au1.sysdig.com'
-            MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/secure'
-            AGENT_COLLECTOR='ingest.au1.sysdig.com'
-            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=au1
-            MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$MONITOR_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
-            ;;
-
-        *"AP Cybereason (Sydney) - au1"*)
-            DOMAIN='cybereason.app.au1.sysdig.com'
-            MONITOR_URL='https://'$DOMAIN
-            SECURE_URL=$MONITOR_URL'/'
-            AGENT_COLLECTOR='ingest.au1.sysdig.com'
-            NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=au1
-            MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$MONITOR_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
-            ;;
-
-        *"On Premises - onprem"*)
-            if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ]; then
-                DOMAIN=$(cat $WORK_DIR/ON_PREM_ENDPOINT)
-                # DOMAIN='mateo-burillo-aramco-osc-4044.dev.draios.com'
-                MONITOR_URL='https://'$DOMAIN
-                SECURE_URL=$MONITOR_URL'/secure'
-                AGENT_COLLECTOR=$DOMAIN
-                NIA_ENDPOINT=$MONITOR_URL'/internal/scanning/scanning-analysis-collector'
-                HELM_REGION_ID=custom
-                MONITOR_API_ENDPOINT=$MONITOR_URL
-                SECURE_API_ENDPOINT=$MONITOR_URL
-                PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
-            fi
-            ;;
-
-        *) # default to us1 values
-            # https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges#us-east-north-virginia
-            MONITOR_URL='https://app.sysdigcloud.com'
-            SECURE_URL='https://secure.sysdig.com'
-            AGENT_COLLECTOR='collector.sysdigcloud.com'
-            NIA_ENDPOINT='https://collector-static.sysdigcloud.com/internal/scanning/scanning-analysis-collector'
-            HELM_REGION_ID=us1
-            MONITOR_API_ENDPOINT=$MONITOR_URL
-            SECURE_API_ENDPOINT=$SECURE_URL
-            PROMETHEUS_ENDPOINT=$MONITOR_URL'/prometheus'
+        *)
+            read -r domain COLLECTOR_HOST HELM_REGION_ID secure_path <<< "${REGION_DATA[region_number]}"
             ;;
     esac
-    
-    echo "${MONITOR_API_ENDPOINT}" > $WORK_DIR/MONITOR_API_ENDPOINT
-    echo "${SECURE_API_ENDPOINT}" > $WORK_DIR/SECURE_API_ENDPOINT
+
+    if [[ -n $domain ]]
+    then
+        MONITOR_URL="https://${domain}"
+        SECURE_URL="${MONITOR_URL}${secure_path}"
+        NIA_ENDPOINT="${MONITOR_URL}/internal/scanning/scanning-analysis-collector"
+        SECURE_API_ENDPOINT=$MONITOR_URL
+    fi
+    MONITOR_API_ENDPOINT=$MONITOR_URL
+
+    echo "${MONITOR_API_ENDPOINT}" > "$WORK_DIR/MONITOR_API_ENDPOINT"
+    echo "${SECURE_API_ENDPOINT}" > "$WORK_DIR/SECURE_API_ENDPOINT"
 
     # If nginx is installed
     if command -v nginx >/dev/null; then
-        config_sysdig_tab_redirect
+        configure_tab_redirect
     fi
 }
 
@@ -245,170 +299,133 @@ function set_values () {
 # Prompt user to select agent collector (region).
 ##
 function select_region () {
-    if [[ "${USE_CURSES}" == false ]] || [[ "${DYNAMIC_SETUP}" == true ]];
-    then
-        echo
-        echo "Sysdig SaaS Region"
-        echo "==========================="
-        echo
-        echo "Check the docs if more info about regions is required to find what's yours:"
-        echo "   https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges"
-        echo 
-        echo "Please select your Sysdig SaaS account Region: "
-        echo
-        echo "   0) Abort install"
-        echo "   1) US East (Virginia) - us1"
-        echo "   2) US West AWS (Oregon) - us2"
-        echo "   3) US West GCP (Dallas) - us4"
-        echo "   4) European Union (Frankfurt) - eu1"
-        echo "   5) AP Australia (Sydney) - au1"
-        echo "   6) AP Cybereason (Sydney) - au1"
-        if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ];
-        then
-            echo "   7) On Premises - onprem"
-        fi
-        echo
+    local choice i dialog_items=()
 
-        if [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]] || [[ ${INSTRUQT_USER_ID} == "testuser-"* ]];
+    while true
+    do
+        if [[ "${USE_CURSES}" == false ]] || [[ "${DYNAMIC_SETUP}" == true ]]
         then
-            REGION_N=${TEST_REGION}
-            echo "Region number to use $REGION_N"
-            echo "   Instruqt test or provided Sysdig SaaS region will be used."
+            echo
+            echo "Sysdig SaaS Region"
+            echo "==========================="
+            echo
+            echo "Check the docs if more info about regions is required to find what's yours:"
+            echo "   https://docs.sysdig.com/en/administration/saas-regions-and-ip-ranges"
+            echo
+            echo "Please select your Sysdig SaaS account Region: "
+            echo
+            echo "   0) Abort install"
+            for (( i=1; i<=REGION_MAX; i++ )); do
+                echo "   $(printf '%2s' "$i")) ${REGION_LABELS[i]}"
+            done
+            echo
+
+            if is_noninteractive
+            then
+                choice=${TEST_REGION}
+                echo "Region number to use $choice"
+                echo "   Instruqt test or provided Sysdig SaaS region will be used."
+            else
+                read -p "   Select Region (type number): " choice
+            fi
         else
-            read -p "   Select Region (type number): "  REGION_N; 
+            dialog_items=()
+            for (( i=1; i<=REGION_MAX; i++ )); do
+                dialog_items+=("$i" "${REGION_LABELS[i]}")
+            done
+            choice=$(dialog --title "$TITLE" \
+                            --menu "Select your Sysdig Agent region:" 20 60 11 \
+                            "${dialog_items[@]}" \
+                            3>&1 1>&2 2>&3 3>&-
+                    ) || choice=0
         fi
-    else
-        REGION_N=$(dialog --title "$TITLE" \
-                          --menu "Select your Sysdig Agent region:" 13 42 5 \
-                          1 'US East (Virginia) - us1' \
-                          2 'US West AWS (Oregon) - us2' \
-                          3 'US West GCP (Dallas) - us4' \
-                          4 'European Union (Frankfurt) - eu1' \
-                          5 'AP Australia (Sydney) - au1' \
-                          6 'AP Cybereason (Sydney) - au1' \
-                          3>&1 1>&2 2>&3 3>&-
-                  )
-        if [ $? -ne 0 ]
-        then
-            REGION_N=0
-        fi
-    fi
 
-    case $REGION_N in
-        0)
+        if [[ $choice == 0 ]]
+        then
             echo "   Abort init.sh. Region not defined, agent not installed. This track will not work properly."
             exit 0
-            ;;
-        1)
-            REGION="US East (Virginia) - us1"
-            ;;
-        2)
-            REGION="US West AWS (Oregon) - us2"
-            ;;
-        3)
-            REGION="US West GCP (Dallas) - us4"
-            ;;
-        4)
-            REGION="European Union (Frankfurt) - eu1"
-            ;;
-        5)
-            REGION="AP Australia (Sydney) - au1"
-            ;;
-        6)
-            REGION="AP Cybereason (Sydney) - au1"
-            ;;
-        7)
-            if [ -e "$WORK_DIR/ON_PREM_ENDPOINT" ];
-            then
-                REGION="On Premises - onprem"
-            else
-                echo "${REGION_N} is not a valid an option."
-                select_region
-            fi
-            ;;
-        *)
-            echo "${REGION_N} is not a valid an option."
-            select_region
-            ;;
-    esac
+        fi
 
-    #based on selected region, values are defined
-    echo -e "\n   ${REGION} selected.\n"
-    set_values "$REGION"
+        if [[ $choice =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= REGION_MAX ))
+        then
+            choice=$(( 10#$choice ))
+            break
+        fi
+
+        echo "${choice} is not a valid an option."
+        # Retrying cannot help when the value comes from the environment.
+        if is_noninteractive; then panic_msg; fi
+    done
+
+    REGION_NAME=${REGION_LABELS[choice]}
+    echo -e "\n   ${REGION_NAME} selected.\n"
+    set_values "$choice"
 }
 
 ##
 # Configure Sysdig API access for Monitor or Secure.
-# 
+#
 # Usage:
-#   configure_API ${PRODUCT} ${PRODUCT_URL} ${PRODUCT_API_ENDPOINT}
+#   configure_api ${PRODUCT} ${PRODUCT_URL} ${PRODUCT_API_ENDPOINT}
 #
 #   PRODUCT := { SECURE | MONITOR }
 ##
-function configure_API () {
+function configure_api () {
+    local product=$1
+    local product_url=$2
+    local api_endpoint=$3
+    local ok_file="$WORK_DIR/user_data_${product}_API_OK"
+    local test_token_var="TEST_${product}_API"
+    local attempt=0 max_attempts=7 token
 
-    PRODUCT=$1
-    PRODUCT_URL=$2
-    PRODUCT_API_ENDPOINT=$3
+    echo "Configuring Sysdig $product API"
 
-    echo "Configuring Sysdig $PRODUCT API"
-
-    if [ -f $WORK_DIR/user_data_${PRODUCT}_API_OK ]
+    if [ -f "$ok_file" ]
     then
-      echo -e "  Sysdig ${PRODUCT} API already configured.\n"
-      return
+        echo -e "  Sysdig ${product} API already configured.\n"
+        return
     fi
 
     if [ "$USE_CURSES" = false ]
     then
-        echo -e "  Visit ${F_BOLD}${F_CYAN}${PRODUCT_URL}/#/settings/user${F_CLEAR} to retrieve your Sysdig ${PRODUCT} API Token."
+        echo -e "  Visit ${BOLD}${CYAN}${product_url}/#/settings/user${RESET} to retrieve your Sysdig ${product} API Token."
     fi
-    varname=${PRODUCT}_API_KEY
 
-    attempt=0
-    MAX_ATTEMPTS=7
-
-    while [ ! -f $WORK_DIR/user_data_${PRODUCT}_API_OK ] && [ $attempt -le $MAX_ATTEMPTS ]
+    while [ ! -f "$ok_file" ] && [ $attempt -le $max_attempts ]
     do
-        attempt=$(( $attempt + 1 ))
+        attempt=$(( attempt + 1 ))
 
-        if [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]] || [[ ${INSTRUQT_USER_ID} == "testuser-"* ]];
+        if is_noninteractive
         then
-            if [[ ${PRODUCT} == "MONITOR" ]];
-            then
-                API_TOKEN=$(echo -n ${TEST_MONITOR_API} | base64 --decode)
-            else #SECURE
-                API_TOKEN=$(echo -n ${TEST_SECURE_API} | base64 --decode)
-            fi
-            echo "TEST_${PRODUCT}_API_TOKEN=${API_TOKEN}"
+            token=$(echo -n "${!test_token_var:-}" | base64 --decode)
+            echo "TEST_${product}_API_TOKEN=${token}"
         elif [ "$USE_CURSES" = false ]
         then
-            read -p "  Insert here your Sysdig $PRODUCT API Token: "  API_TOKEN;
+            read -p "  Insert here your Sysdig $product API Token: " token
         else
-            API_TOKEN=$(dialog --title "$TITLE" \
-                               --inputbox "Visit $MONITOR_URL/#/settings/user to retrieve your Sysdig ${PRODUCT} API Token.\n\n(You can use copy/paste with right click menu)\n\nInsert your Sysdig $PRODUCT API Token:" 14 60 \
-                               3>&1 1>&2 2>&3 3>&-
-                       )
+            token=$(dialog --title "$TITLE" \
+                           --inputbox "Visit ${product_url}/#/settings/user to retrieve your Sysdig ${product} API Token.\n\n(You can use copy/paste with right click menu)\n\nInsert your Sysdig $product API Token:" 14 60 \
+                           3>&1 1>&2 2>&3 3>&-
+                   )
         fi
 
         # Test connection using /api/users/me — works for all roles including non-admin.
         # /api/alerts returns 403 for restricted roles even with a valid token.
-        echo -n "  Testing connection to API on endpoint ${PRODUCT_API_ENDPOINT}... "
-        curl --insecure -sD - -o /dev/null -H "Authorization: Bearer ${API_TOKEN}" "${PRODUCT_API_ENDPOINT}/api/users/me" | grep '200' &> /dev/null
-        
-        if [ $? -eq 0 ]
+        echo -n "  Testing connection to API on endpoint ${api_endpoint}... "
+        # TLS not validated (disabled): if curl --insecure -sD - -o /dev/null -H "Authorization: Bearer ${token}" "${api_endpoint}/api/users/me" | grep '200' > /dev/null
+        if curl -sD - -o /dev/null -H "Authorization: Bearer ${token}" "${api_endpoint}/api/users/me" | grep '200' > /dev/null
         then
             echo "  success"
-            echo "${API_TOKEN}" > $WORK_DIR/user_data_${PRODUCT}_API_OK
-            export SYSDIG_${PRODUCT}_API_TOKEN="${API_TOKEN}"
+            echo "${token}" > "$ok_file"
+            export "SYSDIG_${product}_API_TOKEN=${token}"
         else
             echo "  failed"
         fi
         sleep 1
         echo
     done
-    
-    if [ ! -f $WORK_DIR/user_data_${PRODUCT}_API_OK ];
+
+    if [ ! -f "$ok_file" ]
     then
         echo "  Failed to connect to API Endpoint with selected Region and API Key(s)."
         panic_msg
@@ -422,10 +439,10 @@ function configure_API () {
 function installation_method () {
     if [[ -z "$INSTALL_WITH" ]]
     then
-        if [ `which helm` ]
+        if command -v helm >/dev/null
         then
             INSTALL_WITH="helm"
-        elif [ `which docker` ]
+        elif command -v docker >/dev/null
         then
             INSTALL_WITH="docker"
             export NIA_ENDPOINT
@@ -436,108 +453,69 @@ function installation_method () {
 }
 
 ##
-# Deploy a Sysdig Agent.
-#
-# Usage:
-#   install_agent ${CLUSTER_NAME} ${ACCESS_KEY} ${COLLECTOR} ${HELM_REGION_ID} ${SECURE_API_TOKEN}
+# Deploy a Sysdig Agent with the installation method selected.
+# Uses: CLUSTER_NAME, AGENT_ACCESS_KEY, COLLECTOR_HOST, HELM_REGION_ID,
+#       SYSDIG_SECURE_API_TOKEN, SECURE_API_ENDPOINT
 ##
 function install_agent () {
-
-    CLUSTER_NAME=$1
-    ACCESS_KEY=$2
-    COLLECTOR=$3
-    HELM_REGION_ID=$4
-    SECURE_API_TOKEN=$5
-    SECURE_API_ENDPOINT=$6
-
-    installation_method
-
     if [[ "$INSTALL_WITH" == "helm" ]]
     then
-        source $TRACK_DIR/install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID $SECURE_API_TOKEN $COLLECTOR $SECURE_API_ENDPOINT
+        source "$TRACK_DIR/install_with_helm.sh" "$CLUSTER_NAME" "$AGENT_ACCESS_KEY" "$HELM_REGION_ID" "$SYSDIG_SECURE_API_TOKEN" "$COLLECTOR_HOST" "$SECURE_API_ENDPOINT"
     else
-        source $TRACK_DIR/install_with_${INSTALL_WITH}.sh $CLUSTER_NAME $ACCESS_KEY $COLLECTOR
+        source "$TRACK_DIR/install_with_${INSTALL_WITH}.sh" "$CLUSTER_NAME" "$AGENT_ACCESS_KEY" "$COLLECTOR_HOST"
     fi
+}
+
+##
+# Print a line of the welcome message when a flag is enabled.
+#
+# Usage:
+#   intro_item ${FLAG} ${MESSAGE}
+##
+function intro_item () {
+    [[ "$1" == true ]] && echo "    - $2"
+    return 0
 }
 
 ##
 # Display banner with welcome message.
 ##
 function intro () {
-    echo "----------------------------------------------------------"
-    echo "   ____ __  __   ____   ___    ____  _____                "
-    echo "  / __/ \ \/ /  / __/  / _ \  /  _/ / ___/                "
-    echo " _\ \    \  /  _\ \   / // / _/ /  / (_ /                 "
-    echo "/___/    /_/  /___/  /____/ /___/  \___/                  "
-    echo "                                                          "
-    echo " ______   ___    ___    ____   _  __   ____   _  __  _____"
-    echo "/_  __/  / _ \  / _ |  /  _/  / |/ /  /  _/  / |/ / / ___/"
-    echo " / /    / , _/ / __ | _/ /   /    /  _/ /   /    / / (_ / "
-    echo "/_/    /_/|_| /_/ |_|/___/  /_/|_/  /___/  /_/|_/  \___/  "
-    echo "----------------------------------------------------------"
-    echo
-    echo "  Welcome! This script configures the lab environment."
-    echo "  It will:"
+    cat <<'EOF'
+----------------------------------------------------------
+   ____ __  __   ____   ___    ____  _____
+  / __/ \ \/ /  / __/  / _ \  /  _/ / ___/
+ _\ \    \  /  _\ \   / // / _/ /  / (_ /
+/___/    /_/  /___/  /____/ /___/  \___/
 
-    echo "    - Set up your Sysdig region."
+ ______   ___    ___    ____   _  __   ____   _  __  _____
+/_  __/  / _ \  / _ |  /  _/  / |/ /  /  _/  / |/ / / ___/
+ / /    / , _/ / __ | _/ /   /    /  _/ /   /    / / (_ /
+/_/    /_/|_| /_/ |_|/___/  /_/|_/  /___/  /_/|_/  \___/
+----------------------------------------------------------
 
-    if [ "$USE_USER_PROVISIONER" == true ]; then
-      echo "    - Provisions a user in Sysdig Saas account for this lab."
-    fi
+  Welcome! This script configures the lab environment.
+  It will:
+    - Set up your Sysdig region.
+EOF
 
-    if [ "$USE_MONITOR_API" == true ]; then
-      echo "    - Set up the environment for Monitor API usage."
-    fi
-
-    if [ "$USE_SECURE_API" == true ]; then
-      echo "    - Set up the environment for Secure API usage."
-    fi
-
-    if [ "$USE_AGENT" == true ]; then
-      echo "    - Set up Instruqt tab with access to the Sysdig Dashboard."
-      echo "    - Deploy a Sysdig Agent."
-    fi
-
-    if [ "$USE_NODE_ANALYZER" == true ]; then
-      echo "    - Enable the Agent Node Analyzer."
-    fi
-    
-    if [ "$USE_KSPM" == true ]; then
-      echo "    - Enable KSPM."
-    fi
-
-    if [ "$USE_RAPID_RESPONSE" == true ]; then
-      echo "    - Enable Rapid Response."
-    fi
-
-    if [ "$USE_RESPONSE_ACTIONS" == true ]; then
-      echo "    - Enable Response Actions."
-    fi
-
-    if [ "$USE_PROMETHEUS" == true ]; then
-      echo "    - Enable the Agent Prometheus collector."
-    fi
-
-    if [ "$USE_CLOUD" == true ]; then
-      echo "    - Set up Instruqt tab with access to the Sysdig Dashboard."
-      echo "    - Enable CloudVision."
-    fi
-
-    if [ "$USE_CLOUD_SCAN_ENGINE" == true ]; then
-      echo "    - Deploys the Image Scanner for Cloud Registries."
-    fi
-
-    if [ "$USE_K8S" == true ]; then
-      echo "    - Customize Helm installer for kubeadm K8s cluster."
-    fi
-
-    if [ "$USE_RUNTIME_VM" == true ]; then
-      echo "    - Deploy Runtime Scanner. Requires --node-analyzer."
-    fi
-
-    if [ "$DYNAMIC_SETUP" == true ]; then
-      echo "    - Dynamic setup enabled."
-    fi
+    intro_item "$USE_PROVISIONER"      "Provisions a user in Sysdig Saas account for this lab."
+    intro_item "$USE_MONITOR_API"      "Set up the environment for Monitor API usage."
+    intro_item "$USE_SECURE_API"       "Set up the environment for Secure API usage."
+    intro_item "$USE_AGENT"            "Set up Instruqt tab with access to the Sysdig Dashboard."
+    intro_item "$USE_AGENT"            "Deploy a Sysdig Agent."
+    intro_item "$USE_NODE_ANALYZER"    "Enable the Agent Node Analyzer."
+    intro_item "$USE_KSPM"             "Enable KSPM."
+    intro_item "$USE_RAPID_RESPONSE"   "Enable Rapid Response."
+    intro_item "$USE_RESPONSE_ACTIONS" "Enable Response Actions."
+    intro_item "$USE_ALL_FEATURES"     "Enable all Sysdig Shield features."
+    intro_item "$USE_PROMETHEUS"       "Enable the Agent Prometheus collector."
+    intro_item "$USE_CLOUD"            "Set up Instruqt tab with access to the Sysdig Dashboard."
+    intro_item "$USE_CLOUD"            "Enable CloudVision."
+    intro_item "$USE_CLOUD_SCANNER"    "Deploys the Image Scanner for Cloud Registries."
+    intro_item "$USE_KUBEADM"          "Customize Helm installer for kubeadm K8s cluster."
+    intro_item "$USE_RUNTIME_VM"       "Deploy Runtime Scanner. Requires --node-analyzer."
+    intro_item "$DYNAMIC_SETUP"        "Dynamic setup enabled."
 
     echo "  Follow the instructions below."
     echo
@@ -549,46 +527,50 @@ function intro () {
 # Ask for Agent Key and deploy a Sysdig Agent.
 ##
 function deploy_agent () {
+    local deploy_date lab_id
+    deploy_date=$(date -d '+2 hour' +"%F__%H_%M")
+    lab_id=$(cat "$WORK_DIR/random_string_OK")
+    if [ "$POV_MODE" = true ]
+    then
+        CLUSTER_NAME="${lab_id}_pov_cluster"
+    else
+        CLUSTER_NAME="${lab_id}_${deploy_date}"
+    fi
+    echo "${deploy_date}" > "$WORK_DIR/agent_deploy_date"
+    echo "${CLUSTER_NAME}" > "$WORK_DIR/agent_cluster_id"
 
-    AGENT_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
-    RANDOM_USER_ID=$(cat $WORK_DIR/random_string_OK)
-    echo ${AGENT_DEPLOY_DATE} > $WORK_DIR/agent_deploy_date
-    RANDOM_CLUSTER_ID=$(echo ${RANDOM_USER_ID}_${AGENT_DEPLOY_DATE})
-    echo ${RANDOM_CLUSTER_ID} > $WORK_DIR/agent_cluster_id
-    
     # Expose Cluster ID as Instruqt var
-    agent variable set SPA_CLUSTER ${RANDOM_CLUSTER_ID}
-    
-    echo "Configuring Sysdig Agent"
+    agent variable set SPA_CLUSTER "${CLUSTER_NAME}"
 
+    echo "Configuring Sysdig Agent"
 
     if [ "$USE_CURSES" = false ]
     then
-        echo -e "  Visit ${F_BOLD}${F_CYAN}$MONITOR_URL/#/settings/agentInstallation${F_CLEAR} to retrieve your Sysdig Agent Key."
+        echo -e "  Visit ${BOLD}${CYAN}${MONITOR_URL}/#/settings/agentInstallation${RESET} to retrieve your Sysdig Agent Key."
     fi
 
-    if [[ ${USE_USER_PROVISIONER} == true ]] || [[ ${DYNAMIC_SETUP} == true ]] || [[ ${INSTRUQT_USER_ID} == "testuser-"* ]];
+    if is_noninteractive
     then
-        AGENT_ACCESS_KEY=$(echo -n ${TEST_AGENT_ACCESS_KEY} | base64 --decode)
+        AGENT_ACCESS_KEY=$(echo -n "${TEST_AGENT_ACCESS_KEY}" | base64 --decode)
     elif [ "$USE_CURSES" = false ]
     then
-        read -p "  Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY;
+        read -p "  Insert your Sysdig Agent Key: " AGENT_ACCESS_KEY
     else
         AGENT_ACCESS_KEY=$(dialog --title "$TITLE" \
-                                  --inputbox "Visit $MONITOR_URL/#/settings/agentInstallation to retrieve your Sysdig Agent Key.\n\n(You can use copy/paste with right click menu)\n\nInsert your Sysdig Agent key:" 14 60 \
+                                  --inputbox "Visit ${MONITOR_URL}/#/settings/agentInstallation to retrieve your Sysdig Agent Key.\n\n(You can use copy/paste with right click menu)\n\nInsert your Sysdig Agent key:" 14 60 \
                                   3>&1 1>&2 2>&3 3>&-
                           )
     fi
 
-    if [[ -z "$INSTALL_WITH" ]] && [ `which helm` ]; # in helm, we deploy by default the AC for k8s audit loging, we need the api
+    installation_method
+    # in helm, we deploy by default the AC for k8s audit loging, we need the api
+    if [[ "$INSTALL_WITH" == "helm" ]]
     then
-        configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
+        configure_api "SECURE" "${SECURE_URL}" "${SECURE_API_ENDPOINT}"
     fi
 
     echo -e "  The agent is being installed in the background.\n"
-    ACCESSKEY=`echo ${AGENT_ACCESS_KEY} | tr -d '\r'`
-
-    install_agent ${RANDOM_CLUSTER_ID} ${AGENT_ACCESS_KEY} ${AGENT_COLLECTOR} ${HELM_REGION_ID} ${SYSDIG_SECURE_API_TOKEN} ${SECURE_API_ENDPOINT}
+    install_agent
 }
 
 ##
@@ -602,13 +584,13 @@ function test_agent () {
         echo "  Testing if Sysdig Agent is running correctly..."
     fi
 
-    attempt=0
-    MAX_ATTEMPTS=10 # 0.5 minutes
-    CONNECTED_MSG="Sending scraper version"
-    FOUND_COLLECTOR=""
-    connected=false
+    local attempt=0
+    local max_attempts=10 # 0.5 minutes
+    local connected_msg="Sending scraper version"
+    local connected=false
+    local found_collector="" agent_log
 
-    while [ -z ${FOUND_COLLECTOR} ] && [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
+    while [ -z "${found_collector}" ] && [ "$connected" != true ] && [ $attempt -le $max_attempts ]
     do
         sleep 5
         case "$INSTALL_WITH" in
@@ -617,35 +599,35 @@ function test_agent () {
                 #kubectl logs -l app=sysdig-agent -n sysdig-agent --tail=-1 | grep "cm_collector" | grep -q "Processing messages" && connected=true
                 # The -l selector is not available in the current kubectl version installed
                 kubectl rollout status daemonset/sysdig-agent-shield-host -n sysdig-agent -w --timeout=600s && connected=true
-                FOUND_COLLECTOR=`kubectl logs -l sysdig/component=host -n sysdig-agent | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
+                agent_log=$(kubectl logs -l sysdig/component=host -n sysdig-agent || true)
                 ;;
             docker)
                 ### Todo: docker should check the existence of /opt/draios/logs/running <- leveraged by our kubernetes health check and is only created when the agent is officially connected to the backend
-                docker logs sysdig-agent 2>&1 | grep -q "${CONNECTED_MSG}" && connected=true
-                FOUND_COLLECTOR=`docker logs sysdig-agent 2>&1 | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
+                agent_log=$(docker logs sysdig-agent 2>&1 || true)
+                grep -q "${connected_msg}" <<< "$agent_log" && connected=true
                 sleep 10     # Installation through docker takes more time
                 ;;
             host)
                 ### Todo: systemctl status sysdig-agent; if its running its connected and healthy.
-                grep -q "${CONNECTED_MSG}" /opt/draios/logs/draios.log && connected=true
-                FOUND_COLLECTOR=`cat /opt/draios/logs/draios.log | awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' | tr -d '[:space:]' || true`
+                agent_log=$(cat /opt/draios/logs/draios.log || true)
+                grep -q "${connected_msg}" <<< "$agent_log" && connected=true
                 ;;
         esac
-        
-        attempt=$(( $attempt + 1 ))
+        found_collector=$(awk 'tolower($0) ~ /collector at host=/ {print $NF; exit}' <<< "$agent_log" | tr -d '[:space:]' || true)
+
+        attempt=$(( attempt + 1 ))
     done
 
     if [ "$connected" = true ]
     then
-
         echo "  OK. Sysdig Agent successfully installed."
-        touch $WORK_DIR/user_data_AGENT_OK
-        echo "  Sysdig Agent cluster.name: $(cat $WORK_DIR/agent_cluster_id)"
+        touch "$WORK_DIR/user_data_AGENT_OK"
+        echo "  Sysdig Agent cluster.name: $(cat "$WORK_DIR/agent_cluster_id")"
     else
         echo "  FAIL"
         echo "  Agent failed to connect to back-end. Check your Agent Key."
         # Dump install logs to help diagnose failures
-        for log in /opt/sysdig/helm_install.out /opt/sysdig/docker_install.out; do
+        for log in "$WORK_DIR/helm_install.out" "$WORK_DIR/docker_install.out"; do
             if [ -f "$log" ]; then
                 echo "--- $log ---"
                 cat "$log"
@@ -659,59 +641,61 @@ function test_agent () {
 # Checks if the track includes a cloud account
 # and sets the CLOUD_ACCOUNT_ID variable with an identifier of the cloud account
 # that will be used to deploy the required infra in the cloud provider selected
-# 
+#
 # More info about resources and variables used in this function:
 #    -----------------------------------------------------------------------------
-#    Instruqt can attach a burner cloud account with a track. It injects 
+#    Instruqt can attach a burner cloud account with a track. It injects
 #    credentials to use the account in the host or cloud_container. This
 #    function checks if there's a cloud account in the track and in that case
 #    it sets the requiered env vars to use it and deploy sysdig secure for cloud.
-# 
+#
 #    To learn more about it:
 #    https://docs.instruqt.com/how-to-guides/manage-sandboxes/access-cloud-accounts
 #    -----------------------------------------------------------------------------
-# 
+#
 # NOTE: this function do not support >1 cloud accounts attached to the track sandbox
 #
 ##
-function track_has_cloud_account () {
-    if [ ! -z "$INSTRUQT_AWS_ACCOUNTS" ]
+function detect_cloud_account () {
+    local account_var sa_key_var tenant_var sa_key
+
+    if [ -n "${INSTRUQT_AWS_ACCOUNTS:-}" ]
     then
         CLOUD_PROVIDER=aws
-        cloudvarname=INSTRUQT_AWS_ACCOUNT_${INSTRUQT_AWS_ACCOUNTS}_ACCOUNT_ID
-        CLOUD_ACCOUNT_ID=${!cloudvarname}
+        account_var=INSTRUQT_AWS_ACCOUNT_${INSTRUQT_AWS_ACCOUNTS}_ACCOUNT_ID
+        CLOUD_ACCOUNT_ID=${!account_var}
     fi
 
-    if [ ! -z "$INSTRUQT_GCP_PROJECTS" ]
+    if [ -n "${INSTRUQT_GCP_PROJECTS:-}" ]
     then
         CLOUD_PROVIDER=gcp
-        cloudvarname=INSTRUQT_GCP_PROJECT_${INSTRUQT_GCP_PROJECTS}_PROJECT_ID
-        CLOUD_ACCOUNT_ID=${!cloudvarname}
+        account_var=INSTRUQT_GCP_PROJECT_${INSTRUQT_GCP_PROJECTS}_PROJECT_ID
+        CLOUD_ACCOUNT_ID=${!account_var}
 
         # terraform config to use the service account with role.owner permissions.
         # the user account provided by instruqt do not have org-level permissions and these
         # are required for the sysdig-cloud GCP installer
-        sakeyvarname=INSTRUQT_GCP_PROJECT_${INSTRUQT_GCP_PROJECTS}_SERVICE_ACCOUNT_KEY
-        SA_KEY=${!sakeyvarname}
-        echo $SA_KEY | base64 -d > creds.json # credentials for the Service Account
+        sa_key_var=INSTRUQT_GCP_PROJECT_${INSTRUQT_GCP_PROJECTS}_SERVICE_ACCOUNT_KEY
+        sa_key=${!sa_key_var}
+        echo "$sa_key" | base64 -d > creds.json # credentials for the Service Account
         export TF_VAR_project=$CLOUD_ACCOUNT_ID
-        grep $CLOUD_ACCOUNT_ID /root/.bashrc || echo "export TF_VAR_project=\"$CLOUD_ACCOUNT_ID\"" >> /root/.bashrc
+        grep -q "$CLOUD_ACCOUNT_ID" /root/.bashrc || echo "export TF_VAR_project=\"$CLOUD_ACCOUNT_ID\"" >> /root/.bashrc
 
         # set the path for terraform to use the service account credentials
         export GOOGLE_CREDENTIALS=$(pwd)/creds.json
         echo "export GOOGLE_CREDENTIALS=$GOOGLE_CREDENTIALS" >> /root/.bashrc
     fi
 
-    if [ ! -z "$INSTRUQT_AZURE_SUBSCRIPTIONS" ]
+    if [ -n "${INSTRUQT_AZURE_SUBSCRIPTIONS:-}" ]
     then
         CLOUD_PROVIDER=azure
-        cloudvarname=INSTRUQT_AZURE_SUBSCRIPTION_${INSTRUQT_AZURE_SUBSCRIPTIONS}_SUBSCRIPTION_ID
-        azure_tenant_id_var_name=INSTRUQT_AZURE_SUBSCRIPTION_${INSTRUQT_AZURE_SUBSCRIPTIONS}_TENANT_ID
-        AZURE_TENANT_ID=${!azure_tenant_id_var_name}
-        CLOUD_ACCOUNT_ID=${!cloudvarname}
+        account_var=INSTRUQT_AZURE_SUBSCRIPTION_${INSTRUQT_AZURE_SUBSCRIPTIONS}_SUBSCRIPTION_ID
+        tenant_var=INSTRUQT_AZURE_SUBSCRIPTION_${INSTRUQT_AZURE_SUBSCRIPTIONS}_TENANT_ID
+        AZURE_TENANT_ID=${!tenant_var}
+        CLOUD_ACCOUNT_ID=${!account_var}
     fi
 
-    if [ -z $CLOUD_PROVIDER ]
+    if [ -z "${CLOUD_PROVIDER:-}" ]
     then
         echo "  FAIL"
         echo "  This track does not include a cloud account but it should."
@@ -723,75 +707,74 @@ function track_has_cloud_account () {
 # Deploys the cloud connector.
 ##
 function deploy_cloud_connector () {
-    CLOUD_CONNECTOR_DEPLOY_DATE=$(date -d '+2 hour' +"%F__%H_%M")
-    CLOUD_CONNECTOR_DEPLOY_QUERY=$(date +"%FT%H:%M:%S") # get a deployment date that matches the format and timezone of the date returned by sysdig API CloudProvidersLastSeen
-    CLOUD_REGION=""
-    echo ${CLOUD_CONNECTOR_DEPLOY_DATE} > $WORK_DIR/cloud_connector_deploy_date
-    echo ${CLOUD_CONNECTOR_DEPLOY_QUERY} > $WORK_DIR/cloud_connector_deploy_query
-    
+    local deploy_date deploy_query
+    deploy_date=$(date -d '+2 hour' +"%F__%H_%M")
+    # a deployment date that matches the format and timezone of the date returned by sysdig API CloudProvidersLastSeen
+    deploy_query=$(date +"%FT%H:%M:%S")
+    echo "${deploy_date}" > "$WORK_DIR/cloud_connector_deploy_date"
+    echo "${deploy_query}" > "$WORK_DIR/cloud_connector_deploy_query"
+
     echo "Configuring Sysdig CloudVision for $CLOUD_PROVIDER"
 
     # we are defining here some values (region) but in future we might want the user to choose its region
     # right now there's not a reason to select one or another
-    if [ $CLOUD_PROVIDER = "aws" ]
-    then
-        CLOUD_REGION="us-east-1"
-    elif [ $CLOUD_PROVIDER = "gcp" ]
-    then
-        CLOUD_REGION="us-east1"
-    elif [ $CLOUD_PROVIDER = "azure" ]
-    then
-        CLOUD_REGION="foo"
-    fi
+    case $CLOUD_PROVIDER in
+        aws)   CLOUD_REGION="us-east-1" ;;
+        gcp)   CLOUD_REGION="us-east1" ;;
+        azure) CLOUD_REGION="foo" ;;
+        *)     CLOUD_REGION="" ;;
+    esac
 
     echo -e "  CloudVision is being installed in the background.\n"
 
-    source $TRACK_DIR/cloud/install_with_terraform.sh $CLOUD_PROVIDER $SYSDIG_SECURE_API_TOKEN $SECURE_API_ENDPOINT $CLOUD_REGION $CLOUD_ACCOUNT_ID
+    source "$TRACK_DIR/cloud/install_with_terraform.sh" "$CLOUD_PROVIDER" "$SYSDIG_SECURE_API_TOKEN" "$SECURE_API_ENDPOINT" "$CLOUD_REGION" "$CLOUD_ACCOUNT_ID"
 }
 
 ##
 # Test if the Cloud account is connected successfully.
 ##
 function test_cloud_connector () {
+    local attempt=0
+    local max_attempts=36 # 6 minutes
+    local connected=false
+    local accounts_url="${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts"
+    local lab_id internal_id account_alias
 
-    attempt=0
-    MAX_ATTEMPTS=36 # 6 minutes
-    connected=false
+    lab_id=$(cat "$WORK_DIR/random_string_OK")
 
-    # get internal id 
-    INTERNAL_CLOUD_ID=$(curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts" | jq -r '.accounts[] | select(.providerId == '"${CLOUD_ACCOUNT_ID}"') | .id')
+    sysdig_get () {
+        curl -s -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "$1"
+    }
+
+    internal_id=$(sysdig_get "$accounts_url" | jq -r '.accounts[] | select(.providerId == '"${CLOUD_ACCOUNT_ID}"') | .id')
 
     echo "    Testing if the cloud account is connected... (ID=${CLOUD_ACCOUNT_ID})"
 
-    while [ "$connected" != true ] && [ $attempt -le $MAX_ATTEMPTS ]
+    while [ "$connected" != true ] && [ $attempt -le $max_attempts ]
     do
-
         # validate cloud account
-        curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts/${INTERNAL_CLOUD_ID}/validate"   
+        sysdig_get "${accounts_url}/${internal_id}/validate"
 
         sleep 10
 
-        # get status, on hold until validation works quickly
-        # STATUS=$(curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts" | jq -r '.accounts[] | select(.providerId == '"${CLOUD_ACCOUNT_ID}"') | .validation.result')
-
         # find account via alias
-        LAB_RANDOM_ID=$(cat /opt/sysdig/random_string_OK)
-        ACCOUNT_ALIAS=$(curl -s -XGET -H "Authorization: Bearer $SYSDIG_SECURE_API_TOKEN" -H 'Content-Type: application/json' "${SECURE_API_ENDPOINT}/api/cloudauth/v1/accounts" | jq -r '.accounts[] | select(.providerId == '"${CLOUD_ACCOUNT_ID}"') | .providerAlias')
+        account_alias=$(sysdig_get "$accounts_url" | jq -r '.accounts[] | select(.providerId == '"${CLOUD_ACCOUNT_ID}"') | .providerAlias')
 
-        # if [[ "${STATUS}" =~ "VALIDATION_RESULT_SUCCESS" ]]
-        if [[ "${LAB_RANDOM_ID}" =~ "${ACCOUNT_ALIAS}" ]]
-        then 
+        if [[ "${lab_id}" =~ "${account_alias}" ]]
+        then
             connected=true
             break
         fi
-    
-        attempt=$(( $attempt + 1 ))
+
+        attempt=$(( attempt + 1 ))
     done
+
+    unset -f sysdig_get
 
     if [ "$connected" = true ]
     then
         echo "  Cloud Account Integration configured."
-        touch $WORK_DIR/user_data_CLOUDVISION_OK
+        touch "$WORK_DIR/user_data_CLOUDVISION_OK"
     else
         echo "  FAIL"
         echo "  Cloud Account Integration installation went wrong. Use the provided channels to report this issue."
@@ -803,46 +786,33 @@ function test_cloud_connector () {
 # Delete files only needed while running the script.
 ##
 function clean_setup () {
+    local entry flag name
 
-    if [ "$USE_AGENT" == true ]
-    then
-      if [ -f $WORK_DIR/user_data_AGENT_OK ]
-      then
-          rm $WORK_DIR/user_data_AGENT_OK
-      else
-          panic_msg
-      fi
-    fi
+    # <enabled flag>:<name of its health-check marker file>
+    for entry in USE_AGENT:AGENT USE_MONITOR_API:MONITOR_API USE_SECURE_API:SECURE_API
+    do
+        flag=${entry%%:*}
+        name=${entry##*:}
+        if [ "${!flag}" == true ]
+        then
+            if [ -f "$WORK_DIR/user_data_${name}_OK" ]
+            then
+                rm "$WORK_DIR/user_data_${name}_OK"
+            else
+                panic_msg
+            fi
+        fi
+    done
 
-    if [ "$USE_MONITOR_API" == true ]
-    then
-      if [ -f $WORK_DIR/user_data_MONITOR_API_OK ]
-      then
-          rm $WORK_DIR/user_data_MONITOR_API_OK
-      else
-          panic_msg
-      fi
-    fi
-
-    if [ "$USE_SECURE_API" == true ]
-    then
-      if [ -f $WORK_DIR/user_data_SECURE_API_OK ]
-      then
-          rm $WORK_DIR/user_data_SECURE_API_OK
-      else
-          panic_msg
-      fi
-    fi
-
-    if [ -d $TRACK_DIR ]
+    if [ -d "$TRACK_DIR" ]
     then
         # we used to remove these files, but they are useful for debugging.
         # Also, the terraform state file is good to keep it in case we need to destroy the assets
         # In most cases we don't care about this, as Instruqts manages the cleanup of the envs.
-        mv $TRACK_DIR/ /tmp/
+        mv "$TRACK_DIR/" /tmp/
         test -f /root/creds.json && mv /root/creds.json /tmp/
         sed -i '/init.sh/d' /root/.profile  # removes the script from .profile so it is not executed in new challenges
-        touch $WORK_DIR/user_data_OK # flag environment configured with user data
+        touch "$WORK_DIR/user_data_OK" # flag environment configured with user data
     else
         panic_msg
     fi
@@ -852,98 +822,115 @@ function clean_setup () {
 # Show help and script usage
 ##
 function help () {
-    echo
-    echo "USAGE:"
-    echo
-    echo "  `basename $0` [OPTIONS...]"
-    echo
-    echo "Environment start up script. It can be used to:"
-    echo "- deploy a Sysdig Agent "
-    echo "- deploy Sysdig Secure for Cloud (AWS, GCP, Azure)"
-    echo "- and/or set up some environment variables."
-    echo ""
-    echo "Review the options below to learn what's available."
-    echo ""
-    echo "WARNING: This script is meant to be used in training materials."
-    echo "Do NOT use it in production."
-    echo
-    echo
-    echo "OPTIONS:"
-    echo
+    cat <<EOF
 
-    echo "  --skip-cleanup              Skip script setup clean-up actions."
-    echo "  --provision-user            Creates user in Sysdig Saas Training account for use in this lab."
-    echo "  --dynamic-setup             Do not use the user provisioner, use the runtime parameters."
-    echo "  -a, --agent                 Deploy a Sysdig Agent."
-    echo "  -b, --rapid-response        Enable Rapid Response"
-    echo "  -c, --cloud                 Set up environment for Sysdig Secure for Cloud."
-    echo "  -h, --help                  Show this help."
-    echo "  -k, --kspm                  Enable KSPM. Use with -k/--kspm."
-    echo "  -m, --monitor               Set up environment for Monitor API usage."
-    echo "  -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent."
-    echo "  -p, --prometheus            Enable Prometheus. Use with -a/--agent."
-    echo "  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account."
-    echo "  -r, --region                Set up environment with user's Sysdig Region for a track with a host."
-    echo "  -s, --secure                Set up environment for Secure API usage."
-    echo "  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud."
-    echo "  -x, --use-curses            Use ncurses dialog menus instead of CLI."
-    echo "  -8, --kube-adm              Customize installer for kubeadm k8s cluster"
-    echo "  --on-prem <on_prem_endpoint>       In case an on-prem backend is used, set here the endpoint value."                     
-    echo "      --runtime-vm            Enable VM Runtime Scanner. Use with --node-analyzer."
-    echo "      --no-check              Remove agent and cloud connector post install health check."
-    echo
-    echo
-    echo "ENVIRONMENT VARIABLES:"
-    echo
-    echo "  INSTALL_WITH                Sets preferred installation method. Available"
-    echo "                              options are 'helm', 'docker' and 'host'. If not"
-    echo "                              set, it will default to what's available in your,"
-    echo "                              checking first for 'helm', then 'docker', and"
-    echo "                              finally 'host'."
-    echo
-    echo "  HELM_OPTS                   Additional options for Helm installation."
-    echo
-    echo "  DOCKER_OPTS                 Additional options for Docker installation."
-    echo
-    echo "  HOST_OPTS                   Additional options for Host installation."
-    echo
-    echo "  DYNAMIC_SETUP               Set to 'true' to skip interactive prompts and use"
-    echo "                              the TEST_* / DYNAMIC_* env vars below instead."
-    echo "                              Can be set via Instruqt invite env-var overrides."
-    echo
-    echo "  DYNAMIC_AGENT_ACCESS_KEY    Base64-encoded Sysdig Agent access key."
-    echo "                              Overrides TEST_AGENT_ACCESS_KEY."
-    echo
-    echo "  DYNAMIC_MONITOR_API         Base64-encoded Sysdig Monitor API token."
-    echo "                              Overrides TEST_MONITOR_API."
-    echo
-    echo "  DYNAMIC_SECURE_API          Base64-encoded Sysdig Secure API token."
-    echo "                              Overrides TEST_SECURE_API."
-    echo
-    echo "  TEST_REGION                 Region number used in non-interactive/dynamic mode."
-    echo "                              Defaults to 2 (US West AWS - us2). Values:"
-    echo "                                1  US East (Virginia) - us1"
-    echo "                                2  US West AWS (Oregon) - us2"
-    echo "                                3  US West GCP (Dallas) - us4"
-    echo "                                4  European Union (Frankfurt) - eu1"
-    echo "                                5  AP Australia (Sydney) - au1"
-    echo "                                6  AP Cybereason (Sydney) - au1"
-    echo "                                7  On Premises (requires DYNAMIC_MONITOR_API_URL"
-    echo "                                   or DYNAMIC_SECURE_API_URL)"
-    echo
-    echo "  DYNAMIC_MONITOR_API_URL     Base URL of the on-prem Sysdig backend"
-    echo "                              (e.g. https://sysdig.corp.example.com)."
-    echo "                              Required when TEST_REGION=7 in dynamic/test mode."
-    echo "                              Takes precedence over DYNAMIC_SECURE_API_URL."
-    echo
-    echo "  DYNAMIC_SECURE_API_URL      Base URL of the on-prem Sysdig Secure backend."
-    echo "                              Fallback for DYNAMIC_MONITOR_API_URL when TEST_REGION=7."
-    echo "                              Include the collector port in the URL to set it explicitly"
-    echo "                              (e.g. https://sysdig.corp.example.com:6443). If no port is"
-    echo "                              given, the script probes 6443 then 443 and warns on fallback."
-    echo
+USAGE:
+
+  $(basename "$0") [OPTIONS...]
+
+Environment start up script. It can be used to:
+- deploy a Sysdig Agent
+- deploy Sysdig Secure for Cloud (AWS, GCP, Azure)
+- and/or set up some environment variables.
+
+Review the options below to learn what's available.
+
+WARNING: This script is meant to be used in training materials.
+Do NOT use it in production.
 
 
+OPTIONS:
+
+  --skip-cleanup              Skip script setup clean-up actions.
+  --provision-user            Creates user in Sysdig Saas Training account for use in this lab.
+  --dynamic-setup             Do not use the user provisioner, use the runtime parameters.
+  --wait                      Make the Helm installation wait until the agent is ready.
+  -a, --agent                 Deploy a Sysdig Agent.
+  -A, --all-features          Enable every Sysdig Shield feature (admission control in enforce
+                              mode, posture, vulnerability management, detections, investigations,
+                              response actions). Use with -a/--agent. Works for SaaS and on-prem.
+  -b, --rapid-response        Enable Rapid Response
+  -c, --cloud                 Set up environment for Sysdig Secure for Cloud.
+  -h, --help                  Show this help.
+  -j, --admission-controller  Enable Admission Controller. Use with -a/--agent.
+  -k, --kspm                  Enable KSPM. Use with -a/--agent.
+  -m, --monitor               Set up environment for Monitor API usage.
+  -n, --node-analyzer         Enable Node Analyzer. Use with -a/--agent.
+  -p, --prometheus            Enable Prometheus. Use with -a/--agent.
+  -q, --region-cloud          Set up environment with user's Sysdig Region for cloud track with a cloud account.
+  -r, --region                Set up environment with user's Sysdig Region for a track with a host.
+  -s, --secure                Set up environment for Secure API usage.
+  -v, --vuln-management       Enable Image Scanning with Sysdig Secure for Cloud. Use with -c/--cloud.
+  -x, --use-curses            Use ncurses dialog menus instead of CLI.
+  -8, --kube-adm              Customize installer for kubeadm k8s cluster
+  --on-prem <url>             On-prem backend URL (region 7), e.g. https://sysdig.example.com
+      --collector <host[:port]>  On-prem agent collector (region 7). Defaults to the backend host, port 6443.
+      --response-actions      Enable Response Actions. Use with -a/--agent.
+      --runtime-vm            Enable VM Runtime Scanner. Use with --node-analyzer.
+      --no-check              Remove agent and cloud connector post install health check.
+
+
+ENVIRONMENT VARIABLES:
+
+  INSTALL_WITH                Sets preferred installation method. Available
+                              options are 'helm', 'docker' and 'host'. If not
+                              set, it will default to what's available in your,
+                              checking first for 'helm', then 'docker', and
+                              finally 'host'.
+
+  HELM_OPTS                   Additional options for Helm installation.
+
+  DOCKER_OPTS                 Additional options for Docker installation.
+
+  HOST_OPTS                   Additional options for Host installation.
+
+  DYNAMIC_SETUP               Set to 'true' to skip interactive prompts and use
+                              the TEST_* / DYNAMIC_* env vars below instead.
+                              Can be set via Instruqt invite env-var overrides.
+
+  DYNAMIC_AGENT_ACCESS_KEY    Base64-encoded Sysdig Agent access key.
+                              Overrides TEST_AGENT_ACCESS_KEY.
+
+  DYNAMIC_MONITOR_API         Base64-encoded Sysdig Monitor API token.
+                              Overrides TEST_MONITOR_API.
+
+  DYNAMIC_SECURE_API          Base64-encoded Sysdig Secure API token.
+                              Overrides TEST_SECURE_API.
+
+  TEST_REGION                 Region number used in non-interactive/dynamic mode.
+                              Defaults to 2 (US West AWS - us2). Values:
+                                1  US East (Virginia) - us1
+                                2  US West AWS (Oregon) - us2
+                                3  US West GCP (Dallas) - us4
+                                4  European Union (Frankfurt) - eu1
+                                5  AP Australia (Sydney) - au1
+                                6  AP Cybereason (Sydney) - au1
+                                7  On Premises (requires DYNAMIC_MONITOR_API_URL
+                                   or DYNAMIC_SECURE_API_URL)
+                                8  European Union (Stockholm) - eu2
+                                9  Middle East (Dammam) - me2
+                                10 AP South (Mumbai) - in1
+                                11 AP Japan (Tokyo) - jp1
+
+  DYNAMIC_MONITOR_API_URL     Base URL of the on-prem Sysdig backend
+                              (e.g. https://sysdig.corp.example.com).
+                              Required when TEST_REGION=7 in dynamic/test mode.
+                              Takes precedence over DYNAMIC_SECURE_API_URL.
+
+  DYNAMIC_SECURE_API_URL      Base URL of the on-prem Sysdig Secure backend.
+                              Fallback for DYNAMIC_MONITOR_API_URL when TEST_REGION=7.
+
+  DYNAMIC_COLLECTOR_HOST      On-prem agent collector, "host" or "host:port".
+                              Defaults to the host of the backend URL.
+
+  DYNAMIC_COLLECTOR_PORT      On-prem agent collector port. Defaults to 6443.
+
+  POV_MODE                    'true' (default in this branch) names the provisioned user
+                              <adjective>_<noun>+pov@sysdig.com (admin, Secure only) and the
+                              cluster <adjective>_<noun>_pov_cluster. 'false' restores the
+                              training naming (<adjective>_<noun>_<salt>, student user).
+
+EOF
 }
 
 
@@ -957,35 +944,38 @@ function check_flags () {
             --wait)
                 export WAIT_ENABLED=true
                 ;;
-            --on-prem) # on-prem backend
+            --on-prem) # on-prem backend URL
                 shift
-                ON_PREM_ENDPOINT=$1
-                echo "On Premise backend endpoint: $ON_PREM_ENDPOINT";
-                echo "${ON_PREM_ENDPOINT}" > $WORK_DIR/ON_PREM_ENDPOINT
+                ONPREM_URL=$1
+                echo "On Premise backend endpoint: $ONPREM_URL"
+                ;;
+            --collector) # on-prem collector, host[:port]
+                shift
+                ONPREM_COLLECTOR=$1
                 ;;
             --skip-cleanup)
                 SKIP_CLEANUP=true
                 ;;
             --provision-user)
-                USE_USER_PROVISIONER=true
+                USE_PROVISIONER=true
                 ;;
             --dynamic-setup)
                 DYNAMIC_SETUP=true
                 ;;
             --agent | -a)
                 USE_AGENT=true
-                USE_AGENT_REGION=true
+                USE_REGION_HOST=true
                 ;;
             --region | -r)
-                USE_AGENT_REGION=true
+                USE_REGION_HOST=true
                 ;;
             --cloud | -c)
                 USE_CLOUD=true
-                USE_CLOUD_REGION=true
+                USE_REGION_CLOUD=true
                 USE_SECURE_API=true
                 ;;
             --region-cloud | -q)
-                USE_CLOUD_REGION=true
+                USE_REGION_CLOUD=true
                 ;;
             --monitor | -m)
                 USE_MONITOR_API=true
@@ -1008,24 +998,32 @@ function check_flags () {
             --response-actions)
                 export USE_RESPONSE_ACTIONS=true
                 ;;
+            --all-features | -A)
+                # everything in the reference shield values.yaml (see install_with_helm.sh)
+                export USE_ALL_FEATURES=true
+                export USE_NODE_ANALYZER=true
+                export USE_KSPM=true
+                export USE_ADMISSION_CONTROL=true
+                export USE_RESPONSE_ACTIONS=true
+                ;;
             --admission-controller | -j)
-                export USE_ADMISSION_CONTROLLER=true
+                export USE_ADMISSION_CONTROL=true
                 ;;
             --vuln-management | -v)
-                export USE_CLOUD_SCAN_ENGINE=true
+                export USE_CLOUD_SCANNER=true
                 ;;
             --use-curses | -x)
                 export USE_CURSES=true
                 ;;
             --kube-adm | -8)
-                export USE_K8S=true
+                export USE_KUBEADM=true
                 ;;
             --runtime-vm)
                 export USE_RUNTIME_VM=true
                 ;;
             --no-check)
-                export USE_NO_CHECK=true
-                ;;                
+                export SKIP_CHECKS=true
+                ;;
             --help | -h)
                 help
                 exit 0
@@ -1039,22 +1037,27 @@ function check_flags () {
         shift
     done
 
-    if ([ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ] || [ "$USE_RUNTIME_VM" = true ]  || [ "$USE_RAPID_RESPONSE" = true ]  || [ "$USE_K8S" = true ]) && [ "$USE_AGENT" != true ]
+    if [ "$USE_AGENT" != true ] && {
+           [ "$USE_ALL_FEATURES" = true ] || [ "$USE_NODE_ANALYZER" = true ] || [ "$USE_PROMETHEUS" = true ] || [ "$USE_RUNTIME_VM" = true ] ||
+           [ "$USE_RAPID_RESPONSE" = true ] || [ "$USE_KUBEADM" = true ]
+       }
     then
         echo "ERROR: Options only available with -a/--agent."
         exit 1
     fi
-
 }
 
-function overwrite_test_creds () {
-    TEST_AGENT_ACCESS_KEY=$(cat $WORK_DIR/ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY | base64)
-    TEST_MONITOR_API=$(cat /opt/sysdig/account.json | jq --raw-output .token.key | base64)
-    TEST_SECURE_API=$(cat /opt/sysdig/account.json | jq --raw-output .token.key | base64)
-    TEST_REGION=$(cat $WORK_DIR/ACCOUNT_PROVISIONER_REGION)
+##
+# Use the credentials of the account created by the user provisioner.
+##
+function use_provisioned_creds () {
+    local api_token
+    api_token=$(jq --raw-output .token.key "$WORK_DIR/account.json")
 
-    SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER)
-    SPA_PASS=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_PASS)
+    TEST_AGENT_ACCESS_KEY=$(base64 < "$WORK_DIR/ACCOUNT_PROVISIONER_AGENT_ACCESS_KEY")
+    TEST_MONITOR_API=$(echo "$api_token" | base64)
+    TEST_SECURE_API=$TEST_MONITOR_API
+    TEST_REGION=$(cat "$WORK_DIR/ACCOUNT_PROVISIONER_REGION")
 
     echo
     echo "----------------------------------------------------------"
@@ -1062,64 +1065,34 @@ function overwrite_test_creds () {
     echo "----------------------------------------------------------"
     echo
     echo "  These are your credentials (also available in the instructions in the right):"
-    echo "  User: $SPA_USER"
-    echo "  Password: $SPA_PASS"
+    echo "  User: $(cat "$WORK_DIR/ACCOUNT_PROVISIONED_USER")"
+    echo "  Password: $(cat "$WORK_DIR/ACCOUNT_PROVISIONED_PASS")"
     echo "  Region: use the tab in this lab to access your Sysdig's UI"
     echo
     echo
-
 }
 
 ##
 # Execute setup.
 ##
 function setup () {
-    mkdir -p $WORK_DIR/
+    mkdir -p "$WORK_DIR/"
 
-    check_flags $@
+    check_flags "$@"
 
     if [ "${USE_CURSES}" = false ]
     then
         intro
     fi
 
-    source $TRACK_DIR/lab_random_string_id.sh
+    source "$TRACK_DIR/lab_random_string_id.sh"
 
-    if [ "${USE_USER_PROVISIONER}" = true ]
+    if [ "${USE_PROVISIONER}" = true ]
     then
-        overwrite_test_creds
+        use_provisioned_creds
     fi
 
-    # When TEST_REGION=7 (on-prem) is selected via dynamic setup, write the on-prem
-    # endpoint to the file that set_values() expects. The domain is derived from
-    # DYNAMIC_MONITOR_API_URL (preferred) or DYNAMIC_SECURE_API_URL as fallback.
-    # This allows customising the Sysdig backend endpoint entirely through Instruqt
-    # invite env-var overrides without touching lab scripts.
-    if [[ "${TEST_REGION}" == "7" ]] && ([[ "${DYNAMIC_SETUP}" == "true" ]] || [[ "${USE_USER_PROVISIONER}" == "true" ]] || [[ "${INSTRUQT_USER_ID}" == "testuser-"* ]]);
-    then
-        ONPREM_URL="${DYNAMIC_MONITOR_API_URL:-$DYNAMIC_SECURE_API_URL}"
-        if [[ -z "${ONPREM_URL}" ]];
-        then
-            echo "ERROR: TEST_REGION=7 (on-prem) requires DYNAMIC_MONITOR_API_URL or DYNAMIC_SECURE_API_URL to be set."
-            panic_msg
-        fi
-        # Extract clean hostname (strip protocol, any explicit port, and path).
-        # ON_PREM_ENDPOINT stores only the hostname so set_values() builds the API URL
-        # as https://<domain> (port 443). API calls and agent collector use different ports.
-        ONPREM_DOMAIN=$(echo "${ONPREM_URL}" | sed 's|^https\?://||' | cut -d: -f1 | cut -d/ -f1)
-        echo "On-prem domain: ${ONPREM_DOMAIN}"
-        echo "${ONPREM_DOMAIN}" > $WORK_DIR/ON_PREM_ENDPOINT
-
-        # Default collector port for on-prem is 6443. The probe cannot reliably determine
-        # whether a port is "truly closed" vs "firewalled from the probe host but reachable
-        # from inside the cluster", so we only honour an explicit DYNAMIC_COLLECTOR_PORT
-        # env-var override (set via Instruqt invite) rather than falling back automatically.
-        DYNAMIC_COLLECTOR_PORT="${DYNAMIC_COLLECTOR_PORT:-6443}"
-        export DYNAMIC_COLLECTOR_PORT
-        echo "On-prem collector port: ${DYNAMIC_COLLECTOR_PORT}"
-    fi
-
-    if [ "$USE_AGENT_REGION" = true ] || [ "$USE_CLOUD_REGION" = true ]
+    if [ "$USE_REGION_HOST" = true ] || [ "$USE_REGION_CLOUD" = true ]
     then
         select_region
     fi
@@ -1131,34 +1104,31 @@ function setup () {
 
     if [ "$USE_MONITOR_API" = true ]
     then
-        configure_API "MONITOR" ${MONITOR_URL} ${MONITOR_API_ENDPOINT}
-    fi
-    
-    if [ "$USE_SECURE_API" = true ]
-    then
-        configure_API "SECURE" ${SECURE_URL} ${SECURE_API_ENDPOINT}
+        configure_api "MONITOR" "${MONITOR_URL}" "${MONITOR_API_ENDPOINT}"
     fi
 
-    if [ "$USE_AGENT" = true ]
+    if [ "$USE_SECURE_API" = true ]
     then
-        if [ "$USE_NO_CHECK" = false ]
-        then
-            test_agent
-        fi
+        configure_api "SECURE" "${SECURE_URL}" "${SECURE_API_ENDPOINT}"
+    fi
+
+    if [ "$USE_AGENT" = true ] && [ "$SKIP_CHECKS" = false ]
+    then
+        test_agent
     fi
 
     if [ "$USE_CLOUD" = true ]
     then
-        # we can't run `track_has_cloud_account` and `deploy_cloud_connector`
-        # before `configure_API` because they use data set within `configure_API`
-        track_has_cloud_account
+        # we can't run `detect_cloud_account` and `deploy_cloud_connector`
+        # before `configure_api` because they use data set within `configure_api`
+        detect_cloud_account
         deploy_cloud_connector
-        if [ "$USE_NO_CHECK" = false ]
+        if [ "$SKIP_CHECKS" = false ]
         then
             test_cloud_connector
         fi
     fi
-    
+
     if [ "$SKIP_CLEANUP" = false ]
     then
         clean_setup
@@ -1166,4 +1136,4 @@ function setup () {
 }
 
 ################################    SCRIPT    #################################
-setup $@
+setup "$@"

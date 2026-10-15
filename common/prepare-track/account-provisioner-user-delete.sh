@@ -16,10 +16,11 @@ function user_deprovisioner () {
     SPA_USER=$(cat $WORK_DIR/ACCOUNT_PROVISIONED_USER)
 
     # delete user in parent account
-    curl -s -k -X DELETE \
+    # TLS not validated (disabled): curl -s -k -X DELETE \
+    curl -s -X DELETE \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${ACCOUNT_PROVISIONER_SECURE_API_TOKEN}" \
-    ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/users/${SPA_USER} \
+    ${ACCOUNT_PROVISIONER_SECURE_API_URL}/api/users/${SPA_USER//+/%2B} \
     | jq
 
 }

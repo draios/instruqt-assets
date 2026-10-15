@@ -6,6 +6,28 @@
 #   install_with_helm.sh $CLUSTER_NAME $ACCESS_KEY $HELM_REGION_ID $SECURE_API_TOKEN $COLLECTOR
 #   (check ./init.sh to learn more about possible HELM_REGION_ID values )
 #
+# Backends:
+#   - SaaS:    HELM_REGION_ID is a chart region (us1, us2, us4, eu1, eu2, au1, me2, in1).
+#              Equivalent values.yaml:
+#                sysdig_endpoint:
+#                  region: us2
+#   - OnPrem:  HELM_REGION_ID=custom (also used for regions the chart does not know yet,
+#              e.g. jp1). The API URL is $6 and the collector host is $5. The port is
+#              $DYNAMIC_COLLECTOR_PORT (6443 by default). Equivalent values.yaml:
+#                sysdig_endpoint:
+#                  region: custom
+#                  api_url: https://<your-onprem-host>
+#                  collector:
+#                    host: <your-onprem-host>
+#                    port: 6443
+#              If the OnPrem backend has a self-signed certificate, TLS verification
+#              is already disabled below (ssl.verify=false, as for SaaS in the labs).
+#
+# Features (HELM_OPTS is built from the USE_* flags set by init.sh):
+#   USE_ALL_FEATURES=true  enables everything in the reference values.yaml (admission
+#                          control in enforce mode, posture, vulnerability management,
+#                          detections, investigations and response actions).
+#                          Any value passed in HELM_OPTS still wins over all of these.
 ##
 
 OUTPUT=/opt/sysdig/helm_install.out
@@ -79,6 +101,38 @@ helm repo update >> ${OUTPUT} 2>&1
 # ingest k8sAuditDetections via admission controller by default (with AC scanning disabled)
 HELM_OPTS="--set features.detections.kubernetes_audit.enabled=true \
 	--set features.investigations.activity_audit.enabled=true  ${HELM_OPTS}"
+
+# Everything on, same as the reference values.yaml. It goes before the individual
+# flags below on purpose: with repeated --set the last one wins, and each block is
+# prepended, so the blocks added first (this one) take precedence, e.g. over
+# in_use.integration_enabled=false set by the Node Analyzer block.
+if [ "${USE_ALL_FEATURES:-false}" = true ]
+then
+    HELM_OPTS="--set host.driver=universal_ebpf \
+    --set features.admission_control.enabled=true \
+    --set features.admission_control.dry_run=false \
+    --set features.admission_control.container_vulnerability_management.enabled=true \
+    --set features.admission_control.posture.enabled=true \
+    --set features.admission_control.supply_chain.enabled=true \
+    --set features.kubernetes_metadata.enabled=true \
+    --set features.posture.host_posture.enabled=true \
+    --set features.posture.cluster_posture.enabled=true \
+    --set features.vulnerability_management.host_vulnerability_management.enabled=true \
+    --set features.vulnerability_management.container_vulnerability_management.enabled=true \
+    --set features.vulnerability_management.in_use.enabled=true \
+    --set features.vulnerability_management.in_use.integration_enabled=true \
+    --set features.detections.drift_control.enabled=true \
+    --set features.detections.malware_control.enabled=true \
+    --set features.detections.ml_policies.enabled=true \
+    --set features.detections.kubernetes_audit.enabled=true \
+    --set features.detections.file_integrity_monitoring.enabled=true \
+    --set features.investigations.activity_audit.enabled=true \
+    --set features.investigations.live_logs.enabled=true \
+    --set features.investigations.network_security.enabled=true \
+    --set features.investigations.audit_tap.enabled=true \
+    --set features.investigations.captures.enabled=true \
+    --set features.respond.response_actions.enabled=true $HELM_OPTS"
+fi
 
 if [ "$USE_NODE_ANALYZER" = true ]
 then
