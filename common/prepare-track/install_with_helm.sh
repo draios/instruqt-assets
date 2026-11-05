@@ -32,7 +32,7 @@ HELM_OPTS="--set host.additional_settings.falcobaseline.report_interval=15000000
 --set host.additional_settings.falcobaseline.debug_metadata=true \
 --set host.additional_settings.falcobaseline.debug=true \
 --set host.additional_settings.falcobaseline.randomize_start=false \
---version=1.31.1 \
+--version=1.55.1 \
 $HELM_OPTS"
 
 # new hostnames, to avoid duplicated names as much as possible
@@ -104,7 +104,10 @@ fi
 
 if [ "$USE_RAPID_RESPONSE" = true ]
 then
-    HELM_OPTS="--set features.respond.rapid_response.enabled=true $HELM_OPTS"
+    # Shield chart >= 1.4x refuses to render Rapid Response without a password.
+    # Throwaway lab value, intentionally in clear (ephemeral sandboxes).
+    HELM_OPTS="--set features.respond.rapid_response.enabled=true \
+    --set features.respond.rapid_response.password=instruqt-lab $HELM_OPTS"
 fi
 
 if [ "$USE_ADMISSION_CONTROL" = true ]
