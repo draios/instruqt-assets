@@ -27,7 +27,9 @@ apt update -y
 # (CRI engine SIGSEGV), so the host-shield never becomes Ready and no runtime
 # events reach the backend. 1.7.x is also the natural pairing for Kubernetes 1.28.
 # Stopgap until the Sysdig agent ships a plugin compatible with containerd 2.x.
-CONTAINERD_VER=$(apt-cache madison containerd.io | awk '/1\.7\./{print $3; exit}')
+# awk must read all input: exiting early SIGPIPEs apt-cache and, with pipefail, aborts the script.
+CONTAINERD_VER=$(apt-cache madison containerd.io | awk '/1\.7\./ && !v {v=$3} END{print v}')
+[ -n "${CONTAINERD_VER}" ] || { echo "no containerd.io 1.7.x available" >&2; exit 1; }
 apt install -y containerd.io="${CONTAINERD_VER}"
 apt-mark hold containerd.io
 
