@@ -40,7 +40,11 @@ cd /root/prepare-track/cloud
 # Config git to use the PAT for access to the terraform modules in our private repo
 # This is needed to avoid the need for a password when cloning the repo
 # The PAT is stored in the environment variable Terraform_Modules_PAT coming from the Instruqt environment
+# Disable xtrace for this line: callers run with "set -x" and it would print the PAT in the track logs
+case $- in *x*) _xtrace_was_on=1 ;; *) _xtrace_was_on= ;; esac
+{ set +x; } 2>/dev/null
 git config --global url."https://sysdiglabs:$Terraform_Modules_PAT@github.com".insteadOf https://github.com
+if [ -n "$_xtrace_was_on" ]; then set -x; fi
 
 if [ "$PROVIDER" == "aws" ]
 then
